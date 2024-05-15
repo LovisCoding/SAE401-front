@@ -8,6 +8,13 @@ const port = process.env.PORT || 8080;
 app.get('/', function(req, res) {
   res.sendFile(path.join(__dirname, '/src/html/index.html'));
 });
+app.get('/login', function(req, res) {
+	res.sendFile(path.join(__dirname, '/src/html/Connection.html'));
+  });
+  app.use(express.static('src/css'))
+  app.use(express.static('src/js'))
+  app.use(express.static('src/assets'))
+  
 
 app.get('/home', function(req, res) {
   res.sendFile(path.join(__dirname, '/src/html/home.html'));
