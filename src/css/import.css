@@ -72,6 +72,18 @@ h6 {
 }
 
 .type {
-	margin-left: 4rem;
+	margin-left: 5rem;
 	margin-top: 1.5rem;
+}
+
+#semester {
+	margin-left: 1.2rem;
+}
+
+#jury {
+	margin-left: 2rem;
+}
+
+.coeff {
+	margin-top: 35%;
 }
