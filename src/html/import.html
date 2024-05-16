@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="FR">
+<head>
+	<meta charset="UTF-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+	<title>Page d'importation</title>
+	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet"/>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="./nav.css"/>
+	<link rel="stylesheet" type="text/css" href="./import.css"/>
+</head>
+<body>
+<div class="background-left"></div>
+<div class="background-right">
+	<select class="form-control"></select>
+</div>
+<div class="container mt-5">
+	<table class="table table-bordered">
+		<thead>
+		<tr>
+			<th scope="col"></th>
+			<th scope="col">S1</th>
+			<th scope="col">S2</th>
+			<th scope="col">S3</th>
+			<th scope="col">S4</th>
+			<th scope="col">S5</th>
+			<th scope="col">S6</th>
+		</tr>
+		</thead>
+		<tbody>
+		<tr class="jury">
+			<th scope="row">Jury</th>
+			<td><img src="./img/Excel.svg" alt="Excel" class="icon"/></td>
+			<td><img src="./img/Excel.svg" alt="Excel" class="icon"/></td>
+			<td><img src="./img/Excel.svg" alt="Excel" class="icon"/></td>
+			<td><img src="./img/Excel.svg" alt="Excel" class="icon"/></td>
+			<td><img src="./img/Excel.svg" alt="Excel" class="icon"/></td>
+			<td><img src="./img/Excel.svg" alt="Excel" class="icon"/></td>
+		</tr>
+		<tr>
+			<th scope="row">Commission</th>
+			<td><img src="./img/Excel.svg" alt="Excel" class="icon"/></td>
+			<td><img src="./img/Excel.svg" alt="Excel" class="icon"/></td>
+			<td><img src="./img/Excel.svg" alt="Excel" class="icon"/></td>
+			<td><img src="./img/Excel.svg" alt="Excel" class="icon"/></td>
+			<td><img src="./img/Excel.svg" alt="Excel" class="icon"/></td>
+			<td><img src="./img/Excel.svg" alt="Excel" class="icon"/></td>
+		</tr>
+		</tbody>
+	</table>
+</div>
+<div class="container mt-5">
+	<div class="row">
+		<div class="col-md-6 vertical-center splitter">
+			<div class="form-group">
+				<h6>Dépôt du fichier</h6>
+				<label for="file-input" class="file-label">
+					<img src="./img/File.svg" alt="Logo" class="logo">
+					<span class="label-text">Fichier</span>
+					<input type="file" id="file-input" class="input-file">
+				</label>
+			</div>
+			<div class="form-group">
+				<label for="semester">Choix du semestre</label><br>
+				<select id="semester">
+					<option value="1">Semestre 1</option>
+					<option value="2">Semestre 2</option>
+					<option value="3">Semestre 3</option>
+					<option value="4">Semestre 4</option>
+					<option value="5">Semestre 5</option>
+					<option value="6">Semestre 6</option>
+				</select>
+			</div>
+			<div class="form-check">
+				<input type="checkbox" class="form-check-input" id="alternant">
+				<label class="form-check-label" for="alternant">Alternant</label>
+			</div>
+			<div class="form-group">
+				<label class="type">Type</label><br>
+				<div class="form-check form-check-inline">
+					<input class="form-check-input" type="radio" name="type" id="jury" value="jury">
+					<label class="form-check-label" for="jury">Jury</label>
+				</div>
+				<div class="form-check form-check-inline">
+					<input class="form-check-input" type="radio" name="type" id="commission" value="commission">
+					<label class="form-check-label" for="commission">Commission</label>
+				</div>
+			</div>
+			<button type="button" class="addBtn">Ajouter</button>
+		</div>
+		<div class="col-md-6 vertical-center">
+			<div class="form-group">
+				<h6>Dépôt des coefficients</h6>
+				<label for="file-input" class="file-label">
+					<img src="./img/File.svg" alt="Logo" class="logo">
+					<span class="label-text">Fichier</span>
+					<input type="file" id="file-input" class="input-file">
+				</label>
+			</div>
+			<button type="button" class="addBtn">Ajouter</button>
+		</div>
+	</div>
+</div>
+<script src="./nav.js"></script>
+<script src="./year.js"></script>
+</body>
+</html>

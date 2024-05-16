@@ -1,0 +1,70 @@
+.jury {
+	background-color: rgba(227, 227, 227, 0.5);
+}
+
+.center-content {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 100vh;
+}
+
+.splitter {
+	height: 100%;
+	border-right: 1px solid #000;
+}
+
+.input-file {
+	display: none;
+}
+
+.file-label {
+	display: inline-block;
+	position: relative;
+	width: 250px;
+	height: 30px;
+	padding: 10px;
+	border: 1px solid #DEE2E6;
+	border-radius: 5px;
+	background-color: #fff;
+	cursor: pointer;
+}
+
+.logo {
+	width: 20px;
+}
+
+.label-text {
+	margin-left: 1rem;
+	color: #ADB5BD;
+}
+
+.file-label:hover {
+	opacity: 0.8;
+}
+
+.addBtn {
+	background-color: #82CDD0;
+	cursor: pointer;
+	font-weight: bold;
+	border-radius: 45px;
+	border: none;
+	color: #fff;
+	padding: 10px 20px;
+}
+
+.vertical-center {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	height: 100%;
+}
+
+h6 {
+	text-align: center;
+}
+
+.type {
+	margin-left: 4rem;
+}
