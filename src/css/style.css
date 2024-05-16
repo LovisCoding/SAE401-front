@@ -1,6 +1,4 @@
-.samem {
-	font-family:Inter;
-	src: url(./Inter-Display-Regular.woff2) format('woff2');
-	/* add bold */
-	font-weight: regular;
+body {
+	font-family: 'Inter', sans-serif;
+	background: #EEECEC;
 }

@@ -9,7 +9,7 @@ app.get('/', function(req, res) {
   res.sendFile(path.join(__dirname, '/src/html/index.html'));
 });
 app.get('/login', function(req, res) {
-	res.sendFile(path.join(__dirname, '/src/html/Connection.html'));
+	res.sendFile(path.join(__dirname, '/src/html/connection.html'));
   });
   app.use(express.static('src/css'))
   app.use(express.static('src/js'))
