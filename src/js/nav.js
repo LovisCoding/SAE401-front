@@ -21,7 +21,7 @@ class Nav {
 				<div class="collapse navbar-collapse" id="navbarSupportedContent">
 				<ul class="navbar-nav ml-auto">
 					<li class="nav-item">
-						<a class="nav-link d-flex flex-column align-items-center text-center" href="#">
+						<a class="nav-link d-flex flex-column align-items-center text-center" href="/import">
 							<img src="./img/Import.svg" width="25" height="25" class="d-inline-block align-top" alt="Importation"/>
 							<span>Importation</span>
 						</a>
