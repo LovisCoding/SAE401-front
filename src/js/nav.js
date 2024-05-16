@@ -13,7 +13,7 @@ class Nav {
 			const navHTML = `
 			<nav class="navbar navbar-expand-lg navbar-light">
 				<a class="navbar-brand" href="#">
-				<img src="./img/Logo_ScoNotesSimple.png" width="65" height="45" class="d-inline-block align-top" alt="ScoNotes"/>
+				<img src="./img/Logo_ScoNotesSimple.png" width="65" height="45" class="d-inline-block align-top logo" alt="ScoNotes"/>
 				</a>
 				<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
 				<span class="navbar-toggler-icon"></span>
@@ -27,13 +27,13 @@ class Nav {
 						</a>
 					</li>
 					<li class="nav-item">
-						<a class="nav-link d-flex flex-column align-items-center text-center" href="#">
+						<a class="nav-link d-flex flex-column align-items-center text-center" href="/recap">
 							<img src="./img/Recapitulatif.svg" width="25" height="25" class="d-inline-block align-top" alt="Récapitulatif"/>
 							<span>Récapitulatif</span>
 						</a>
 					</li>
 					<li class="nav-item">
-						<a class="nav-link d-flex flex-column align-items-center text-center" href="#">
+						<a class="nav-link d-flex flex-column align-items-center text-center" href="/export">
 							<img src="./img/Export.svg" width="25" height="25" class="d-inline-block align-top" alt="Exportation"/>
 							<span>Exportation</span>
 						</a>
