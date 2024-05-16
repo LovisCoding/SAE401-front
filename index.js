@@ -4,12 +4,15 @@ const path = require('path');
 const app = express();
 const port = process.env.PORT || 8080;
 
+const cors = require('cors');
+app.use(cors());
+
 // sendFile will go here
 app.get('/', function(req, res) {
   res.sendFile(path.join(__dirname, '/src/html/index.html'));
 });
 app.get('/login', function(req, res) {
-	res.sendFile(path.join(__dirname, '/src/html/Connection.html'));
+	res.sendFile(path.join(__dirname, '/src/html/connection.html'));
   });
   app.use(express.static('src/css'))
   app.use(express.static('src/js'))
