@@ -7,5 +7,17 @@
 </head>
 <body>
 	<h1>HTML</h1>
+	<script>
+		const getUsers = () => {
+  axios
+    .get("http://localhost/api/users")
+    .then((response) => {
+      const users = response.data.data;
+      console.log(`GET users`, users);
+    })
+    .catch((error) => console.error(error));
+};
+getUsers();
+	</script>
 </body>
 </html>l

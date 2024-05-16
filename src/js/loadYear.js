@@ -28,10 +28,11 @@ $(document).ready(function(){
 			url: 'http://localhost:8000/api/addAnnee',
 			type: 'POST',
 			dataType: 'json',
-			data: { annee: newYear },
+			data: JSON.stringify([{ annee: newYear }]),
 			success: function(data){
 				$('.form-control').append('<option value="' + data.id_annee + '">' + data.annee + '</option>');
 			},
+			
 			error: function(jqXHR, textStatus, errorThrown){
 				console.log('Erreur : ' + errorThrown);
 			}
