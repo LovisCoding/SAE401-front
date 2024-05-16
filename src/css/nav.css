@@ -105,7 +105,8 @@ body {
 }
 
 .logo {
-	z-index: 1;
+	cursor: default;
+	z-index: 1000;
 }
 
 @media (max-width: 768px) {
