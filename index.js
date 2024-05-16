@@ -1,11 +1,11 @@
 const express = require('express');
 const path = require('path');
+const cors = require('cors');
 
 const app = express();
 const port = process.env.PORT || 8080;
 
-const cors = require('cors');
-app.use(cors());
+app.use(cors({origin: true}));
 
 // sendFile will go here
 app.get('/', function(req, res) {
@@ -29,6 +29,10 @@ app.get('/import', function(req, res) {
 
 app.get('/test_import', function(req, res) {
   res.sendFile(path.join(__dirname, '/src/html/test_import.html'));
+});
+
+app.get('/export', function(req, res) {
+  res.sendFile(path.join(__dirname, '/src/html/export.html'));
 });
 
 app.listen(port);
