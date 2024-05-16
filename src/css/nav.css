@@ -104,6 +104,10 @@ body {
 	font-size: 0.8rem;
 }
 
+.logo {
+	z-index: 1;
+}
+
 @media (max-width: 768px) {
 	.background-left {
 		width: 30vw;
