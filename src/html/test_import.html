@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+		<meta charset="UTF-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+		<title>Page de test</title>
+		<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet"/>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+		<link rel="stylesheet" type="text/css" href="./nav.css"/>
+	</head>
+<body>
+    <div class="background-left"></div>
+		<div class="background-right">
+			<select class="form-control"></select>
+		</div>
+		<div class="background-center"></div>
+		<script src="./nav.js"></script>
+		<script src="./year.js"></script>
+	</body>
+
+    <input type="file" id="fichierExcelInput" accept=".xlsx">
+    <button onclick="importerFichier()">Importer</button>
+    <div id="resultat"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.0/xlsx.full.min.js"></script>
+    <script>
+        function importerFichier() {
+            const input = document.getElementById('fichierExcelInput');
+            const fichier = input.files[0];
+
+            if (!fichier) {
+                alert("Veuillez sélectionner un fichier Excel.");
+                return;
+            }
+
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+                const enTetesAttendus = ['etudid', 'code_nip', 'Rg', 'Nom', 'Prénom', 'TD', 'TP', 'Cursus', 'Moy', 'Abs'];
+                const enTetesFichier = Object.keys(jsonData[0]);
+
+                const enTetesManquants = enTetesAttendus.filter(enTete => !enTetesFichier.includes(enTete));
+
+                if (enTetesManquants.length > 0) {
+                    document.getElementById('resultat').innerHTML = "Les en-têtes suivants sont manquants dans le fichier Excel: " + enTetesManquants.join(', ');
+                } else {
+                    const entetesAssociatifs = {};
+                    const enteteModule = [];
+
+                    let enteteBIN = null;
+                    enTetesFichier.forEach(enTete => {
+                        // Retirer le '_' et tout ce qui vient après
+                        const cleanEnTete = enTete.replace(/_.*/, '');
+                        if (/^BIN\d/.test(cleanEnTete)) {
+                            enteteBIN = cleanEnTete;
+                            entetesAssociatifs[enteteBIN] = [];
+                        } else if (enteteBIN && (cleanEnTete.startsWith('BINR') || cleanEnTete.startsWith('BINS') || cleanEnTete.startsWith('BINP') || cleanEnTete.startsWith('Bonus') )) {
+                            entetesAssociatifs[enteteBIN].push(cleanEnTete);
+                            if (!enteteModule.includes(cleanEnTete)) {
+                                enteteModule.push(cleanEnTete);
+                            }
+                        }
+                    });
+
+                    let message = "Données importées avec succès pour les en-têtes obligatoires: <br>" + JSON.stringify(enTetesAttendus);
+					
+					// Ajout des compétences dans la BD
+                    for (const competence in entetesAssociatifs) {
+						message += "<br>Création de la compétence " + competence + " dans la BD"
+                        ajouterCompetence(competence, 1 /* déterminer l'idSemestre */);
+                    }
+					
+					// Ajout des modules dans la BD
+					enteteModule.forEach(module => {
+						if (!module.startsWith('Bonus')) {
+							message += "<br>Création du module " + module + " dans la BD";
+                            ajouterModule(module);
+						}
+                    });
+					
+					// Ajout des coeff dans la BD
+                    /*
+					for (const competence in entetesAssociatifs) {
+                        if (entetesAssociatifs.hasOwnProperty(competence)) {
+							entetesAssociatifs[competence].forEach(module => {
+								if (!module.startsWith('Bonus')) {
+									message += "<br>Création du module " + module + " de la compétence : " + competence + "dans la BD";
+                                    ajouterCoefficient(module, competence);
+								}
+							});
+                        }
+                    }*/
+					
+
+                    document.getElementById('resultat').innerHTML = message;
+					
+                    //afficherDonnees(jsonData, entetesAssociatifs, enteteModule, enTetesAttendus);
+                }
+            };
+
+            reader.readAsArrayBuffer(fichier);
+        }
+		
+		function afficherDonnees(jsonData, entetesAssociatifs, enteteModule, entetesObligatoires) {
+            let resultat = "";
+
+            // Affichage des entêtes obligatoires et des valeurs pour chaque ligne
+            jsonData.forEach(element => {
+                const idEtu = Number(element.etudid)
+                // Appeler la méthode pour ajouter l'étudiant
+                ajouterEtudiant({
+                    code_etu: idEtu,
+                    nom_etu: element.Nom,
+                    prenom_etu: element.Prénom,
+                    groupe_TD: element.TD,
+                    groupe_TP: element.TP,
+                    cursus: element.Cursus,
+                    alternant: 0 // déterminer cette valeur
+                });
+
+                resultat += "<strong>Données pour " + element.Prénom + ":</strong><br>";
+                
+                // Affichage des entêtes obligatoires
+                entetesObligatoires.forEach(entete => {
+                    resultat += entete + ": " + element[entete] + "<br>";
+                });
+
+                // Affichage des entêtes associatives et de leurs valeurs
+                for (const competenceLabel in entetesAssociatifs) {
+                    if (entetesAssociatifs.hasOwnProperty(competenceLabel)) {
+                        resultat += "<br>" + competenceLabel + ": " + element[competenceLabel] + "<br>";
+                        entetesAssociatifs[competenceLabel].forEach(moduleLabel => {
+                            resultat += " - " + moduleLabel + ": " + element[moduleLabel] + "<br>";
+
+
+                            if (moduleLabel.startsWith("Bonus")) {
+                                const idComp = getIdCompetenceByName(competenceLabel);
+                                ajouterEtuComp(idEtu, idComp, element[competenceLabel], "",element[moduleLabel])
+                            }
+                            else {
+                                const idCoeff = getIdCoeffByModuleAndComp(getIdModuleByName(moduleLabel), getIdCompetenceByName(competenceLabel))
+                                ajouterEtuModule(idEtu, idCoeff, element[moduleLabel])
+                            }
+                        });
+                    }
+                   
+                }
+                resultat += "<br>";
+            });
+
+            document.getElementById('resultat').innerHTML = resultat;
+        }
+		
+		async function ajouterEtudiant(data) {
+            // Appel de l'API
+            const response = await fetch('http://localhost:8000/api/addEtudiant', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                const jsonResponse = await response.json();
+                console.log(jsonResponse); // Affiche la réponse de l'API dans la console
+            } else {
+                console.error('Erreur lors de l\'appel de l\'API: ', response.status);
+            }
+        }
+
+        async function ajouterEtuModule(idEtu, idCoefficient, note) {
+            const response = await fetch('http://localhost:8000/api/addEtuModule', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ id_etu: idEtu, id_coef: idCoefficient, note: note })
+            });
+
+            if (response.ok) {
+                const jsonResponse = await response.json();
+                console.log(jsonResponse); // Affiche la réponse de l'API dans la console
+            } else {
+                console.error('Erreur lors de l\'ajout du EtuModule:', response.status);
+            }
+        }
+
+        async function ajouterEtuComp(idEtu, idComp, moyenneComp, passage, bonus) {
+            const response = await fetch('http://localhost:8000/api/addEtuComp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ id_etu: idEtu, id_comp: idComp, moyenne_comp: moyenneComp, passage: passage, bonus: bonus })
+            });
+
+            if (response.ok) {
+                const jsonResponse = await response.json();
+                console.log(jsonResponse); // Affiche la réponse de l'API dans la console
+            } else {
+                console.error('Erreur lors de l\'ajout du EtuComp:', response.status);
+            }
+        }
+
+
+
+        async function ajouterModule(moduleLabel) {
+            // Vérifier si le module existe déjà
+            const response = await fetch('http://localhost:8000/api/module');
+            const modulesExistants = await response.json();
+            const moduleExiste = modulesExistants.some(m => m.label === moduleLabel);
+
+            if (!moduleExiste) {
+                // Ajouter le module s'il n'existe pas
+                const response = await fetch('http://localhost:8000/api/addModule', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ label: moduleLabel })
+                });
+
+                if (response.ok) {
+                    const jsonResponse = await response.json();
+                    console.log(jsonResponse); // Affiche la réponse de l'API dans la console
+                } else {
+                    console.error('Erreur lors de l\'ajout du module:', response.status);
+                }
+            }
+        }
+
+        async function ajouterCompetence(competenceLabel, idSemestre) {
+            // Vérifier si la compétence existe déjà
+            const response = await fetch('http://localhost:8000/api/competence');
+            const competencesExistantes = await response.json();
+            const competenceExiste = competencesExistantes.some(c => c.label === competenceLabel && c.id_semestre === idSemestre);
+
+            if (!competenceExiste) {
+                // Ajouter la compétence s'elle n'existe pas
+                $.ajax({
+				url: 'http://localhost:8000/api/addCompetence',
+				type: 'POST',
+				dataType: 'json',
+				data: { label: competenceLabel, id_semestre: idSemestre },
+				success: function(data) {
+					console.log('Success : ');
+				},
+				error: function(jqXHR, textStatus, errorThrown) {
+					console.log('Erreur : ' + errorThrown);
+				}
+			});
+
+            }
+        }
+
+        async function ajouterCoefficient(nomModule, nomCompetence) {
+            // Récupérer l'ID du module
+            const idModule = getIdModuleByName(nomModule);
+
+            // Récupérer l'ID de la compétence
+            const idCompetence = getIdCompetenceByName(nomCompetence);
+
+            // Ajouter le coefficient
+            const response = await fetch('http://localhost:8000/api/addCoefficient', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ id_module: idModule, id_comp: idCompetence, coef: 1 })
+            });
+
+            if (response.ok) {
+                const jsonResponse = await response.json();
+                console.log(jsonResponse); // Affiche la réponse de l'API dans la console
+            } else {
+                console.error('Erreur lors de l\'ajout du coefficient:', response.status);
+            }
+        }
+
+
+        async function getIdModuleByName(nomModule) {
+            const responseModule = await fetch('http://localhost:8000/api/module');
+            const modules = await responseModule.json();
+            const module = modules.find(m => m.label === nomModule);
+            if (!module) {
+                console.error('Module non trouvé:', nomModule);
+                return;
+            }
+            return module.id;
+        }
+
+        async function getIdCompetenceByName(nomCompetence) {
+            const responseCompetence = await fetch('http://localhost:8000/api/competence');
+            const competences = await responseCompetence.json();
+            const competence = competences.find(c => c.label === nomCompetence);
+            if (!competence) {
+                console.error('Compétence non trouvée:', nomCompetence);
+                return;
+            }
+            return competence.id;
+        }
+
+        async function getIdEtudiantByCode(codeEtudiant) {
+            const responseEtudiant = await fetch('http://localhost:8000/api/etudiant');
+            const etudiants = await responseEtudiant.json();
+            const etudiant = etudiants.find(e => e.code_etu === codeEtudiant);
+            if (!etudiant) {
+                console.error('Etudiant non trouvée:', codeEtudiant);
+                return;
+            }
+            return etudiant.id;
+        }
+
+        async function getIdCoeffByModuleAndComp(idModule, idComp) {
+            const responseCoefficient = await fetch('http://localhost:8000/api/coefficient');
+            const coefficients = await responseCoefficient.json();
+            const coeff = coefficients.find(c => c.id_module === idModule && c.id_comp === idComp);
+            if (!coeff) {
+                console.error('Coefficient non trouvée: ', idModule, idComp);
+                return;
+            }
+            return coeff.id;
+        }
+
+    </script>
+</body>
+</html>

@@ -27,5 +27,9 @@ app.get('/import', function(req, res) {
   res.sendFile(path.join(__dirname, '/src/html/import.html'));
 });
 
+app.get('/test_import', function(req, res) {
+  res.sendFile(path.join(__dirname, '/src/html/test_import.html'));
+});
+
 app.listen(port);
 console.log('Server started at http://localhost:' + port);
