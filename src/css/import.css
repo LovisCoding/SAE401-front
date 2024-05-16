@@ -31,11 +31,17 @@
 }
 
 .logo {
-	width: 20px;
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	left: 10px;
 }
 
 .label-text {
-	margin-left: 1rem;
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	left: 40px;
 	color: #ADB5BD;
 }
 
@@ -67,4 +73,5 @@ h6 {
 
 .type {
 	margin-left: 4rem;
+	margin-top: 1.5rem;
 }
