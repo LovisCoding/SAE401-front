@@ -19,12 +19,13 @@
 				<div class="mb-3">
 					<label class="form-label" for="identifiant">Identifiant</label>
 					<input type="text" class="form-control" id="identifiant" placeholder="Identifiant">
+					<div id="identifiantError" class="invalid-feedback"></div>
 
 				</div>
 				<div class="mb-3">
 					<label class="form-label" for="password">Mot de passe</label>
 					<input type="password" class="form-control" id="password" placeholder="Mot de passe">
-
+					<div id="pwError" class="invalid-feedback"></div>
 				</div>
 				<button class="btn btn-primary w-100 btnValidate mt-4" type="submit" id="btnValidate">Se connecter</button>
 				<p class="form-text mt-3">Vous n'avez pas de compte ? <a href="#!">Demander l'accès</a></p>
@@ -36,6 +37,7 @@
 	  </div>
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 	<script src="./Connection.js"></script>
 	
 </body>
