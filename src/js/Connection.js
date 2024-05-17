@@ -28,7 +28,7 @@ class Connection {
 					if (jsData.token) {
 						console.log('Connexion réussie');
 						localStorage.setItem('token', data.token);
-						window.location.href = 'http://localhost:8081/home';
+						window.location.href = 'http://localhost:8080/home';
 
 					} else {
 						const inputIdentifiant = document.getElementById('identifiant');
