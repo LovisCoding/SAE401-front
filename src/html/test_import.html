@@ -133,69 +133,70 @@
                 console.error("Une erreur s'est produite :", error);
             }
 
-            ajouterDonnees(jsonData, entetesAssociatifs, enteteModule, enTetesAttendus);
+            ajouterDonnees(jsonData, entetesAssociatifs, enteteModule, enTetesAttendus, hmCompetences, hmCoefficient);
         }
 
-		function ajouterDonnees(jsonData, entetesAssociatifs, enteteModule, entetesObligatoires) {
-            let resultat = "";
+        async function relaiGetIdEtudiantByCode(codeEtu) {
+           return await getIdEtudiantByCode(codeEtu);
+        }
+
+		function ajouterDonnees(jsonData, entetesAssociatifs, enteteModule, entetesObligatoires, hmCompetences, hmCoefficient) {
 
             // Affichage des entêtes obligatoires et des valeurs pour chaque ligne
             jsonData.forEach(element => {
                 const codeEtu = Number(element.etudid)
                 // Appeler la méthode pour ajouter l'étudiant
-                ajouterEtudiant({
-                    code_etu: codeEtu,
-                    nom_etu: element.Nom,
-                    prenom_etu: element.Prénom,
-                    groupe_TD: element.TD,
-                    groupe_TP: element.TP,
-                    cursus: element.Cursus,
-                    alternant: 0 // déterminer cette valeur
-                });
+                ajouterEtudiant(relaiGetIdEtudiantByCode(codeEtu), {code_etu: codeEtu, nom_etu: element.Nom, prenom_etu: element.Prénom, groupe_TD: element.TD, groupe_TP: element.TP, cursus: element.Cursus, alternant: 0 /* déterminer cette valeur*/ })
+                    .then(etu => {
+                        entetesObligatoires.forEach(entete => {
+                            resultat += entete + ": " + element[entete] + "<br>";
+                        });
 
-                resultat += "<strong>Données pour " + element.Prénom + ":</strong><br>";
+                        getIdEtudiantByCode(codeEtu)
+                            .then(idEtu => {
+                                // Affichage des entêtes associatives et de leurs valeurs
+                                const etuComp = [];
+                                const etuModule = []
+                                for (const competenceLabel in entetesAssociatifs) {
+                                    if (entetesAssociatifs.hasOwnProperty(competenceLabel)) {
+                                        entetesAssociatifs[competenceLabel].forEach(moduleLabel => {
+
+                                            if (moduleLabel.startsWith("Bonus")) {
+                                                const idComp = hmCompetences[competenceLabel];
+                                                var bonus = 0;
+                                                if (element[moduleLabel] != null) { bonus = element[moduleLabel] }
+                                                etuComp.push( { id_etu: idEtu, id_comp: idComp, moyenne_comp: element[competenceLabel], passage: "", bonus: bonus })
+                                            }
+                                            else {
+                                                const idCoeff = hmCoefficient[moduleLabel + "-" + competenceLabel]
+                                                etuModule.push({ id_etu: idEtu, id_coef: idCoeff, note: element[moduleLabel] })
+                                            }
+                                        });
+                                    }
+                                
+                                }
+                                ajouterManyEtuComp(etuComp);
+                                ajouterManyEtuModule(etuModule);
+                            })
+                            .catch(error => {
+                                console.error("Une erreur s'est produite :", error);
+                            });
+                    })
+                    .catch(error => {
+                        console.error("Une erreur s'est produite :", error);
+                    });
                 
                 // Affichage des entêtes obligatoires
-                entetesObligatoires.forEach(entete => {
-                    resultat += entete + ": " + element[entete] + "<br>";
-                });
-
-                // Affichage des entêtes associatives et de leurs valeurs
-               for (const competenceLabel in entetesAssociatifs) {
-                    if (entetesAssociatifs.hasOwnProperty(competenceLabel)) {
-                        resultat += "<br>" + competenceLabel + ": " + element[competenceLabel] + "<br>";
-                        entetesAssociatifs[competenceLabel].forEach(moduleLabel => {
-                            resultat += " - " + moduleLabel + ": " + element[moduleLabel] + "<br>";
-                            
-                             getIdEtudiantByCode(codeEtu)
-                            .then(idEtu => {
-                                    if (moduleLabel.startsWith("Bonus")) {
-                                        const idComp = getIdCompetenceByName(competenceLabel);
-                                        ajouterEtuComp(idEtu, idComp, element[competenceLabel], "",element[moduleLabel])
-                                    }
-                                    else {
-                                        
-                                        const idCoeff = getIdCoeffByModuleAndComp(getIdModuleByName(moduleLabel), getIdCompetenceByName(competenceLabel))
-                                        ajouterEtuModule(idEtu, idCoeff, element[moduleLabel])
-                                    }
-                                })
-                                .catch(error => {
-                                    console.error("Une erreur s'est produite :", error);
-                                });
-
-                            
-                        });
-                    }
-                   
-                }
-                resultat += "<br>";
+                
             });
 
-            document.getElementById('resultat').innerHTML = resultat;
         }
 		
-		async function ajouterEtudiant(data) {
-            console.log([data])
+		async function ajouterEtudiant(idEtu, data) {
+            if (idEtu != -1) {
+                console.log("existe déjà");
+                return;
+            }
             $.ajax({
 				url: 'http://localhost:8000/api/addEtudiant',
 				type: 'POST',
@@ -220,17 +221,47 @@
 					console.log('Success : ');
 				},
 				error: function(jqXHR, textStatus, errorThrown) {
+                    console.log('Erreur : ' + errorThrown);
+				}
+			});
+        }
+
+        async function ajouterManyEtuModule($manyData) {
+            $.ajax({
+				url: 'http://localhost:8000/api/addManyEtuModule',
+				type: 'POST',
+				dataType: 'json',
+				data: JSON.stringify($manyData),
+				success: function(data) {
+					console.log('Success : ');
+				},
+				error: function(jqXHR, textStatus, errorThrown) {
 					console.log('Erreur : ' + errorThrown);
 				}
 			});
         }
 
-        async function ajouterEtuComp(idEtu, idComp, moyenneComp, passage, bonus) {
+        async function ajouterEtuComp(idEtu, idComp, moyenneComp, passage, bonus = 0) {
             $.ajax({
 				url: 'http://localhost:8000/api/addEtuComp',
 				type: 'POST',
 				dataType: 'json',
 				data: JSON.stringify([{ id_etu: idEtu, id_comp: idComp, moyenne_comp: moyenneComp, passage: passage, bonus: bonus }]),
+				success: function(data) {
+					console.log('Success : ');
+				},
+				error: function(jqXHR, textStatus, errorThrown) {
+					console.log('Erreur : ' + errorThrown);
+				}
+			});
+        }
+
+        async function ajouterManyEtuComp($manyData) {
+            $.ajax({
+				url: 'http://localhost:8000/api/addManyEtuComp',
+				type: 'POST',
+				dataType: 'json',
+				data: JSON.stringify($manyData),
 				success: function(data) {
 					console.log('Success : ');
 				},
@@ -372,17 +403,6 @@
             return competence.id;
         }
 
-        async function getIdEtudiantByCode(codeEtudiant) {
-            const responseEtudiant = await fetch('http://localhost:8000/api/etudiant');
-            const etudiants = await responseEtudiant.json();
-            const etudiant = etudiants.find(e => e.code_etu === codeEtudiant);
-            if (!etudiant) {
-                console.error('Etudiant non trouvée:', codeEtudiant);
-                return;
-            }
-            return etudiant.id;
-        }
-
         async function getIdCoeffByModuleAndComp(idModule, idComp) {
             const responseCoefficient = await fetch('http://localhost:8000/api/coefficient');
             const coefficients = await responseCoefficient.json();
@@ -398,20 +418,15 @@
             try {
                 const response = await fetch(`http://localhost:8000/api/etudiantCode/${codeEtudiant}`);
                 const data = await response.json();
-
                 if (data && Object.keys(data).length !== 0) {
-                    return data.id_etu; // Retourner l'ID de l'étudiant s'il existe
+                    return data[0].id_etu; // Retourner l'ID de l'étudiant s'il existe
                 }
-                
-                return null; // Retourner null si l'étudiant n'existe pas
+                return -1; // Retourner null si l'étudiant n'existe pas
             } catch (error) {
                 console.error('Une erreur s\'est produite :', error);
-                return null; // Retourner null en cas d'erreur
+                return -2; // Retourner null en cas d'erreur
             }
         }
-
-
-        
 
     </script>
 </body>

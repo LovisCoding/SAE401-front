@@ -1,9 +1,9 @@
-class Year {
+class Import {
 
 	// Déclaration du constructeur
 
 	constructor() {
-		this.loadYears();
+		
 	}
 
 	// Méthode pour charger les années
@@ -30,6 +30,7 @@ class Year {
 		$('.form-control').after('<button id="addYearBtn" class="btn btn-primary">Ajouter</button>');
 
 		$(document).on('click', '#addYearBtn', function(){
+			// prendre le dernier élément de la liste
 			var beforeLastYear = $('.form-control option:nth-last-child(1)').text();
 			var yearParts = beforeLastYear.split('-');
 			var startYear = parseInt(yearParts[0]) + 1;
