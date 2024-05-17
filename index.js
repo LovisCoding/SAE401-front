@@ -17,6 +17,7 @@ app.get('/login', function(req, res) {
   app.use(express.static('src/css'))
   app.use(express.static('src/js'))
   app.use(express.static('src/assets'))
+  app.use(express.static('node_modules'))
   
 
 app.get('/home', function(req, res) {
