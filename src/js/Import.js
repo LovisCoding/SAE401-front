@@ -102,7 +102,7 @@ async function ajouterLogoFichier(fileInput) {
 		ajouterFichier(fileInput, type, idSemestre, idAnnee)
 	}
 
-	loadInfoImport();
+	loadInfoImports();
 }
 
 async function ajouterDonnees(jsonData, entetesAssociatifs, enteteModule, entetesObligatoires, hmCompetences, hmCoefficient) {
@@ -118,8 +118,14 @@ async function ajouterDonnees(jsonData, entetesAssociatifs, enteteModule, entete
             code_etu: codeEtu, nom_etu: element.Nom, prenom_etu: element.Prénom, groupe_TD: element.TD, groupe_TP: element.TP, cursus: element.Cursus, alternant: alternant
         });
 
+
         try {
             idEtu = await getIdEtudiantByCode(codeEtu);
+
+			console.log(element.Rg);
+			console.log(element.Abs);
+			console.log(element.Just);
+			console.log(element.Moy);
 
             // Créer les listes de données pour les ajouts en masse
             const etuComp = [];
@@ -160,12 +166,10 @@ async function ajouterCompetencesEtModules(jsonData, entetesAssociatifs, enteteM
 
 	var idSemestre = await getIdSemestreByIdAnneeAndLabel(idAnnee, lblSem);
 
-	console.log("idSemestre : " + idSemestre);
 
 	await ajouterSemestre(idSemestre, idAnnee, lblSem)
 
 	idSemestre = await getIdSemestreByIdAnneeAndLabel(idAnnee, lblSem);
-	console.log("idSemestre : " + idSemestre);
 
 	const hmCompetences = {};
 	const hmModules = {};
@@ -476,7 +480,6 @@ async function getIdEtudiantByCode(codeEtudiant) {
 }
 
 async function updateFichier(idFichier, nom) {
-	console.log(JSON.stringify([{id_fichier: idFichier, nom_fichier: nom}]))
 	$.ajax({
 		url: 'http://localhost:8000/api/updateFichier',
 		type: 'PUT',
@@ -511,9 +514,7 @@ async function loadInfoImports() {
 	var lstFiles = await getAllFile(idAnnee);
 	if (lstFiles) {
 		for (file of lstFiles) {
-			console.log(file)
 			const labelSemestre = "" + await getLabelSemestreById(file.id_semestre);
-			console.log(labelSemestre);
 			const match = labelSemestre.match(/\d+/);
 			const numSemestre = match ? parseInt(match[0]) : null;
 			const img = document.getElementById(file.type+""+numSemestre);
