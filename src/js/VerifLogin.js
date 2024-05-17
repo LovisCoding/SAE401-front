@@ -1,6 +1,11 @@
 class VerifLogin {
 	constructor() {
 		this.token = localStorage.getItem('token');
+		if (this.token == null || this.token == undefined ) {
+			console.log(';a');
+			window.location.href = 'http://localhost:8080/login';
+		}
+		this.request();
 	}
 	request() {
 		$.ajax({
@@ -8,16 +13,17 @@ class VerifLogin {
 			type: 'POST',
 			dataType: 'text',
 			success: function(data){
+				console.log(data);
 				const jsData = JSON.parse(data);
-				console.log(jsData.token);
 				if (!jsData.token) {
 					console.log('pas de token');
+					window.location.href = 'http://localhost:8080/login';
 				}
 					
 
 			},
-			beforeSend: function (xhr) {
-				xhr.setRequestHeader ("Authorization", "Basic " + this.token);
+			headers: {
+				'Authorization': 'Basic ' + this.token	
 			},
 			xhrFields: {
 				withCredentials: true
@@ -28,4 +34,6 @@ class VerifLogin {
 			}
 		});
 	}
+	
 }
+new VerifLogin();
