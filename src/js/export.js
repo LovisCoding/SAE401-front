@@ -6,6 +6,7 @@ class Export {
 		this.setupListeners();
 		this.loadStudent();
 		this.setupStudentProcessListener();
+		this.setupSubmitListener();
 	}
 
 	setupListeners() {
@@ -81,6 +82,72 @@ class Export {
 					console.log('Erreur : ' + errorThrown);
 				}
 			});
+		});
+	}
+
+	updateProcess() {
+		const selectedStudentId = $('.student').val();
+		const avisMaster = $('#avisMaster').val();
+		const avisEcoleIngenieur = $('#avisEcoleIngenieur').val();
+		const comment = $('#commentaire').val();
+	
+		const requestData = {
+			id_etu: Number(selectedStudentId),
+			avis_master: avisMaster,
+			avis_inge: avisEcoleIngenieur,
+			commentaire: comment
+		};
+
+		console.log(JSON.stringify([requestData]));
+	
+		$.ajax({
+			url: 'http://localhost:8000/api/updateAvis',
+			type: 'PUT',
+			dataType: 'json',
+			data: JSON.stringify([requestData]),
+			success: function(data){
+				$('#avisModal').modal('hide');
+			},
+			error: function(jqXHR, textStatus, errorThrown){
+				console.log('Erreur : ' + errorThrown);
+			}
+		});
+	}
+
+	addAvis() {
+		$('.student').after('<button id="addAvisBtn" class="btn btn-primary">Ajouter</button>');
+
+		$(document).on('click', '#addAvisBtn', function(){
+			const selectedStudentId = $('.student').val();
+			const avisMaster = $('#avisMaster').val();
+			const avisEcoleIngenieur = $('#avisEcoleIngenieur').val();
+			const comment = $('#commentaire').val();
+	
+			const requestData = {
+				id_etu: selectedStudentId,
+				avis_master: avisMaster,
+				avis_inge: avisEcoleIngenieur,
+				commentaire: comment
+			};
+	
+			$.ajax({
+				url: 'http://localhost:8000/api/addAvis',
+				type: 'POST',
+				contentType: 'application/json',
+				data: JSON.stringify(requestData),
+				success: function(data){
+					$('#avisModal').modal('hide');
+				},
+				error: function(jqXHR, textStatus, errorThrown){
+					console.log('Erreur : ' + errorThrown);
+				}
+			});
+		});
+	}
+	
+	setupSubmitListener() {
+		$('#avisModal .btn-primary').click(() => {
+			this.updateProcess();
 		});
 	}
 }
