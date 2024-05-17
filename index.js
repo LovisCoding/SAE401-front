@@ -5,7 +5,7 @@ const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 8080;
 
-app.use(cors({origin: true}));
+app.use(cors({origin: "*"}));
 
 // sendFile will go here
 app.get('/', function(req, res) {
@@ -17,6 +17,7 @@ app.get('/login', function(req, res) {
   app.use(express.static('src/css'))
   app.use(express.static('src/js'))
   app.use(express.static('src/assets'))
+  app.use(express.static('node_modules'))
   
 
 app.get('/home', function(req, res) {

@@ -6,6 +6,7 @@
 		<title>Page d'exportation</title>
 		<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet"/>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 		<link rel="stylesheet" type="text/css" href="./nav.css"/>
 		<link rel="stylesheet" type="text/css" href="./export.css"/>
 	</head>
@@ -51,14 +52,7 @@
 					</h4>
 					<div class="form-group">
 						<label for="student" class="labelStudent">Choix de l'étudiant</label><br />
-						<select id="student">
-							<option value="1">Étudiant 1</option>
-							<option value="2">Étudiant 2</option>
-							<option value="3">Étudiant 3</option>
-							<option value="4">Étudiant 4</option>
-							<option value="5">Étudiant 5</option>
-							<option value="6">Étudiant 6</option>
-						</select>
+						<select class="student"></select>
 						<button type="button" class="processBtn" id="addStudent">Traiter</button>
 					</div>
 					<div class="form-group">
@@ -98,6 +92,49 @@
 						</select>
 					</div>
 					<button type="button" class="addBtn" id="addFile">Exporter</button>
+				</div>
+			</div>
+		</div>
+		<div class="modal fade" id="avisModal" tabindex="-1" aria-labelledby="avisModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="avisModalLabel">Avis de l'équipe pédagogique</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<form>
+							<div class="form-group">
+								<label for="avisMaster">Avis Master</label>
+								<select id="avisMaster">
+									<option>Très favorable</option>
+									<option>Favorable</option>
+									<option>Assez favorable</option>
+									<option>Sans avis</option>
+									<option>Réservé</option>
+								</select>
+							</div>
+							<div class="form-group">
+								<label for="avisEcoleIngenieur">Avis École d'ingénieur</label>
+								<select id="avisEcoleIngenieur">
+									<option>Très favorable</option>
+									<option>Favorable</option>
+									<option>Assez favorable</option>
+									<option>Sans avis</option>
+									<option>Réservé</option>
+								</select>
+							</div>
+							<div class="form-group">
+								<textarea id="commentaire" rows="3" placeholder="Veuillez saisir votre commentaire"></textarea>
+							</div>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+						<button type="button" class="btn btn-primary">Valider</button>
+					</div>
 				</div>
 			</div>
 		</div>

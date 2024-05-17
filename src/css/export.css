@@ -146,3 +146,19 @@ h6 {
 	justify-content: center;
 	height: 70vh;
 }
+
+#commentaire {
+	width: 300px;
+	height: 100px;
+	border: 1px solid #DEE2E6;
+	border-radius: 5px;
+}
+
+.modal-dialog {
+	margin-top: 10rem;
+}
+
+#avisMaster,
+#avisEcoleIngenieur {
+	margin-left: 1rem;
+}
