@@ -107,8 +107,18 @@ async function ajouterLogoFichier(fileInput) {
 
 async function ajouterDonnees(jsonData, entetesAssociatifs, enteteModule, entetesObligatoires, hmCompetences, hmCoefficient) {
 
+	const idAnnee = $(".form-control").val();
+
 	const isChecked = document.getElementById('alternant').checked;
 	const alternant = isChecked ? 1 : 0;
+
+	var selectElement = document.getElementById("semester");
+	var selectedOption = selectElement.options[selectElement.selectedIndex];
+	var lblSem = selectedOption.text;
+
+	var idSemestre = await getIdSemestreByIdAnneeAndLabel(idAnnee, lblSem);
+
+	etuSemestre = []
 
     for (const element of jsonData) {
         const codeEtu = Number(element.etudid);
@@ -122,10 +132,7 @@ async function ajouterDonnees(jsonData, entetesAssociatifs, enteteModule, entete
         try {
             idEtu = await getIdEtudiantByCode(codeEtu);
 
-			console.log(element.Rg);
-			console.log(element.Abs);
-			console.log(element.Just);
-			console.log(element.Moy);
+			etuSemestre.push({id_etu:idEtu, id_semestre:idSemestre, absences: element.Abs, rang:element.Rg, moyenne: element.Moy, validation:"ATT"})
 
             // Créer les listes de données pour les ajouts en masse
             const etuComp = [];
@@ -154,6 +161,7 @@ async function ajouterDonnees(jsonData, entetesAssociatifs, enteteModule, entete
             console.error("Une erreur s'est produite :", error);
         }
     }
+	ajouterManyEtuSemestre(etuSemestre);
 
 }
 async function ajouterCompetencesEtModules(jsonData, entetesAssociatifs, enteteModule, enTetesAttendus, fichier) {
@@ -204,7 +212,7 @@ async function ajouterCompetencesEtModules(jsonData, entetesAssociatifs, enteteM
 
 		// Récupérer l'ID du dernier module
 		const idCoeff = await getMaxCoeffId();
-
+		const coeff = []
 		// Ajouter les coefficients dans la base de données
 		var cptCoeff = 1;
 		for (const competence in entetesAssociatifs) {
@@ -212,13 +220,15 @@ async function ajouterCompetencesEtModules(jsonData, entetesAssociatifs, enteteM
 				for (const module of entetesAssociatifs[competence]) {
 					if (!module.startsWith('Bonus')) {
 						const idCo = idCoeff + cptCoeff;
-						await ajouterCoefficient(idCo, hmModules[module], hmCompetences[competence]);
+						coeff.push({ id_module: hmModules[module], id_comp: hmCompetences[competence], coef: 1 })
 						hmCoefficient[module + "-" + competence] = idCo;
 						cptCoeff++;
 					}
 				}
 			}
 		}
+
+		ajouterManyCoeff(coeff);
 
 	} catch (error) {
 		console.error("Une erreur s'est produite :", error);
@@ -285,6 +295,22 @@ async function ajouterEtuModule(idEtu, idCoefficient, note) {
 async function ajouterManyEtuModule($manyData) {
 	$.ajax({
 		url: 'http://localhost:8000/api/addManyEtuModule',
+		type: 'POST',
+		dataType: 'json',
+		data: JSON.stringify($manyData),
+		success: function(data) {
+			console.log('Success : ');
+		},
+		error: function(jqXHR, textStatus, errorThrown) {
+			console.log('Erreur : ' + errorThrown);
+		}
+	});
+}
+
+async function ajouterManyEtuSemestre($manyData) {
+	console.log(JSON.stringify($manyData))
+	$.ajax({
+		url: 'http://localhost:8000/api/addManyEtuSemestre',
 		type: 'POST',
 		dataType: 'json',
 		data: JSON.stringify($manyData),
@@ -376,14 +402,7 @@ async function ajouterCompetence(idCompetence, competenceLabel, idSemestre) {
 
 }
 
-async function ajouterCoefficient(idCoeff, idModule, idCompetence) {
-	const response = await fetch(`http://localhost:8000/api/coefficient/${idCoeff}`);
-	const data = await response.json();
-	if (data && Object.keys(data).length !== 0) {
-		console.log(`Le coefficient avec l'ID ${idCoeff} existe déjà.`);
-		return;
-	}
-
+async function ajouterCoefficient(idModule, idCompetence) {
 	$.ajax({
 		url: 'http://localhost:8000/api/addCoefficient',
 		type: 'POST',
@@ -396,7 +415,21 @@ async function ajouterCoefficient(idCoeff, idModule, idCompetence) {
 			console.log('Erreur : ' + errorThrown);
 		}
 	});
+}
 
+async function ajouterManyCoeff(dataJson) {
+	$.ajax({
+		url: 'http://localhost:8000/api/addManyCoefficient',
+		type: 'POST',
+		dataType: 'json',
+		data: JSON.stringify(dataJson),
+		success: function(data) {
+			console.log('Success Coefficient : ');
+		},
+		error: function(jqXHR, textStatus, errorThrown) {
+			console.log('Erreur : ' + errorThrown);
+		}
+	});
 }
 
 
@@ -499,7 +532,7 @@ async function ajouterFichier(nom, type, idSem, idAnnee) {
 		url: 'http://localhost:8000/api/addFichier',
 		type: 'POST',
 		dataType: 'json',
-		data: JSON.stringify([{ nom_fichier: nom, type: type, id_semestre: idSem, id_annee: idAnnee }]),
+		data: JSON.stringify([{ nom_fichier: nom, type: type, id_semestre: idSem, id_annee: Number(idAnnee) }]),
 		success: function(data) {
 			console.log('Success : ');
 		},
