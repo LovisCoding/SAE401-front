@@ -6,6 +6,7 @@
 		<title>Page d'exportation</title>
 		<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet"/>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 		<link rel="stylesheet" type="text/css" href="./nav.css"/>
 		<link rel="stylesheet" type="text/css" href="./export.css"/>
 	</head>
@@ -38,16 +39,17 @@
 					</label>
 				</div>
 				<div class="form-group">
-					<input type="text" id="department" placeholder="Nom du département"/>
+					<input type="text" id="department" placeholder="Nom du chef de département"/>
 				</div>
 			</div>
 		</div>
 		<div class="container mt-5">
-			<h4 class="title">Avis de poursuite d'études
-				<img class="settings" src="./img/Settings.svg" alt="Paramètres">
-			</h4>
 			<div class="row">
 				<div class="col-md-6 vertical-center splitter">
+					<h4 class="title">
+						Avis de poursuite d'études
+						<img class="settings" src="./img/Settings.svg" alt="Paramètres"/>
+					</h4>
 					<div class="form-group">
 						<label for="student" class="labelStudent">Choix de l'étudiant</label><br />
 						<select id="student">
@@ -100,20 +102,8 @@
 				</div>
 			</div>
 		</div>
-		<script src="./nav.js"></script>
-		<script src="./year.js"></script>
-		<script>
-			const settingsImage = document.querySelector('.settings');
-			const settingsPanel = document.querySelector('.settings-panel');
-		
-			settingsImage.addEventListener('click', function() {
-				settingsPanel.classList.toggle('show');
-
-				const settingsElements = document.querySelectorAll('.settings-panel > *');
-				settingsElements.forEach(element => {
-					element.classList.toggle('show');
-				});
-			});
-		</script>
+		<script src="./Nav.js"></script>
+		<script src="./Year.js"></script>
+		<script src="./Export.js"></script>
 	</body>
 </html>

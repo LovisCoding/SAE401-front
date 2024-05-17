@@ -105,7 +105,8 @@ body {
 }
 
 .logo {
-	z-index: 1;
+	cursor: default;
+	z-index: 1000;
 }
 
 @media (max-width: 768px) {
@@ -117,6 +118,13 @@ body {
 	.background-right {
 		width: 30vw;
 		height: 30vw;
+	}
+	.arrow {
+		margin-left: 1.5rem;
+	}
+	.nav-link::after {
+		width: 10%;
+		left: 45%
 	}
 }
 
