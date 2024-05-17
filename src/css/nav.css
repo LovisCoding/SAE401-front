@@ -119,6 +119,13 @@ body {
 		width: 30vw;
 		height: 30vw;
 	}
+	.arrow {
+		margin-left: 1.5rem;
+	}
+	.nav-link::after {
+		width: 10%;
+		left: 45%
+	}
 }
 
 @media (max-width: 576px) {

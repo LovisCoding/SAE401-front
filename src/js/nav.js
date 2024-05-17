@@ -11,7 +11,7 @@ class Nav {
 	loadNav() {
 		document.addEventListener("DOMContentLoaded", () => {
 			const navHTML = `
-			<nav class="navbar navbar-expand-lg navbar-light">
+			<nav class="navbar navbar-expand-lg navbar-light bg-light">
 				<a class="navbar-brand" href="#">
 					<img src="./img/Logo_ScoNotesSimple.png" width="65" height="45" class="d-inline-block align-top logo" alt="ScoNotes"/>
 				</a>
@@ -54,6 +54,7 @@ class Nav {
 			</nav>`;
 
 			document.body.insertAdjacentHTML('afterbegin', navHTML);
+			this.arrowAnimation();
 		});
 	}
 
