@@ -160,12 +160,10 @@ async function ajouterCompetencesEtModules(jsonData, entetesAssociatifs, enteteM
 
 	var idSemestre = await getIdSemestreByIdAnneeAndLabel(idAnnee, lblSem);
 
-	console.log("idSemestre : " + idSemestre);
 
 	await ajouterSemestre(idSemestre, idAnnee, lblSem)
 
 	idSemestre = await getIdSemestreByIdAnneeAndLabel(idAnnee, lblSem);
-	console.log("idSemestre : " + idSemestre);
 
 	const hmCompetences = {};
 	const hmModules = {};
@@ -476,7 +474,6 @@ async function getIdEtudiantByCode(codeEtudiant) {
 }
 
 async function updateFichier(idFichier, nom) {
-	console.log(JSON.stringify([{id_fichier: idFichier, nom_fichier: nom}]))
 	$.ajax({
 		url: 'http://localhost:8000/api/updateFichier',
 		type: 'PUT',
@@ -511,9 +508,7 @@ async function loadInfoImports() {
 	var lstFiles = await getAllFile(idAnnee);
 	if (lstFiles) {
 		for (file of lstFiles) {
-			console.log(file)
 			const labelSemestre = "" + await getLabelSemestreById(file.id_semestre);
-			console.log(labelSemestre);
 			const match = labelSemestre.match(/\d+/);
 			const numSemestre = match ? parseInt(match[0]) : null;
 			const img = document.getElementById(file.type+""+numSemestre);
