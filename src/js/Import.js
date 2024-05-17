@@ -102,7 +102,7 @@ async function ajouterLogoFichier(fileInput) {
 		ajouterFichier(fileInput, type, idSemestre, idAnnee)
 	}
 
-	loadInfoImport();
+	loadInfoImports();
 }
 
 async function ajouterDonnees(jsonData, entetesAssociatifs, enteteModule, entetesObligatoires, hmCompetences, hmCoefficient) {
@@ -118,8 +118,14 @@ async function ajouterDonnees(jsonData, entetesAssociatifs, enteteModule, entete
             code_etu: codeEtu, nom_etu: element.Nom, prenom_etu: element.Prénom, groupe_TD: element.TD, groupe_TP: element.TP, cursus: element.Cursus, alternant: alternant
         });
 
+
         try {
             idEtu = await getIdEtudiantByCode(codeEtu);
+
+			console.log(element.Rg);
+			console.log(element.Abs);
+			console.log(element.Just);
+			console.log(element.Moy);
 
             // Créer les listes de données pour les ajouts en masse
             const etuComp = [];
