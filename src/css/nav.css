@@ -21,6 +21,9 @@ nav {
 .nav-link:hover::after {
 	background-color: #82CDD0;
 }
+.nav-selected {
+	background-color: #82CDD0;
+}
 
 .navbar-nav .nav-item:last-child .nav-link {
 	display: flex;

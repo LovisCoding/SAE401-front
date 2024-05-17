@@ -27,7 +27,7 @@ class Connection {
 					console.log(jsData.token);
 					if (jsData.token) {
 						console.log('Connexion réussie');
-						localStorage.setItem('token', data.token);
+						localStorage.setItem('token', jsData.token);
 						window.location.href = 'http://localhost:8080/home';
 
 					} else {
