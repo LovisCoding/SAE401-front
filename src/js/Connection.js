@@ -4,7 +4,6 @@ class Connection {
 		
 		this.btnValidate = document.querySelector("#btnValidate");
 		this.btnValidate.addEventListener('click', function(event) {
-			console.log(event);
 			
 			event.preventDefault();
 			
@@ -15,17 +14,48 @@ class Connection {
 			
 		});
 	}
+	
 	static login(identifiant, password) {
-		axios.get('http://localhost:8000/api/verifyUser', [{
-			identifiant: identifiant,
-			password: password
-		}])
-		.then(function (response) {
-			console.log(response);
-		})
-		.catch(function (error) {
-			console.log(error);
-		});
+
+		
+			$.ajax({
+				url: 'http://localhost:8000/api/verifyUser',
+				type: 'POST',
+				dataType: 'text',
+				success: function(data){
+					const jsData = JSON.parse(data);
+					console.log(jsData.token);
+					if (jsData.token) {
+						console.log('Connexion réussie');
+						localStorage.setItem('token', data.token);
+						window.location.href = 'http://localhost:8080/home';
+
+					} else {
+						const inputIdentifiant = document.getElementById('identifiant');
+						const inputPassword = document.getElementById('password');
+						const divIdentifiantError = document.getElementById('identifiantError');
+						const divPasswordError = document.getElementById('pwError');
+
+						inputIdentifiant.value = '';
+						inputPassword.value = '';
+						inputIdentifiant.className = 'form-control is-invalid';
+						inputPassword.className = 'form-control is-invalid';
+						divIdentifiantError.innerHTML = 'Identifiant ou mot de passe incorrect';
+						divPasswordError.innerHTML = 'Identifiant ou mot de passe incorrect';
+
+					}
+				},
+				beforeSend: function (xhr) {
+					xhr.setRequestHeader ("Authorization", "Basic " + btoa(identifiant + ":" + password));
+				},
+				xhrFields: {
+					withCredentials: true
+				  },
+				
+				error: function(jqXHR, textStatus, errorThrown){
+					console.log('Erreur : ' + errorThrown);
+				}
+			});
 	
 	}
 }

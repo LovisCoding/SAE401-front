@@ -5,7 +5,11 @@ const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 8080;
 
-app.use(cors({origin: true}));
+app.use(cors({
+	origin: true,
+	//access-control-allow-credentials:true
+    optionSuccessStatus:200
+}));
 
 // sendFile will go here
 app.get('/', function(req, res) {

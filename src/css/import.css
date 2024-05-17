@@ -87,3 +87,11 @@ h6 {
 .coeff {
 	margin-top: 35%;
 }
+
+.invisibleImg{
+	display: none;
+}
+
+.visibleImg{
+	display: block;
+}
