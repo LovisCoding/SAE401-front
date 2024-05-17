@@ -4,6 +4,8 @@ class Export {
 		this.settingsImage = document.querySelector(settingsSelector);
 		this.settingsPanel = document.querySelector(settingsPanelSelector);
 		this.setupListeners();
+		this.loadStudent();
+		this.setupStudentProcessListener();
 	}
 
 	setupListeners() {
@@ -35,6 +37,50 @@ class Export {
 		const settingsElements = this.settingsPanel.querySelectorAll('*');
 		settingsElements.forEach(element => {
 			element.classList.remove('show');
+		});
+	}
+
+	loadStudent() {
+		$.ajax({
+			url: 'http://localhost:8000/api/etudiant',
+			type: 'GET',
+			dataType: 'json',
+			success: function(data){
+				$.each(data, function(index, etudiant){
+					$('.student').append('<option value="' + etudiant.id_etu + '">' + etudiant.nom_etu + ' ' + etudiant.prenom_etu + '</option>');
+				});
+			},
+			error: function(jqXHR, textStatus, errorThrown){
+				console.log('Erreur : ' + errorThrown);
+			}
+		});
+	}
+
+	setupStudentProcessListener() {
+		$('#addStudent').click(() => {
+			const selectedStudentId = $('.student').val();
+
+			$.ajax({
+				url: 'http://localhost:8000/api/avis',
+				type: 'GET',
+				dataType: 'json',
+				success: function(data) {
+					const avis = data.find(avis => avis.id_etu === parseInt(selectedStudentId));
+					console.log(selectedStudentId);
+					console.log(avis);
+					if (avis) {
+						$('#avisMaster').val(avis.avis_master || 'Sans avis');
+						$('#avisEcoleIngenieur').val(avis.avis_inge || 'Sans avis');
+					} else {
+						$('#avisMaster').val('Sans avis');
+						$('#avisEcoleIngenieur').val('Sans avis');
+					}
+					$('#avisModal').modal('show');
+				},
+				error: function(jqXHR, textStatus, errorThrown){
+					console.log('Erreur : ' + errorThrown);
+				}
+			});
 		});
 	}
 }
