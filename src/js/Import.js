@@ -5,10 +5,6 @@ class Import {
 	constructor() {
 		this.btnAddFile = document.getElementById('addFile');
 		this.setupListeners();
-		this.loadInfoImport();
-	}
-
-	loadInfoImport() {
 		loadInfoImports();
 	}
 
@@ -30,8 +26,8 @@ class Import {
 			else {
 				this.importerFichier();
 			}
-		});
 
+		});
 
 	}
 
@@ -115,9 +111,9 @@ class Import {
 			console.log(enTetesAttendus);
 
 			if (enTetesManquants.length > 0) {
-				console.log(enTetesManquants);
+				alert("entetes manquants " + enTetesManquants);
 			} else {
-				ajouterJuryDonnees(jsonData);
+				ajouterJuryDonnees(jsonData, fichier);
 			}
 
 		};
@@ -129,7 +125,7 @@ class Import {
 
 const importInstance = new Import();
 
-async function ajouterJuryDonnees(jsonData) {
+async function ajouterJuryDonnees(jsonData, fichier) {
 	const idAnnee = $(".form-control").val();
 
 	const isChecked = document.getElementById('alternant').checked;
@@ -145,29 +141,27 @@ async function ajouterJuryDonnees(jsonData) {
 		alert("Veuillez importer les moyennes de ce semestre avant !");
 	}
 	etuSemestre = []
-	
 
+	const lstCompImport = await getCompetencesByIdSemestre(idSemestre);
+	console.log(lstCompImport);
+	if (lstCompImport.length == 0) {
+		alert("Veuillez importer les moyennes de ce semestre avant !");
+	}
+
+	
     for (const element of jsonData) {
 		console.log(element);
 		const codeEtu = Number(element.etudid);
 		var idEtu = await getIdEtudiantByCode(codeEtu);
 
-		
-
-		const lstCompImport = await getCompetencesByIdSemestre(idSemestre);
-
         // Attendre l'ajout de l'étudiant et récupérer l'id de l'étudiant
-        await ajouterEtudiant(idEtu, {
+        updateEtudiant(idEtu, {
             code_etu: codeEtu, nom_etu: element.Nom, prenom_etu: element.Prénom, groupe_TD: element.TD, groupe_TP: element.TP, cursus: element.Cursus, alternant: alternant
         }); 
 
 		idEtu = await getIdEtudiantByCode(codeEtu);
 
 		updateValidationEtuSemestre(idEtu, idSemestre, element.Année);
-
-		for (i = 0 ; i < lstCompFichier.length ; i ++) {
-			
-		}
 
 		const labelSemestre = "" + await getLabelSemestreById(idSemestre);
 		const match = labelSemestre.match(/\d+/);
@@ -184,6 +178,8 @@ async function ajouterJuryDonnees(jsonData) {
 			}
 		}
 	}
+
+	ajouterLogoFichier(fichier)
 }
 
 async function ajouterLogoFichier(fileInput) {
@@ -205,10 +201,10 @@ async function ajouterLogoFichier(fileInput) {
 
 	const idFichier = await getFichierByAnneeAndSemestreAndType(idAnnee, idSemestre, type);
 	if (idFichier) {
-		updateFichier(idFichier, fileInput)
+		await updateFichier(idFichier, fileInput)
 	}
 	else {
-		ajouterFichier(fileInput, type, idSemestre, idAnnee)
+		await ajouterFichier(fileInput, type, idSemestre, idAnnee)
 	}
 
 	loadInfoImports();
@@ -366,23 +362,24 @@ async function ajouterSemestre(idSemestre, idAnnee, lblSem) {
 	});
 }
 
+async function updateEtudiant(idEtu, data) {
+	$.ajax({
+		url: 'http://localhost:8000/api/updateEtudiant',
+		type: 'POST',
+		dataType: 'json',
+		data: JSON.stringify([{id_etu:idEtu, nom_etu:data.nom_etu, prenom_etu:data.prenom_etu, groupe_TD:data.groupe_TD, groupe_TP:data.groupe_TP, cursus:data.cursus, alternant:data.alternant}]),
+		success: function(data) {
+			console.log('Success : ');
+		},
+		error: function(jqXHR, textStatus, errorThrown) {
+			console.log('Erreur : ' + errorThrown);
+		}
+	});
+}
 
 async function ajouterEtudiant(idEtu, data) {
 	if (idEtu != -1) {
 		console.log("existe déjà");
-		
-		$.ajax({
-			url: 'http://localhost:8000/api/updateEtudiant',
-			type: 'POST',
-			dataType: 'json',
-			data: JSON.stringify([{id_etu:idEtu, nom_etu:data.nom_etu, prenom_etu:data.prenom_etu, groupe_TD:data.groupe_TD, groupe_TP:data.groupe_TP, cursus:data.cursus, alternant:data.alternant}]),
-			success: function(data) {
-				console.log('Success : ');
-			},
-			error: function(jqXHR, textStatus, errorThrown) {
-				console.log('Erreur : ' + errorThrown);
-			}
-		});
 		return;
 	}
 	$.ajax({
@@ -415,6 +412,7 @@ async function ajouterEtuModule(idEtu, idCoefficient, note) {
 }
 
 async function ajouterManyEtuModule($manyData) {
+	console.log(JSON.stringify($manyData));
 	$.ajax({
 		url: 'http://localhost:8000/api/addManyEtuModule',
 		type: 'POST',
@@ -460,6 +458,7 @@ async function ajouterEtuComp(idEtu, idComp, moyenneComp, passage, bonus = 0) {
 }
 
 async function updateValidationEtuSemestre(idEtu, idSem, validation) {
+	console.log(JSON.stringify([{ id_etu: idEtu, id_semestre: idSem, validation: validation}]))
 	$.ajax({
 		url: 'http://localhost:8000/api/updateValidationEtuSemestre',
 		type: 'PUT',
@@ -475,6 +474,7 @@ async function updateValidationEtuSemestre(idEtu, idSem, validation) {
 }
 
 async function updatePassageEtuComp(idEtu, idComp, passage) {
+	console.log(JSON.stringify([{ id_etu: idEtu, id_comp: idComp, passage: passage}]))
 	$.ajax({
 		url: 'http://localhost:8000/api/updatePassageEtuComp',
 		type: 'PUT',
@@ -697,6 +697,7 @@ async function updateFichier(idFichier, nom) {
 			console.log('Erreur : ' + errorThrown);
 		}
 	});
+	loadInfoImports();
 }
 
 async function ajouterFichier(nom, type, idSem, idAnnee) {
