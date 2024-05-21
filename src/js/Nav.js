@@ -3,7 +3,11 @@ class Nav {
 	// Déclaration du constructeur
 
 	constructor() {
-		console.log('Nav loaded');
+		this.isAdmin = localStorage.getItem('isadmin');
+		this.token = localStorage.getItem('token');
+		if (this.isAdmin == null || this.isAdmin == undefined) {
+			window.location.href = 'http://localhost:8080/login';
+		}
 	}
 
 	// Méthode pour charger la barre de navigation
@@ -11,7 +15,7 @@ class Nav {
 	loadNav() { 
 		
 		document.addEventListener("DOMContentLoaded", () => {
-			const navHTML = `
+			let navHTML = `
 			<nav class="navbar navbar-expand-lg navbar-light bg-light">
 				<a  id="navHome" class="navbar-brand" href="#">
 					<img src="./img/Logo_ScoNotesSimple.png" width="65" height="45" class="d-inline-block align-top logo" alt="ScoNotes"/>
@@ -20,13 +24,16 @@ class Nav {
 					<span class="navbar-toggler-icon"></span>
 				</button>
 				<div class="collapse navbar-collapse" id="navbarSupportedContent">
-					<ul class="navbar-nav ml-auto">
-						<li class="nav-item">
+					<ul class="navbar-nav ml-auto">`
+					if (this.isAdmin == 'true') {
+						navHTML+=`<li class="nav-item">
 							<a class="nav-link d-flex flex-column align-items-center text-center" id="navImport" href="/import">
 								<img src="./img/Import.svg" width="25" height="25" class="d-inline-block align-top" alt="Importation"/>
 								<span>Importation</span>
 							</a>
-						</li>
+						</li>`
+					}
+					navHTML+=`
 						<li class="nav-item">
 							<a class="nav-link d-flex flex-column align-items-center text-center" id="navRecap" href="/recap">
 								<img src="./img/Recapitulatif.svg" width="25" height="25" class="d-inline-block align-top" alt="Récapitulatif"/>
