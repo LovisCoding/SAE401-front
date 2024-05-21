@@ -19,7 +19,7 @@ class Year {
 				});
 			},
 			error: function(jqXHR, textStatus, errorThrown){
-				console.log('Erreur : ' + errorThrown);
+				
 			}
 		});
 	}
@@ -35,7 +35,7 @@ class Year {
 			var startYear = parseInt(yearParts[0]) + 1;
 			var endYear = parseInt(yearParts[1]) + 1;
 			var newYear = startYear + '-' + endYear;
-			console.log(newYear);
+			
 
 			$.ajax({
 				url: 'http://localhost:8000/api/addAnnee',
@@ -47,7 +47,7 @@ class Year {
 				},
 				
 				error: function(jqXHR, textStatus, errorThrown){
-					console.log('Erreur : ' + errorThrown);
+					
 				}
 			});
 		});

@@ -24,9 +24,9 @@ class Connection {
 				dataType: 'text',
 				success: function(data){
 					const jsData = JSON.parse(data);
-					console.log(jsData.token);
+					
 					if (jsData.token) {
-						console.log('Connexion réussie');
+						
 						localStorage.setItem('token', jsData.token);
 						localStorage.setItem('isadmin', jsData.isadmin);
 						localStorage.setItem('identifiant', identifiant);
@@ -55,7 +55,7 @@ class Connection {
 				  },
 				
 				error: function(jqXHR, textStatus, errorThrown){
-					console.log('Erreur : ' + errorThrown);
+					
 				}
 			});
 	

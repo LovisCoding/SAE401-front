@@ -19,7 +19,7 @@ class Nav {
 		document.addEventListener("DOMContentLoaded", () => {
 			let navHTML = `
 			<nav class="navbar navbar-expand-lg navbar-light bg-light">
-				<a  id="navHome" class="navbar-brand" href="/home">
+				<a   class="navbar-brand" href="/home">
 					<img src="/img/Logo_ScoNotesSimple.png" width="65" height="45" class="d-inline-block align-top logo" alt="ScoNotes"/>
 				</a>
 				<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -30,7 +30,7 @@ class Nav {
 			if (this.isAdmin == 'true') {
 				navHTML += `<li class="nav-item">
 							<a class="nav-link d-flex flex-column align-items-center text-center" id="navImport" href="/import">
-								<img src="./img/Import.svg" width="25" height="25" class="d-inline-block align-top" alt="Importation"/>
+								<img src="/img/Import.svg" width="25" height="25" class="d-inline-block align-top" alt="Importation"/>
 								<span>Importation</span>
 							</a>
 						</li>`
@@ -59,7 +59,7 @@ class Nav {
 						</li>
 						<div class="profile-popup" id="profilePopup">
 						<div class="profile-info">
-							<div class="profile-icon"><img src="/img/Profil.svg" width="50" height="50" class="arrow" alt=""/></div>
+							<div class="profile-icon"><img src="/img/logoProfilePopUp.png" width="90" height="80" class="arrow" alt=""/></div>
 							<div class="profile-text">
 								<div class="username">${localStorage.getItem('identifiant')}</div>
 								<div class="role">${localStorage.getItem('isadmin') === 'true' ? 'Administrateur' : 'Utilisateur '}</div>
@@ -82,15 +82,20 @@ class Nav {
 			profile.addEventListener('click', function () {
 				if (profilePopup.style.display === 'none' || profilePopup.style.display === '') {
 					profilePopup.style.display = 'block';
-					arrow.classList.toggle('rotate');
+					arrow.classList.add('rotate');
+					
+					
 				} else {
 					profilePopup.style.display = 'none';
 					arrow.classList.remove('rotate');
+					
 				}
+				
 			});
 
 			document.addEventListener('click', function (event) {
 				if (!profile.contains(event.target) && !profilePopup.contains(event.target)) {
+					
 					profilePopup.style.display = 'none';
 					arrow.classList.remove('rotate');
 
@@ -118,18 +123,27 @@ class Nav {
 		});
 	}
 	setSelectedNav() {
+		console.log(document.location.pathname);
 		switch (document.location.pathname) {
 			case '/home':
+			case '/home/':
 				document.getElementById('navHome').classList.add('nav-selected');
+				console.log('home');
 				break;
 			case '/import':
+			case '/import/' :
 				document.getElementById('navImport').classList.add('nav-selected');
+				console.log('import');
 				break;
 			case '/recap':
+				case '/recap/':
 				document.getElementById('navRecap').classList.add('nav-selected');
+				log('recap');
 				break;
 			case '/export':
+				case '/export/':
 				document.getElementById('navExport').classList.add('nav-selected');
+				console.log('export');
 				break;
 
 			default:
