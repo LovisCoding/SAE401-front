@@ -14,6 +14,7 @@ class Year {
 			type: 'GET',
 			dataType: 'json',
 			success: function(data){
+				console.log(data);
 				$.each(data, function(index, annee){
 					$('.form-control').append('<option value="' + annee.id_annee + '">' + annee.annee + '</option>');
 				});
@@ -43,6 +44,7 @@ class Year {
 				dataType: 'json',
 				data: JSON.stringify([{ annee: newYear }]),
 				success: function(data){
+					console.log(data);
 					$('.form-control').append('<option value="' + data.id_annee + '">' + data.annee + '</option>');
 				},
 				

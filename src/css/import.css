@@ -88,11 +88,20 @@ h6 {
 	margin-top: 35%;
 }
 
-.invisibleImg{
+.invisibleImg {
 	display: none;
 }
 
-.visibleImg{
+.visibleImg {
 	display: block;
 }
-
+.logo-rightSide {
+	position: absolute;
+        top: 50%;
+        right: 10px;
+        transform: translateY(-50%);
+        display: none;
+}
+.logo-rightSide.validate {
+	display: inline-block ;
+}

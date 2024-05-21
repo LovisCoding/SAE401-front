@@ -34,6 +34,12 @@ class Import {
 		this.btnAddCoeff.addEventListener('click', (event) => {
 			this.importerCoeff();
 		});
+		document.getElementById('file').addEventListener('change', function() {
+			document.getElementById('labelito').style.borderColor = 'green';
+			const icon = document.getElementById('validateIcon');
+			icon.classList.add('validate')
+			document.getElementById('spanText').innerHTML = document.getElementById('file').files[0].name;
+		});
 
 	}
 
@@ -924,7 +930,8 @@ async function loadInfoImports() {
 			const numSemestre = match ? parseInt(match[0]) : null;
 			const img = document.getElementById(file.type+""+numSemestre);
 			if (img) {
-				img.classList = ["visibleImg"];
+				img.classList.add("visibleImg");
+				img.classList.remove("invisibleImg")
 				img.title = file.nom_fichier;
 			}
 			
