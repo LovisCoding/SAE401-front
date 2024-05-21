@@ -49,12 +49,12 @@ class Nav {
 							</a>
 						</li>
 						<li class="nav-item">
-							<a class="nav-link d-flex align-items-center " href="#" id="profile">
-								<div class="d-flex flex-column align-items-center">
+							<a class="d-flex align-items-center text-decoration-none" href="#" id="profile">
+								<div class="d-flex flex-column align-items-center nav-link">
 								<img src="/img/Profil.svg" width="25" height="25" class="d-inline-block align-top" alt="Profil"/>
 								<span>Profil</span>
 								</div>							
-								<img src="/img/Arrow.svg" width="18" height="18" class="arrow" alt="" id="arrowProfil"/>
+								<img src="/img/Arrow.svg" width="18" height="18" class="arrow default" alt="" id="arrowProfil"/>
 							</a>
 						</li>
 						<div class="profile-popup" id="profilePopup">
@@ -77,18 +77,24 @@ class Nav {
 			const profile = document.getElementById('profile');
 			const profilePopup = document.getElementById('profilePopup');
 			const btnLogout = document.getElementById('btnLogout');
+			const arrow = document.getElementById('arrowProfil');
 
 			profile.addEventListener('click', function () {
 				if (profilePopup.style.display === 'none' || profilePopup.style.display === '') {
 					profilePopup.style.display = 'block';
+					arrow.classList.toggle('rotate');
 				} else {
 					profilePopup.style.display = 'none';
+					arrow.classList.remove('rotate');
 				}
 			});
 
 			document.addEventListener('click', function (event) {
 				if (!profile.contains(event.target) && !profilePopup.contains(event.target)) {
 					profilePopup.style.display = 'none';
+					arrow.classList.remove('rotate');
+
+					
 				}
 				if (btnLogout.contains(event.target)) {
 					localStorage.removeItem('token');
