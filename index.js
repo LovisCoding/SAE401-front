@@ -32,12 +32,13 @@ app.get('/import', function(req, res) {
   res.sendFile(path.join(__dirname, '/src/html/import.html'));
 });
 
-app.get('/test_import', function(req, res) {
-  res.sendFile(path.join(__dirname, '/src/html/test_import.html'));
-});
 
 app.get('/export', function(req, res) {
   res.sendFile(path.join(__dirname, '/src/html/export.html'));
+});
+
+app.get('/recap', function(req, res) {
+  res.sendFile(path.join(__dirname, '/src/html/recap.html'));
 });
 
 app.listen(port);
