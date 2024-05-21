@@ -350,14 +350,21 @@ async function ajouterDonnees(jsonData, entetesAssociatifs, enteteModule, entete
                             etuComp.push({ id_etu: idEtu, id_comp: idComp, moyenne_comp: element[competenceLabel], passage: "", bonus: bonus });
                         } else {
                             const idCoeff = hmCoefficient[moduleLabel + "-" + competenceLabel];
-                            etuModule.push({ id_etu: idEtu, id_coef: idCoeff, note: element[moduleLabel] });
+							var note =  Number(element[moduleLabel])
+							if (element[moduleLabel] == "0") {
+								note = 0;
+							}
+							else if (!note) {
+								note = -1;
+							}
+                            etuModule.push({ id_etu: idEtu, id_coef: idCoeff, note: note });
                         }
                     });
                 }
             }
 
             ajouterManyEtuComp(etuComp);
-			ajouterManyEtuModule(etuModule);
+			ajouterManyEtuModule(etuModule);   
 
         } catch (error) {
             console.error("Une erreur s'est produite :", error);
