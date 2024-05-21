@@ -4,14 +4,15 @@
 		<meta charset="UTF-8"/>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 		<title>Page d'exportation</title>
+		<script src="/VerifLogin.js"></script>
 		<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet"/>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-		<script src="./VerifLogin.js"></script>
 		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.3/xlsx.full.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-		<link rel="stylesheet" type="text/css" href="./nav.css"/>
-		<link rel="stylesheet" type="text/css" href="./export.css"/>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+		<link rel="stylesheet" type="text/css" href="/nav.css"/>
+		<link rel="stylesheet" type="text/css" href="/export.css"/>
 	</head>
 	<body>
 		<div class="background-left"></div>
@@ -21,24 +22,24 @@
 		<div class="settings-panel">
 			<div class="center-content">
 				<div class="form-group">
-					<label for="file" class="file-label">
-						<img src="./img/Drop.svg" alt="Logo" class="logo"/>
+					<label for="fileLogo" class="file-label">
+						<img src="/img/Drop.svg" alt="Logo" class="logo"/>
 						<span class="label-text">Logo principal</span>
-						<input type="file" id="file" class="input-file"/>
+						<input type="file" id="fileLogo" class="input-file"/>
 					</label>
 				</div>
 				<div class="form-group">
-					<label for="file" class="file-label">
-						<img src="./img/Drop.svg" alt="Logo" class="logo"/>
+					<label for="fileLogo2" class="file-label">
+						<img src="/img/Drop.svg" alt="Logo" class="logo"/>
 						<span class="label-text">Logo secondaire</span>
-						<input type="file" id="file" class="input-file"/>
+						<input type="file" id="fileLogo2" class="input-file"/>
 					</label>
 				</div>
 				<div class="form-group">
-					<label for="file" class="file-label">
-						<img src="./img/Drop.svg" alt="Logo" class="logo"/>
+					<label for="fileSign" class="file-label">
+						<img src="/img/Drop.svg" alt="Logo" class="logo"/>
 						<span class="label-text">Signature et cachet du département</span>
-						<input type="file" id="file" class="input-file"/>
+						<input type="file" id="fileSign" class="input-file"/>
 					</label>
 				</div>
 				<div class="form-group">
@@ -51,7 +52,7 @@
 				<div class="col-md-6 vertical-center splitter">
 					<h4 class="title">
 						Avis de poursuite d'études
-						<img class="settings" src="./img/Settings.svg" alt="Paramètres"/>
+						<img class="settings" src="/img/Settings.svg" alt="Paramètres"/>
 					</h4>
 					<div class="form-group">
 						<label for="student" class="labelStudent">Choix de l'étudiant</label><br />
@@ -136,113 +137,15 @@
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
-						<button type="button" class="btn btn-primary">Valider</button>
+						<button type="button" class="btn btn-primary" id="addAvis">Valider</button>
 					</div>
 				</div>
 			</div>
 		</div>
-		<script src="./Nav.js"></script>
-		<script src="./Year.js"></script>
-		<script src="./Export.js"></script>
-		<script>
-			$(document).ready(function() {
-				function exportData() {
-					var selectedSemester = $("#semester").val();
-
-					var titleRow = ["BUT INFORMATIQUE SEMESTRE " + selectedSemester + " " + $('.form-control option:nth-last-child(1)').text()];
-					var headers = ["code_nip", "Rg", "Nom", "Prénom", "Parcours", "Cursus", "UEs", "Moyenne"];
-			
-					// Récupérer les données des compétences une seule fois
-					$.ajax({
-						url: 'http://localhost:8000/api/competence',
-						type: 'GET',
-						dataType: 'json',
-						success: function(competenceData) {
-							competenceData.forEach(function(competence) {
-								headers.push(competence.label);
-							});
-			
-							var data = [titleRow, headers];
-			
-							// Récupérer les données des étudiants une seule fois
-							$.ajax({
-								url: 'http://localhost:8000/api/etudiant',
-								type: 'GET',
-								dataType: 'json',
-								success: function(students) {
-									students.forEach(function(student) {
-										// Récupérer les données du semestre pour chaque étudiant
-										$.ajax({
-											url: 'http://localhost:8000/api/etuSemestre/' + student.id_etu,
-											type: 'GET',
-											dataType: 'json',
-											success: function(semestreData) {
-												// Récupérer les données des compétences pour chaque étudiant
-												$.ajax({
-													url: 'http://localhost:8000/api/etuComp/' + student.id_etu,
-													type: 'GET',
-													dataType: 'json',
-													success: function(compData) {
-														var competencesValides = compData.filter(function(data) {
-															return data.moyenne_comp > 10;
-														}).length;
-			
-														var studentRow = [
-															student.code_etu,
-															(semestreData.length > 0 && semestreData[0].rang) || '',
-															student.nom_etu,
-															student.prenom_etu,
-															"A",
-															student.cursus,
-															competencesValides + "/" + competenceData.length,
-															(semestreData.length > 0 && semestreData[0].moyenne) || ''
-														];
-			
-														competenceData.forEach(function(competence) {
-															var associatedData = compData.find(function(data) {
-																return data.id_comp === competence.id_comp;
-															});
-			
-															studentRow.push(associatedData ? associatedData.moyenne_comp : '');
-														});
-			
-														data.push(studentRow);
-			
-														if (data.length - 1 === students.length) {
-															createExcel(data);
-														}
-													},
-													error: function(jqXHR, textStatus, errorThrown) {
-														console.log('Erreur : ' + errorThrown);
-													}
-												});
-											},
-											error: function(jqXHR, textStatus, errorThrown) {
-												console.log('Erreur : ' + errorThrown);
-											}
-										});
-									});
-								},
-								error: function(jqXHR, textStatus, errorThrown) {
-									console.log('Erreur : ' + errorThrown);
-								}
-							});
-						},
-						error: function(jqXHR, textStatus, errorThrown) {
-							console.log('Erreur : ' + errorThrown);
-						}
-					});
-				}
-			
-				function createExcel(data) {
-					var ws = XLSX.utils.aoa_to_sheet(data);
-					var wb = XLSX.utils.book_new();
-					XLSX.utils.book_append_sheet(wb, ws, "Etudiants");
-					XLSX.writeFile(wb, "Jury.xlsx");
-				}
-			
-				$("#exportFile").click(exportData);
-			});
-		</script>
+		<script src="/Nav.js"></script>
+		<script src="/Year.js"></script>
+		<script src="/Export.js"></script>
+		<script src="/exportJury.js"></script>
+		<script src="/exportStudent.js"></script>
 	</body>
 </html>

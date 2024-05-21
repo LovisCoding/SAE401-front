@@ -7,6 +7,8 @@ class Export {
 		this.loadStudent();
 		this.setupStudentProcessListener();
 		this.setupSubmitListener();
+		this.setupAddAvisListener();
+		this.isAddProcess = false;
 	}
 
 	setupListeners() {
@@ -67,11 +69,10 @@ class Export {
 				dataType: 'json',
 				success: function(data) {
 					const avis = data.find(avis => avis.id_etu === parseInt(selectedStudentId));
-					console.log(selectedStudentId);
-					console.log(avis);
 					if (avis) {
 						$('#avisMaster').val(avis.avis_master || 'Sans avis');
 						$('#avisEcoleIngenieur').val(avis.avis_inge || 'Sans avis');
+						this.isAddProcess = true;
 					} else {
 						$('#avisMaster').val('Sans avis');
 						$('#avisEcoleIngenieur').val('Sans avis');
@@ -85,7 +86,19 @@ class Export {
 		});
 	}
 
+	setupAddAvisListener() {
+		$(document).on('click', '#addAvis', () => {
+			if (this.isAddProcess) {
+				this.addProcess();
+			} else {
+				console.log('update');
+				this.updateProcess();
+			}
+		});
+	}
+
 	updateProcess() {
+
 		const selectedStudentId = $('.student').val();
 		const avisMaster = $('#avisMaster').val();
 		const avisEcoleIngenieur = $('#avisEcoleIngenieur').val();
@@ -97,8 +110,6 @@ class Export {
 			avis_inge: avisEcoleIngenieur,
 			commentaire: comment
 		};
-
-		console.log(JSON.stringify([requestData]));
 	
 		$.ajax({
 			url: 'http://localhost:8000/api/updateAvis',
@@ -114,34 +125,30 @@ class Export {
 		});
 	}
 
-	addAvis() {
-		$('.student').after('<button id="addAvisBtn" class="btn btn-primary">Ajouter</button>');
+	addProcess() {
+		const selectedStudentId = $('.student').val();
+		const avisMaster = $('#avisMaster').val();
+		const avisEcoleIngenieur = $('#avisEcoleIngenieur').val();
+		const comment = $('#commentaire').val();
 
-		$(document).on('click', '#addAvisBtn', function(){
-			const selectedStudentId = $('.student').val();
-			const avisMaster = $('#avisMaster').val();
-			const avisEcoleIngenieur = $('#avisEcoleIngenieur').val();
-			const comment = $('#commentaire').val();
-	
-			const requestData = {
-				id_etu: selectedStudentId,
-				avis_master: avisMaster,
-				avis_inge: avisEcoleIngenieur,
-				commentaire: comment
-			};
-	
-			$.ajax({
-				url: 'http://localhost:8000/api/addAvis',
-				type: 'POST',
-				contentType: 'application/json',
-				data: JSON.stringify(requestData),
-				success: function(data){
-					$('#avisModal').modal('hide');
-				},
-				error: function(jqXHR, textStatus, errorThrown){
-					console.log('Erreur : ' + errorThrown);
-				}
-			});
+		const requestData = {
+			id_etu: selectedStudentId,
+			avis_master: avisMaster,
+			avis_inge: avisEcoleIngenieur,
+			commentaire: comment
+		};
+
+		$.ajax({
+			url: 'http://localhost:8000/api/addAvis',
+			type: 'POST',
+			contentType: 'application/json',
+			data: JSON.stringify([requestData]),
+			success: function(data){
+				$('#avisModal').modal('hide');
+			},
+			error: function(jqXHR, textStatus, errorThrown){
+				console.log('Erreur : ' + errorThrown);
+			}
 		});
 	}
 	
