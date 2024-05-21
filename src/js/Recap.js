@@ -7,7 +7,7 @@ class Recap {
 	}
 
 	loadTableau() {
-		var semestre = "Semestre 1" // déterminer le semestre dans la période 
+		var semestre = "Semestre 2" // déterminer le semestre dans la période 
 		var type = "Jury" // déterminer le type
 
 		if (type == "Commission") {
@@ -152,10 +152,12 @@ async function afficherJury(semestre) {
 		var labelSemestre = "Semestre " + (numSemestre - 1);
 		var idSemestre1 = await getIdSemestreByIdAnneeAndLabel(idAnnee, labelSemestre);
 		let lstCompetencesSem1 = await getCompetencesByIdSemestre(idSemestre1);
+		
+		for (let i = 0; i < lstCompetences.length; i++) {
+			lstEntetes.push(lstCompetencesSem1[i].label+ "" + lstCompetences[i].label);
 
-		lstCompetences.forEach(comp => {
-			lstEntetes.push(lstCompetencesSem1.label+lstCompetences.label);
-		});
+		}
+
 		lstEntetes.push("Décision")
 	} else {
 		lstCompetences.forEach(comp => {
@@ -167,7 +169,11 @@ async function afficherJury(semestre) {
 
 	let lstEtudiants = await getEtudiantsByIdSemestre(idSemestre);
 	let lstEtuComp = await getEtuComp();
+	console.log(lstEtuComp);
 	let lstEtuSemestre = await getEtuSemestre();
+
+	let lstSemestres = await getSemestres();
+	let lstAllCompetences = await getCompetences();
 
 	for (let i = 0; i < lstEtudiants.length; i++) {
 		let lstEtudiantAffiche = []
@@ -200,8 +206,8 @@ async function afficherJury(semestre) {
 							lstNoteEtudiant.push("");
 						}
 					} else {
-						let idSemestreAncien = await getIdSemestreByIdAnneeAndLabel(idAnnee - 2, labelAncienSemestre);
-						let lstAncienneComp = await getCompetencesByIdSemestre(idSemestreAncien);
+						let idSemestreAncien = lstSemestres.filter(item => item.id_annee = idAnnee - 2 && item.label == labelAncienSemestre)[0];
+						let lstAncienneComp = lstAllCompetences.filter(item => item.id_semestre == idSemestreAncien);
 
 						for (let i = 0; i < lstAncienneComp.length; i++) {
 							let idComp = lstAncienneComp[i].id_comp;
@@ -212,8 +218,8 @@ async function afficherJury(semestre) {
 					labelAncienSemestre = 4;
 				}
 	
-				let idSemestreAncien = await getIdSemestreByIdAnneeAndLabel(idAnnee - 1, labelAncienSemestre);
-				let lstAncienneComp = await getCompetencesByIdSemestre(idSemestreAncien);
+				let idSemestreAncien = lstSemestres.filter(item => item.id_annee = idAnnee - 1 && item.label == labelAncienSemestre)[0];
+				let lstAncienneComp = lstAllCompetences.filter(item => item.id_semestre == idSemestreAncien);
 
 				for (let i = 0; i < lstAncienneComp.length; i++) {
 					let idComp = lstAncienneComp[i].id_comp;
@@ -248,9 +254,8 @@ async function afficherJury(semestre) {
 
 			if (numSemestre%2 == 0) {
 				var labelSemestre = "Semestre " + (numSemestre - 1);
-				var idSemestre1 = await getIdSemestreByIdAnneeAndLabel(idAnnee, labelSemestre);
-				let lstCompetencesSem1 = await getCompetencesByIdSemestre(idSemestre1);
-
+				let idSemestre1 = lstSemestres.filter(item => item.id_annee == idAnnee && item.label == labelSemestre)[0].id_semestre;
+				let lstCompetencesSem1 = lstAllCompetences.filter(item => item.id_semestre == idSemestre1);
 				let idCompSem1 = lstCompetencesSem1[i].id_comp;
 				let etuCompSem1 = lstEtuComp.filter(item => item.id_comp = idCompSem1 && item.id_etu == etudiant.id_etu)[0];
 
@@ -267,8 +272,8 @@ async function afficherJury(semestre) {
 		}
 
 		if (numSemestre%2 == 0) {
-			let etuSemestre = lstEtuSemestre.filter(item => item.id_etu == etudiant.id_etu);
-			lstNoteEtudiant.push(etuSemestre.moyenne)
+			let etuSemestre = lstEtuSemestre.filter(item => item.id_etu == etudiant.id_etu && item.id_semestre == idSemestre)[0];
+			lstNoteEtudiant.push(etuSemestre.validation)
 		}
 
 		lstInfoEtudiant.push(cptUEReussie + "/" + lstCompetences.length);
@@ -491,8 +496,6 @@ async function getEtuComp() {
 		const response = await fetch(`http://localhost:8000/api/etuComp`);	
 		const data = await response.json();
 		if (data && Array.isArray(data)) {
-			console.log(data);
-
 			return data; 
 		}
 		return []; // Retourner une liste vide si aucune compétence n'est trouvée
@@ -505,6 +508,34 @@ async function getEtuComp() {
 async function getEtuSemestre() {
 	try {
 		const response = await fetch(`http://localhost:8000/api/etuSemestre`);	
+		const data = await response.json();
+		if (data && Array.isArray(data)) {
+			return data; 
+		}
+		return []; // Retourner une liste vide si aucune compétence n'est trouvée
+	} catch (error) {
+		console.error('Une erreur s\'est produite :', error);
+		return []; // Retourner une liste vide en cas d'erreur
+	}
+}
+
+async function getSemestres() {
+	try {
+		const response = await fetch(`http://localhost:8000/api/semestre`);	
+		const data = await response.json();
+		if (data && Array.isArray(data)) {
+			return data; 
+		}
+		return []; // Retourner une liste vide si aucune compétence n'est trouvée
+	} catch (error) {
+		console.error('Une erreur s\'est produite :', error);
+		return []; // Retourner une liste vide en cas d'erreur
+	}
+}
+
+async function getCompetences() {
+	try {
+		const response = await fetch(`http://localhost:8000/api/competence`);	
 		const data = await response.json();
 		if (data && Array.isArray(data)) {
 			return data; 
