@@ -29,6 +29,7 @@ class Connection {
 						console.log('Connexion réussie');
 						localStorage.setItem('token', jsData.token);
 						localStorage.setItem('isadmin', jsData.isadmin);
+						localStorage.setItem('identifiant', identifiant);
 						window.location.href = 'http://localhost:8080/home';
 
 					} else {

@@ -143,3 +143,58 @@ body {
 		height: 40vw;
 	}
 }
+.profile-popup {
+    display: none;
+    position: absolute;
+    top: 80px;
+    right: 1px;
+    width: 250px;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+	height: 180px;
+}
+
+.profile-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+	margin-top: 8px;
+	margin-left: 10px;
+}
+
+.profile-icon {
+    font-size: 2em;
+    margin-right: 10px;
+}
+
+.profile-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.username {
+    font-weight: bold;
+}
+
+.role {
+    color: gray;
+}
+
+.logout-button {
+    width: 100%;
+    padding: 10px;
+    background-color: #82CDD0;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+	margin-top: 45px;
+}
+
+.logout-button:hover {
+    background-color: #5f9ea0;
+}	
