@@ -4,17 +4,35 @@ class Import {
 
 	constructor() {
 		this.btnAddFile = document.getElementById('addFile');
-		this.setupListeners();
-		this.loadInfoImport();
-	}
+		this.btnAddCoeff = document.getElementById('addFileCoeff');
 
-	loadInfoImport() {
+		this.setupListeners();
 		loadInfoImports();
 	}
 
 	setupListeners() {
 		this.btnAddFile.addEventListener('click', (event) => {
-			this.importerFichier();
+
+			const radios = document.getElementsByName('type');
+
+			var type = '';
+			radios.forEach(radio => {
+				if (radio.checked) {
+					type = radio.nextElementSibling.textContent.toLowerCase();
+				}
+			});
+
+			if (type == "jury") {
+				this.importerJury();
+			} 
+			else {
+				this.importerFichier();
+			}
+
+		});
+
+		this.btnAddCoeff.addEventListener('click', (event) => {
+			this.importerCoeff();
 		});
 
 	}
@@ -73,9 +91,188 @@ class Import {
 		reader.readAsArrayBuffer(fichier);
 	}
 
+	importerJury() {
+
+		const input = document.getElementById('file');
+		const fichier = input.files[0];
+
+		if (!fichier) {
+			alert("Veuillez sélectionner un fichier Excel.");
+			return;
+		}
+
+		const reader = new FileReader();
+
+		reader.onload = function(e) {
+			const data = new Uint8Array(e.target.result);
+			const workbook = XLSX.read(data, { type: 'array' });
+			const firstSheetName = workbook.SheetNames[0];
+			const worksheet = workbook.Sheets[firstSheetName];
+			const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+			const enTetesAttendus = ['etudid', 'code_nip', 'Rg', 'Nom', 'Prénom', 'TD', 'TP', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'Année'];
+			const enTetesFichier = Object.keys(jsonData[0]);
+
+			const enTetesManquants = enTetesAttendus.filter(enTete => !enTetesFichier.includes(enTete));
+
+			if (enTetesManquants.length > 0) {
+				alert("entetes manquants " + enTetesManquants);
+			} else {
+				ajouterJuryDonnees(jsonData, fichier);
+			}
+
+		};
+
+		reader.readAsArrayBuffer(fichier);
+	}
+
+	importerCoeff() {
+
+		const input = document.getElementById('fileCoeff');
+		const fichier = input.files[0];
+
+		if (!fichier) {
+			alert("Veuillez sélectionner un fichier Excel.");
+			return;
+		}
+
+		const reader = new FileReader();
+
+		reader.onload = function(e) {
+			const data = new Uint8Array(e.target.result);
+			const workbook = XLSX.read(data, { type: 'array' });
+			const firstSheetName = workbook.SheetNames[0];
+			const worksheet = workbook.Sheets[firstSheetName];
+			const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+			const enTetesAttendus = ["BIN", "C1", "C2", "C3", "C4", "C5", "C6"];
+			const enTetesFichier = Object.keys(jsonData[0]);
+
+			const enTetesManquants = enTetesAttendus.filter(enTete => !enTetesFichier.includes(enTete));
+
+			if (enTetesManquants.length > 0) {
+				alert("entetes manquants " + enTetesManquants);
+			} else {
+				ajouterCoeff(jsonData, fichier);
+			}
+
+		};
+
+		reader.readAsArrayBuffer(fichier);
+	}
+
 }
 
 const importInstance = new Import();
+
+async function ajouterCoeff(jsonData, fichier) {
+	const idAnnee = $(".form-control").val();
+
+	var lstCompFichier = ["C1", "C2", "C3", "C4", "C5", "C6"]
+
+	const lstIdSemestre = await getLstSemestreByIdAnnee(idAnnee);	
+	var cptIdSemestre = 0;
+	var lstCompImport = await getCompetencesByIdSemestre(lstIdSemestre[cptIdSemestre].id_semestre);
+
+
+	for (const element of jsonData) {
+		if (/^BINR\d01$/.test(element.BIN)) {
+
+			if (lstIdSemestre[cptIdSemestre] == null) {
+				break;
+			}
+
+			lstCompImport = await getCompetencesByIdSemestre(lstIdSemestre[cptIdSemestre].id_semestre);
+
+			if (lstCompImport.length === 0) {
+				break;
+			}
+
+			cptIdSemestre++;
+		}
+		
+		for (let i = 0; i < lstCompFichier.length; i++) {
+			let labelComp = lstCompFichier[i];
+			var idComp = lstCompImport[i].id_comp
+			var idMod = await getIdModuleByLabel(element.BIN);
+
+			var idCoeff = await getIdCoeffByModAndComp(idComp, idMod);
+			var coeff = element[labelComp];
+
+			if (coeff !== "" && coeff !== null) {
+				updateCoeff(idCoeff, Number(coeff));
+			}
+			
+		}
+
+		cptIdSemestre ++;
+	}
+	
+	const idFichier = await getFichierByAnneeAndSemestreAndType(idAnnee, 1, "coefficient");
+	if (idFichier) {
+		await updateFichier(idFichier, fichier.name)
+	}
+	else {
+		await ajouterFichier(fichier.name, "coefficient", 1, idAnnee)
+	}
+
+	loadInfoImports();
+
+}
+
+async function ajouterJuryDonnees(jsonData, fichier) {
+	const idAnnee = $(".form-control").val();
+
+	const isChecked = document.getElementById('alternant').checked;
+	const alternant = isChecked ? 1 : 0;
+
+	var selectElement = document.getElementById("semester");
+	var selectedOption = selectElement.options[selectElement.selectedIndex];
+	var lblSem = selectedOption.text;
+
+	var idSemestre = await getIdSemestreByIdAnneeAndLabel(idAnnee, lblSem);
+
+	if (idSemestre == -1) {
+		alert("Veuillez importer les moyennes de ce semestre avant !");
+	}
+	etuSemestre = []
+
+	const lstCompImport = await getCompetencesByIdSemestre(idSemestre);
+
+	if (lstCompImport.length == 0) {
+		alert("Veuillez importer les moyennes de ce semestre avant !");
+	}
+
+	
+    for (const element of jsonData) {
+		const codeEtu = Number(element.etudid);
+		var idEtu = codeEtu
+
+        // Attendre l'ajout de l'étudiant et récupérer l'id de l'étudiant
+        updateEtudiant(idEtu, {
+            code_etu: codeEtu, nom_etu: element.Nom, prenom_etu: element.Prénom, groupe_TD: element.TD, groupe_TP: element.TP, cursus: element.Cursus, alternant: alternant
+        }); 
+
+		updateValidationEtuSemestre(idEtu, idSemestre, element.Année);
+
+		const labelSemestre = "" + await getLabelSemestreById(idSemestre);
+		const match = labelSemestre.match(/\d+/);
+		const numSemestre = match ? parseInt(match[0]) : null;
+
+		var lstCompFichier = ["C1", "C2", "C3", "C4", "C5", "C6"]
+
+		for (let i = 0; i < lstCompFichier.length; i++) {
+			let compLabel = lstCompFichier[i];
+			if (numSemestre % 2 == 0) {
+				updatePassageEtuComp(idEtu, lstCompImport[i].id_comp, element[compLabel + "_1"]);
+			} else {
+				updatePassageEtuComp(idEtu, lstCompImport[i].id_comp, element[compLabel]);
+			}
+		}
+	}
+
+	ajouterLogoFichier(fichier.name)
+}
 
 async function ajouterLogoFichier(fileInput) {
 	const idAnnee = $(".form-control").val();
@@ -94,12 +291,19 @@ async function ajouterLogoFichier(fileInput) {
 		}
 	});
 
+	const isChecked = document.getElementById('alternant').checked;
+
+	if (isChecked) {
+		type = type + "alternant"
+	}
+
+
 	const idFichier = await getFichierByAnneeAndSemestreAndType(idAnnee, idSemestre, type);
 	if (idFichier) {
-		updateFichier(idFichier, fileInput)
+		await updateFichier(idFichier, fileInput)
 	}
 	else {
-		ajouterFichier(fileInput, type, idSemestre, idAnnee)
+		await ajouterFichier(fileInput, type, idSemestre, idAnnee)
 	}
 
 	loadInfoImports();
@@ -107,29 +311,35 @@ async function ajouterLogoFichier(fileInput) {
 
 async function ajouterDonnees(jsonData, entetesAssociatifs, enteteModule, entetesObligatoires, hmCompetences, hmCoefficient) {
 
+	const idAnnee = $(".form-control").val();
+
 	const isChecked = document.getElementById('alternant').checked;
 	const alternant = isChecked ? 1 : 0;
 
+	var selectElement = document.getElementById("semester");
+	var selectedOption = selectElement.options[selectElement.selectedIndex];
+	var lblSem = selectedOption.text;
+
+	var idSemestre = await getIdSemestreByIdAnneeAndLabel(idAnnee, lblSem);
+
+	etuSemestre = []
+	
+
     for (const element of jsonData) {
         const codeEtu = Number(element.etudid);
-		var idEtu = await getIdEtudiantByCode(codeEtu);
         // Attendre l'ajout de l'étudiant et récupérer l'id de l'étudiant
-        await ajouterEtudiant(idEtu, {
+        await ajouterEtudiant({ id_etu: codeEtu,
             code_etu: codeEtu, nom_etu: element.Nom, prenom_etu: element.Prénom, groupe_TD: element.TD, groupe_TP: element.TP, cursus: element.Cursus, alternant: alternant
         });
 
 
         try {
-            idEtu = await getIdEtudiantByCode(codeEtu);
 
-			console.log(element.Rg);
-			console.log(element.Abs);
-			console.log(element.Just);
-			console.log(element.Moy);
+			var idEtu = codeEtu;
+			etuSemestre.push({id_etu:idEtu, id_semestre:idSemestre, absences: element.Abs, rang:element.Rg, moyenne: element.Moy, validation:""});
 
-            // Créer les listes de données pour les ajouts en masse
-            const etuComp = [];
-            const etuModule = [];
+			const etuComp = [];
+			const etuModule = [];
 
             for (const competenceLabel in entetesAssociatifs) {
                 if (entetesAssociatifs.hasOwnProperty(competenceLabel)) {
@@ -146,14 +356,15 @@ async function ajouterDonnees(jsonData, entetesAssociatifs, enteteModule, entete
                 }
             }
 
-            // Ajouter les données en masse
-            await ajouterManyEtuComp(etuComp);
-            await ajouterManyEtuModule(etuModule);
+            ajouterManyEtuComp(etuComp);
+			ajouterManyEtuModule(etuModule);
 
         } catch (error) {
             console.error("Une erreur s'est produite :", error);
         }
     }
+	
+	ajouterManyEtuSemestre(etuSemestre);
 
 }
 async function ajouterCompetencesEtModules(jsonData, entetesAssociatifs, enteteModule, enTetesAttendus, fichier) {
@@ -176,35 +387,28 @@ async function ajouterCompetencesEtModules(jsonData, entetesAssociatifs, enteteM
 	const hmCoefficient = {};
 
 	try {
-		// Récupérer l'ID de la dernière compétence
-		const idCompetence = await getMaxCompetenceId();
-
 		// Ajouter chaque compétence dans la base de données
-		var cptComp = 1;
 		for (const competence in entetesAssociatifs) {
-			const idComp = idCompetence + cptComp;
+			var idComp = await getIdCompByLabel(competence);
 			await ajouterCompetence(idComp, competence, idSemestre);
+			idComp = await getIdCompByLabel(competence);
 			hmCompetences[competence] = idComp;
-			cptComp ++;
 		}
 
-		// Récupérer l'ID du dernier module
-		const idModule = await getMaxModuleId();
-
 		// Ajouter chaque module dans la base de données
-		var cptModule = 1;
 		for (const module of enteteModule) {
 			if (!module.startsWith('Bonus')) {
-				const idMod = idModule + cptModule;
+				// const idMod = idModule + cptModule
+				var idMod = await getIdModuleByLabel(module);
 				await ajouterModule(idMod, module);
+				idMod = await getIdModuleByLabel(module);
 				hmModules[module] = idMod;
-				cptModule++;
 			}
 		}
 
 		// Récupérer l'ID du dernier module
 		const idCoeff = await getMaxCoeffId();
-
+		const coeff = []
 		// Ajouter les coefficients dans la base de données
 		var cptCoeff = 1;
 		for (const competence in entetesAssociatifs) {
@@ -212,13 +416,19 @@ async function ajouterCompetencesEtModules(jsonData, entetesAssociatifs, enteteM
 				for (const module of entetesAssociatifs[competence]) {
 					if (!module.startsWith('Bonus')) {
 						const idCo = idCoeff + cptCoeff;
-						await ajouterCoefficient(idCo, hmModules[module], hmCompetences[competence]);
-						hmCoefficient[module + "-" + competence] = idCo;
-						cptCoeff++;
+						const verifCoeff = await verifCoeffExist(hmModules[module], hmCompetences[competence])
+						if (!verifCoeff) {
+							coeff.push({ id_module: hmModules[module], id_comp: hmCompetences[competence], coef: 0 })
+							hmCoefficient[module + "-" + competence] = idCo;
+							cptCoeff++;
+						}
+						
 					}
 				}
 			}
 		}
+
+		ajouterManyCoeff(coeff);
 
 	} catch (error) {
 		console.error("Une erreur s'est produite :", error);
@@ -247,10 +457,26 @@ async function ajouterSemestre(idSemestre, idAnnee, lblSem) {
 	});
 }
 
+async function updateEtudiant(idEtu, data) {
+	$.ajax({
+		url: 'http://localhost:8000/api/updateEtudiant',
+		type: 'PUT',
+		dataType: 'json',
+		data: JSON.stringify([{id_etu:idEtu, nom_etu:data.nom_etu, prenom_etu:data.prenom_etu, groupe_TD:data.groupe_TD, groupe_TP:data.groupe_TP, cursus:data.cursus, alternant:data.alternant}]),
+		success: function(data) {
+			console.log('Success : ');
+		},
+		error: function(jqXHR, textStatus, errorThrown) {
+			console.log('Erreur : ' + errorThrown);
+		}
+	});
+}
 
-async function ajouterEtudiant(idEtu, data) {
-	if (idEtu != -1) {
+async function ajouterEtudiant(data) {
+	const exists = await verifEtudiantExists(data.id_etu)
+	if (exists) {
 		console.log("existe déjà");
+		updateEtudiant(data.id_etu, data);
 		return;
 	}
 	$.ajax({
@@ -297,12 +523,57 @@ async function ajouterManyEtuModule($manyData) {
 	});
 }
 
+async function ajouterManyEtuSemestre($manyData) {
+	$.ajax({
+		url: 'http://localhost:8000/api/addManyEtuSemestre',
+		type: 'POST',
+		dataType: 'json',
+		data: JSON.stringify($manyData),
+		success: function(data) {
+			console.log('Success : ');
+		},
+		error: function(jqXHR, textStatus, errorThrown) {
+			console.log('Erreur : ' + errorThrown);
+		}
+	});
+}
+
 async function ajouterEtuComp(idEtu, idComp, moyenneComp, passage, bonus = 0) {
 	$.ajax({
 		url: 'http://localhost:8000/api/addEtuComp',
 		type: 'POST',
 		dataType: 'json',
 		data: JSON.stringify([{ id_etu: idEtu, id_comp: idComp, moyenne_comp: moyenneComp, passage: passage, bonus: bonus }]),
+		success: function(data) {
+			console.log('Success : ');
+		},
+		error: function(jqXHR, textStatus, errorThrown) {
+			console.log('Erreur : ' + errorThrown);
+		}
+	});
+}
+
+async function updateValidationEtuSemestre(idEtu, idSem, validation = "") {
+	$.ajax({
+		url: 'http://localhost:8000/api/updateValidationEtuSemestre',
+		type: 'PUT',
+		dataType: 'json',
+		data: JSON.stringify([{ id_etu: idEtu, id_semestre: idSem, validation: validation}]),
+		success: function(data) {
+			console.log('Success : ');
+		},
+		error: function(jqXHR, textStatus, errorThrown) {
+			console.log('Erreur : ' + errorThrown);
+		}
+	});
+}
+
+async function updatePassageEtuComp(idEtu, idComp, passage = "") {
+	$.ajax({
+		url: 'http://localhost:8000/api/updatePassageEtuComp',
+		type: 'PUT',
+		dataType: 'json',
+		data: JSON.stringify([{ id_etu: idEtu, id_comp: idComp, passage: passage}]),
 		success: function(data) {
 			console.log('Success : ');
 		},
@@ -327,12 +598,60 @@ async function ajouterManyEtuComp($manyData) {
 	});
 }
 
-async function ajouterModule(idModule, moduleLabel) {
-	// Vérifier si le module existe déjà
-	const response = await fetch(`http://localhost:8000/api/module/${idModule}`);
-	const data = await response.json();
-	if (data && Object.keys(data).length !== 0) {
-		console.log(`Le module avec l'ID ${idModule} existe déjà.`);
+async function getIdModuleByLabel(label) {
+	try {
+		const response = await fetch(`http://localhost:8000/api/module`);
+		const data = await response.json();
+
+		if (data && Array.isArray(data)) {
+			const module = data.find(item => item.label == label);
+			if (module) {
+				return module.id_module;
+			}
+		}
+		return -1;
+	} catch (error) {
+		console.error('Une erreur s\'est produite :', error);
+		return -2;
+	}
+}
+
+async function verifCoeffExist(idModule, idComp) {
+	try {
+		const response = await fetch(`http://localhost:8000/api/coefficient`);
+		const data = await response.json();
+		const coeff = data.find(item => item.id_comp == idComp && item.id_module == idModule);
+		if (data && Array.isArray(data) && coeff) {
+			return true;
+		}
+		return false;
+	} catch (error) {
+		console.error('Une erreur s\'est produite :', error);
+		return false;
+	}
+}
+
+async function getIdCompByLabel(label) {
+	try {
+		const response = await fetch(`http://localhost:8000/api/competence`);
+		const data = await response.json();
+
+		if (data && Array.isArray(data)) {
+			const competence = data.find(item => item.label == label);
+			if (competence) {
+				return competence.id_comp;
+			}
+		}
+		return -1;
+	} catch (error) {
+		console.error('Une erreur s\'est produite :', error);
+		return -2;
+	}
+}
+
+async function ajouterModule(idMod, moduleLabel) {
+	if (idMod !== -1) {
+		console.log("existe déjà");
 		return;
 	}
 
@@ -353,13 +672,10 @@ async function ajouterModule(idModule, moduleLabel) {
 
 async function ajouterCompetence(idCompetence, competenceLabel, idSemestre) {
 	// Vérifier si la compétence existe déjà
-	const response = await fetch(`http://localhost:8000/api/competence/${idCompetence}`);
-	const data = await response.json();
-	if (data && Object.keys(data).length !== 0) {
-		console.log(`La compétence avec l'ID ${idCompetence} existe déjà.`);
-		return; // Sortir de la fonction si la compétence existe déjà
+	if (idCompetence !== -1) {
+		console.log("existe déjà");
+		return;
 	}
-
 	// Ajouter la compétence s'elle n'existe pas
 	$.ajax({
 		url: 'http://localhost:8000/api/addCompetence',
@@ -376,14 +692,7 @@ async function ajouterCompetence(idCompetence, competenceLabel, idSemestre) {
 
 }
 
-async function ajouterCoefficient(idCoeff, idModule, idCompetence) {
-	const response = await fetch(`http://localhost:8000/api/coefficient/${idCoeff}`);
-	const data = await response.json();
-	if (data && Object.keys(data).length !== 0) {
-		console.log(`Le coefficient avec l'ID ${idCoeff} existe déjà.`);
-		return;
-	}
-
+async function ajouterCoefficient(idModule, idCompetence) {
 	$.ajax({
 		url: 'http://localhost:8000/api/addCoefficient',
 		type: 'POST',
@@ -396,7 +705,21 @@ async function ajouterCoefficient(idCoeff, idModule, idCompetence) {
 			console.log('Erreur : ' + errorThrown);
 		}
 	});
+}
 
+async function ajouterManyCoeff(dataJson) {
+	$.ajax({
+		url: 'http://localhost:8000/api/addManyCoefficient',
+		type: 'POST',
+		dataType: 'json',
+		data: JSON.stringify(dataJson),
+		success: function(data) {
+			console.log('Success Coefficient : ');
+		},
+		error: function(jqXHR, textStatus, errorThrown) {
+			console.log('Erreur : ' + errorThrown);
+		}
+	});
 }
 
 
@@ -452,7 +775,6 @@ async function getIdSemestreByIdAnneeAndLabel(idAnnee, label) {
 
 		if (data && Array.isArray(data)) {
 			const semestre = data.find(item => item.label == label && item.id_annee == idAnnee);
-			console.log(semestre);
 			if (semestre) {
 				return semestre.id_semestre; // Retourner l'ID du semestre s'il existe
 			}
@@ -464,20 +786,79 @@ async function getIdSemestreByIdAnneeAndLabel(idAnnee, label) {
 	}
 }
 
+async function getLstSemestreByIdAnnee(idAnnee) {
+	try {
+		const response = await fetch(`http://localhost:8000/api/semestre`);
+		const data = await response.json();
 
-async function getIdEtudiantByCode(codeEtudiant) {
+		if (data && Array.isArray(data)) {
+			const semestres = data
+				.filter(item => item.id_annee == idAnnee)
+				.sort((a, b) => a.label.localeCompare(b.label)); // Tri par ordre alphabétique du label
+
+			return semestres;
+		}
+		return []; // Retourner un tableau vide si le semestre n'existe pas
+	} catch (error) {
+		console.error('Une erreur s\'est produite :', error);
+		return []; // Retourner un tableau vide en cas d'erreur
+	}
+}
+
+
+async function getCompetencesByIdSemestre(idSemestre) {
+	try {
+		const response = await fetch(`http://localhost:8000/api/competence`);	
+		const data = await response.json();
+
+		if (data && Array.isArray(data)) {
+			// Filtrer les compétences par id_semestre
+			const competences = data.filter(item => item.id_semestre == idSemestre);
+			
+			// Trier les compétences par id_competence de manière croissante
+			competences.sort((a, b) => a.id_competence - b.id_competence);
+			
+			return competences; // Retourner la liste triée des compétences pour le semestre
+		}
+		return []; // Retourner une liste vide si aucune compétence n'est trouvée
+	} catch (error) {
+		console.error('Une erreur s\'est produite :', error);
+		return []; // Retourner une liste vide en cas d'erreur
+	}
+}
+
+async function verifEtudiantExists(codeEtudiant) {
+
 	try {
 		const response = await fetch(`http://localhost:8000/api/etudiantCode/${codeEtudiant}`);
 		const data = await response.json();
 		if (data && Object.keys(data).length !== 0) {
-			return data[0].id_etu; // Retourner l'ID de l'étudiant s'il existe
+			return true; // Retourner l'ID de l'étudiant s'il existe
 		}
-		return -1; // Retourner null si l'étudiant n'existe pas
+		return false; // Retourner null si l'étudiant n'existe pas
 	} catch (error) {
 		console.error('Une erreur s\'est produite :', error);
-		return -2; // Retourner null en cas d'erreur
+		return false; // Retourner null en cas d'erreur
 	}
 }
+
+async function verifModuleExits(label) {
+	try {
+		const response = await fetch(`http://localhost:8000/api/module`);
+		const data = await response.json();
+		const module = data.filter(item => item.label == label);
+
+		if (data && Array.isArray(data) && module) {
+			return true
+		}
+		return false; // Retourner null si l'étudiant n'existe pas
+	} catch (error) {
+		console.error('Une erreur s\'est produite :', error);
+		return false; // Retourner null en cas d'erreur
+	}
+}
+
+
 
 async function updateFichier(idFichier, nom) {
 	$.ajax({
@@ -492,16 +873,33 @@ async function updateFichier(idFichier, nom) {
 			console.log('Erreur : ' + errorThrown);
 		}
 	});
+	loadInfoImports();
 }
 
 async function ajouterFichier(nom, type, idSem, idAnnee) {
+	console.log(JSON.stringify([{ nom_fichier: nom, type: type, id_semestre: idSem, id_annee: Number(idAnnee) }]))
 	$.ajax({
 		url: 'http://localhost:8000/api/addFichier',
 		type: 'POST',
 		dataType: 'json',
-		data: JSON.stringify([{ nom_fichier: nom, type: type, id_semestre: idSem, id_annee: idAnnee }]),
+		data: JSON.stringify([{ nom_fichier: nom, type: type, id_semestre: idSem, id_annee: Number(idAnnee) }]),
 		success: function(data) {
 			console.log('Success : ');
+		},
+		error: function(jqXHR, textStatus, errorThrown) {
+			console.log('Erreur : ' + errorThrown);
+		}
+	});
+}
+
+async function updateCoeff(idCoeff, coeff) {
+	$.ajax({
+		url: 'http://localhost:8000/api/updateCoefficient',
+		type: 'PUT',
+		dataType: 'json',
+		data: JSON.stringify([{ id_coef: idCoeff, coef: coeff }]),
+		success: function(data) {
+			console.log('Success Coefficient : ');
 		},
 		error: function(jqXHR, textStatus, errorThrown) {
 			console.log('Erreur : ' + errorThrown);
@@ -571,6 +969,23 @@ async function getFichierByAnneeAndSemestreAndType(idAnnee, idSem, type) {
 	} catch (error) {
 		console.error('Une erreur s\'est produite :', error);
 		return; 
+	}
+}
+
+async function getIdCoeffByModAndComp(idComp, idMod) {
+	try {
+		const response = await fetch(`http://localhost:8000/api/coefficient`);
+		const data = await response.json();
+		if (data && Array.isArray(data)) {
+			const coefficient = data.find(item => item.id_module == idMod && item.id_comp == idComp);
+			if (coefficient) {
+				return coefficient.id_coef; // Retourner l'ID du semestre s'il existe
+			}
+		}
+		return -1; // Retourner -1 si le semestre n'existe pas
+	} catch (error) {
+		console.error('Une erreur s\'est produite :', error);
+		return -2; // Retourner -2 en cas d'erreur
 	}
 }
 
