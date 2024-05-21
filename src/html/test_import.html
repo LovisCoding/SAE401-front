@@ -194,7 +194,7 @@
 		
 		async function ajouterEtudiant(idEtu, data) {
             if (idEtu != -1) {
-                console.log("existe déjà");
+                
                 return;
             }
             $.ajax({
@@ -203,10 +203,10 @@
 				dataType: 'json',
 				data: JSON.stringify([data]),
 				success: function(data) {
-					console.log('Success : ');
+					
 				},
 				error: function(jqXHR, textStatus, errorThrown) {
-					console.log('Erreur : ' + errorThrown);
+					
 				}
 			});
         }
@@ -218,10 +218,10 @@
 				dataType: 'json',
 				data: JSON.stringify([{ id_etu: idEtu, id_coef: idCoefficient, note: note }]),
 				success: function(data) {
-					console.log('Success : ');
+					
 				},
 				error: function(jqXHR, textStatus, errorThrown) {
-                    console.log('Erreur : ' + errorThrown);
+                    
 				}
 			});
         }
@@ -233,10 +233,10 @@
 				dataType: 'json',
 				data: JSON.stringify($manyData),
 				success: function(data) {
-					console.log('Success : ');
+					
 				},
 				error: function(jqXHR, textStatus, errorThrown) {
-					console.log('Erreur : ' + errorThrown);
+					
 				}
 			});
         }
@@ -248,10 +248,10 @@
 				dataType: 'json',
 				data: JSON.stringify([{ id_etu: idEtu, id_comp: idComp, moyenne_comp: moyenneComp, passage: passage, bonus: bonus }]),
 				success: function(data) {
-					console.log('Success : ');
+					
 				},
 				error: function(jqXHR, textStatus, errorThrown) {
-					console.log('Erreur : ' + errorThrown);
+					
 				}
 			});
         }
@@ -263,10 +263,10 @@
 				dataType: 'json',
 				data: JSON.stringify($manyData),
 				success: function(data) {
-					console.log('Success : ');
+					
 				},
 				error: function(jqXHR, textStatus, errorThrown) {
-					console.log('Erreur : ' + errorThrown);
+					
 				}
 			});
         }
@@ -276,7 +276,7 @@
             const response = await fetch(`http://localhost:8000/api/module/${idModule}`);
             const data = await response.json();
             if (data && Object.keys(data).length !== 0) {
-                console.log(`Le module avec l'ID ${idModule} existe déjà.`);
+                
                 return;
             }
 
@@ -287,10 +287,10 @@
 				dataType: 'json',
 				data: JSON.stringify([{ label: moduleLabel }]),
 				success: function(data) {
-					console.log('Success : ');
+					
 				},
 				error: function(jqXHR, textStatus, errorThrown) {
-					console.log('Erreur : ' + errorThrown);
+					
 				}
 			});
         }
@@ -300,7 +300,7 @@
             const response = await fetch(`http://localhost:8000/api/competence/${idCompetence}`);
             const data = await response.json();
             if (data && Object.keys(data).length !== 0) {
-                console.log(`La compétence avec l'ID ${idCompetence} existe déjà.`);
+                
                 return; // Sortir de la fonction si la compétence existe déjà
             }
 
@@ -311,10 +311,10 @@
                 dataType: 'json',
                 data: JSON.stringify([{ label: competenceLabel, id_semestre: idSemestre }]),
                 success: function(data) {
-                    console.log('Success : ');
+                    
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
-                    console.log('Erreur : ' + errorThrown);
+                    
                 }
 			});
 
@@ -324,7 +324,7 @@
             const response = await fetch(`http://localhost:8000/api/coefficient/${idCoeff}`);
             const data = await response.json();
             if (data && Object.keys(data).length !== 0) {
-                console.log(`Le coefficient avec l'ID ${idCoeff} existe déjà.`);
+                
                 return;
             }
 
@@ -334,10 +334,10 @@
 				dataType: 'json',
                 data: JSON.stringify([{ id_module: idModule, id_comp: idCompetence, coef: 1 }]),
 				success: function(data) {
-					console.log('Success Coefficient : ');
+					
 				},
 				error: function(jqXHR, textStatus, errorThrown) {
-					console.log('Erreur : ' + errorThrown);
+					
 				}
             });
 

@@ -440,7 +440,7 @@ async function ajouterCompetencesEtModules(jsonData, entetesAssociatifs, enteteM
 
 async function ajouterSemestre(idSemestre, idAnnee, lblSem) {
 	if (idSemestre != -1) {
-		console.log("existe déjà");
+		
 		return;
 	}
 	$.ajax({
@@ -449,10 +449,10 @@ async function ajouterSemestre(idSemestre, idAnnee, lblSem) {
 		dataType: 'json',
 		data: JSON.stringify([{id_annee:idAnnee, label:lblSem}]),
 		success: function(data) {
-			console.log('Success : ');
+			
 		},
 		error: function(jqXHR, textStatus, errorThrown) {
-			console.log('Erreur : ' + errorThrown);
+			
 		}
 	});
 }
@@ -464,10 +464,10 @@ async function updateEtudiant(idEtu, data) {
 		dataType: 'json',
 		data: JSON.stringify([{id_etu:idEtu, nom_etu:data.nom_etu, prenom_etu:data.prenom_etu, groupe_TD:data.groupe_TD, groupe_TP:data.groupe_TP, cursus:data.cursus, alternant:data.alternant}]),
 		success: function(data) {
-			console.log('Success : ');
+			
 		},
 		error: function(jqXHR, textStatus, errorThrown) {
-			console.log('Erreur : ' + errorThrown);
+			
 		}
 	});
 }
@@ -475,7 +475,7 @@ async function updateEtudiant(idEtu, data) {
 async function ajouterEtudiant(data) {
 	const exists = await verifEtudiantExists(data.id_etu)
 	if (exists) {
-		console.log("existe déjà");
+		
 		updateEtudiant(data.id_etu, data);
 		return;
 	}
@@ -485,10 +485,10 @@ async function ajouterEtudiant(data) {
 		dataType: 'json',
 		data: JSON.stringify([data]),
 		success: function(data) {
-			console.log('Success : ');
+			
 		},
 		error: function(jqXHR, textStatus, errorThrown) {
-			console.log('Erreur : ' + errorThrown);
+			
 		}
 	});
 }
@@ -500,10 +500,10 @@ async function ajouterEtuModule(idEtu, idCoefficient, note) {
 		dataType: 'json',
 		data: JSON.stringify([{ id_etu: idEtu, id_coef: idCoefficient, note: note }]),
 		success: function(data) {
-			console.log('Success : ');
+			
 		},
 		error: function(jqXHR, textStatus, errorThrown) {
-			console.log('Erreur : ' + errorThrown);
+			
 		}
 	});
 }
@@ -515,10 +515,10 @@ async function ajouterManyEtuModule($manyData) {
 		dataType: 'json',
 		data: JSON.stringify($manyData),
 		success: function(data) {
-			console.log('Success : ');
+			
 		},
 		error: function(jqXHR, textStatus, errorThrown) {
-			console.log('Erreur : ' + errorThrown);
+			
 		}
 	});
 }
@@ -530,10 +530,10 @@ async function ajouterManyEtuSemestre($manyData) {
 		dataType: 'json',
 		data: JSON.stringify($manyData),
 		success: function(data) {
-			console.log('Success : ');
+			
 		},
 		error: function(jqXHR, textStatus, errorThrown) {
-			console.log('Erreur : ' + errorThrown);
+			
 		}
 	});
 }
@@ -545,10 +545,10 @@ async function ajouterEtuComp(idEtu, idComp, moyenneComp, passage, bonus = 0) {
 		dataType: 'json',
 		data: JSON.stringify([{ id_etu: idEtu, id_comp: idComp, moyenne_comp: moyenneComp, passage: passage, bonus: bonus }]),
 		success: function(data) {
-			console.log('Success : ');
+			
 		},
 		error: function(jqXHR, textStatus, errorThrown) {
-			console.log('Erreur : ' + errorThrown);
+			
 		}
 	});
 }
@@ -560,10 +560,10 @@ async function updateValidationEtuSemestre(idEtu, idSem, validation = "") {
 		dataType: 'json',
 		data: JSON.stringify([{ id_etu: idEtu, id_semestre: idSem, validation: validation}]),
 		success: function(data) {
-			console.log('Success : ');
+			
 		},
 		error: function(jqXHR, textStatus, errorThrown) {
-			console.log('Erreur : ' + errorThrown);
+			
 		}
 	});
 }
@@ -575,10 +575,10 @@ async function updatePassageEtuComp(idEtu, idComp, passage = "") {
 		dataType: 'json',
 		data: JSON.stringify([{ id_etu: idEtu, id_comp: idComp, passage: passage}]),
 		success: function(data) {
-			console.log('Success : ');
+			
 		},
 		error: function(jqXHR, textStatus, errorThrown) {
-			console.log('Erreur : ' + errorThrown);
+			
 		}
 	});
 }
@@ -590,10 +590,10 @@ async function ajouterManyEtuComp($manyData) {
 		dataType: 'json',
 		data: JSON.stringify($manyData),
 		success: function(data) {
-			console.log('Success : ');
+			
 		},
 		error: function(jqXHR, textStatus, errorThrown) {
-			console.log('Erreur : ' + errorThrown);
+			
 		}
 	});
 }
@@ -651,7 +651,7 @@ async function getIdCompByLabel(label) {
 
 async function ajouterModule(idMod, moduleLabel) {
 	if (idMod !== -1) {
-		console.log("existe déjà");
+		
 		return;
 	}
 
@@ -662,10 +662,10 @@ async function ajouterModule(idMod, moduleLabel) {
 		dataType: 'json',
 		data: JSON.stringify([{ label: moduleLabel }]),
 		success: function(data) {
-			console.log('Success : ');
+			
 		},
 		error: function(jqXHR, textStatus, errorThrown) {
-			console.log('Erreur : ' + errorThrown);
+			
 		}
 	});
 }
@@ -673,7 +673,7 @@ async function ajouterModule(idMod, moduleLabel) {
 async function ajouterCompetence(idCompetence, competenceLabel, idSemestre) {
 	// Vérifier si la compétence existe déjà
 	if (idCompetence !== -1) {
-		console.log("existe déjà");
+		
 		return;
 	}
 	// Ajouter la compétence s'elle n'existe pas
@@ -683,10 +683,10 @@ async function ajouterCompetence(idCompetence, competenceLabel, idSemestre) {
 		dataType: 'json',
 		data: JSON.stringify([{ label: competenceLabel, id_semestre: idSemestre }]),
 		success: function(data) {
-			console.log('Success : ');
+			
 		},
 		error: function(jqXHR, textStatus, errorThrown) {
-			console.log('Erreur : ' + errorThrown);
+			
 		}
 	});
 
@@ -699,10 +699,10 @@ async function ajouterCoefficient(idModule, idCompetence) {
 		dataType: 'json',
 		data: JSON.stringify([{ id_module: idModule, id_comp: idCompetence, coef: 1 }]),
 		success: function(data) {
-			console.log('Success Coefficient : ');
+			
 		},
 		error: function(jqXHR, textStatus, errorThrown) {
-			console.log('Erreur : ' + errorThrown);
+			
 		}
 	});
 }
@@ -714,10 +714,10 @@ async function ajouterManyCoeff(dataJson) {
 		dataType: 'json',
 		data: JSON.stringify(dataJson),
 		success: function(data) {
-			console.log('Success Coefficient : ');
+			
 		},
 		error: function(jqXHR, textStatus, errorThrown) {
-			console.log('Erreur : ' + errorThrown);
+			
 		}
 	});
 }
@@ -867,27 +867,27 @@ async function updateFichier(idFichier, nom) {
 		dataType: 'json',
 		data: JSON.stringify([{id_fichier: idFichier, nom_fichier: nom}]),
 		success: function(data) {
-			console.log('Success : ');
+			
 		},
 		error: function(jqXHR, textStatus, errorThrown) {
-			console.log('Erreur : ' + errorThrown);
+			
 		}
 	});
 	loadInfoImports();
 }
 
 async function ajouterFichier(nom, type, idSem, idAnnee) {
-	console.log(JSON.stringify([{ nom_fichier: nom, type: type, id_semestre: idSem, id_annee: Number(idAnnee) }]))
+	
 	$.ajax({
 		url: 'http://localhost:8000/api/addFichier',
 		type: 'POST',
 		dataType: 'json',
 		data: JSON.stringify([{ nom_fichier: nom, type: type, id_semestre: idSem, id_annee: Number(idAnnee) }]),
 		success: function(data) {
-			console.log('Success : ');
+			
 		},
 		error: function(jqXHR, textStatus, errorThrown) {
-			console.log('Erreur : ' + errorThrown);
+			
 		}
 	});
 }
@@ -899,10 +899,10 @@ async function updateCoeff(idCoeff, coeff) {
 		dataType: 'json',
 		data: JSON.stringify([{ id_coef: idCoeff, coef: coeff }]),
 		success: function(data) {
-			console.log('Success Coefficient : ');
+			
 		},
 		error: function(jqXHR, textStatus, errorThrown) {
-			console.log('Erreur : ' + errorThrown);
+			
 		}
 	});
 }

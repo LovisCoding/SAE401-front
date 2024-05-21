@@ -4,6 +4,9 @@ class VerifLogin {
 		if (this.token == null || this.token == undefined ) {
 			window.location.href = 'http://localhost:8080/login';
 		}
+		if ((location.pathname === '/import' || location.pathname === '/import/') && localStorage.getItem('isadmin') === 'false') {
+			window.location.href = 'http://localhost:8080/home';
+		}
 		this.request();
 	}
 	request() {
@@ -12,7 +15,7 @@ class VerifLogin {
 			type: 'POST',
 			dataType: 'text',
 			success: function(data){
-				console.log(data);
+				
 				const jsData = JSON.parse(data);
 				if (!jsData.token ) {
 					window.location.href = 'http://localhost:8080/login';
@@ -29,7 +32,7 @@ class VerifLogin {
 			  },
 			
 			error: function(jqXHR, textStatus, errorThrown){
-				console.log('Erreur : ' + errorThrown);
+				
 			}
 		});
 	}

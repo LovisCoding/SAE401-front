@@ -52,7 +52,7 @@ class Export {
 				});
 			},
 			error: function(jqXHR, textStatus, errorThrown){
-				console.log('Erreur : ' + errorThrown);
+				
 			}
 		});
 	}
@@ -67,8 +67,8 @@ class Export {
 				dataType: 'json',
 				success: function(data) {
 					const avis = data.find(avis => avis.id_etu === parseInt(selectedStudentId));
-					console.log(selectedStudentId);
-					console.log(avis);
+					
+					
 					if (avis) {
 						$('#avisMaster').val(avis.avis_master || 'Sans avis');
 						$('#avisEcoleIngenieur').val(avis.avis_inge || 'Sans avis');
@@ -79,7 +79,7 @@ class Export {
 					$('#avisModal').modal('show');
 				},
 				error: function(jqXHR, textStatus, errorThrown){
-					console.log('Erreur : ' + errorThrown);
+					
 				}
 			});
 		});
@@ -98,7 +98,7 @@ class Export {
 			commentaire: comment
 		};
 
-		console.log(JSON.stringify([requestData]));
+		
 	
 		$.ajax({
 			url: 'http://localhost:8000/api/updateAvis',
@@ -109,7 +109,7 @@ class Export {
 				$('#avisModal').modal('hide');
 			},
 			error: function(jqXHR, textStatus, errorThrown){
-				console.log('Erreur : ' + errorThrown);
+				
 			}
 		});
 	}
@@ -139,7 +139,7 @@ class Export {
 					$('#avisModal').modal('hide');
 				},
 				error: function(jqXHR, textStatus, errorThrown){
-					console.log('Erreur : ' + errorThrown);
+					
 				}
 			});
 		});

@@ -66,23 +66,23 @@ $(document).ready(function() {
 											}
 										},
 										error: function(jqXHR, textStatus, errorThrown) {
-											console.log('Erreur : ' + errorThrown);
+											
 										}
 									});
 								},
 								error: function(jqXHR, textStatus, errorThrown) {
-									console.log('Erreur : ' + errorThrown);
+									
 								}
 							});
 						});
 					},
 					error: function(jqXHR, textStatus, errorThrown) {
-						console.log('Erreur : ' + errorThrown);
+						
 					}
 				});
 			},
 			error: function(jqXHR, textStatus, errorThrown) {
-				console.log('Erreur : ' + errorThrown);
+				
 			}
 		});
 	}
