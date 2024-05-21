@@ -34,6 +34,12 @@ class Import {
 		this.btnAddCoeff.addEventListener('click', (event) => {
 			this.importerCoeff();
 		});
+		document.getElementById('file').addEventListener('change', function() {
+			document.getElementById('labelito').style.borderColor = 'green';
+			const icon = document.getElementById('validateIcon');
+			icon.classList.add('validate')
+			document.getElementById('spanText').innerHTML = document.getElementById('file').files[0].name;
+		});
 
 	}
 
