@@ -108,7 +108,7 @@ body {
 }
 
 .logo {
-	cursor: default;
+	cursor: pointer	;
 	z-index: 1000;
 }
 

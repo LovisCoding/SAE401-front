@@ -17,8 +17,8 @@ class Nav {
 		document.addEventListener("DOMContentLoaded", () => {
 			let navHTML = `
 			<nav class="navbar navbar-expand-lg navbar-light bg-light">
-				<a  id="navHome" class="navbar-brand" href="#">
-					<img src="./img/Logo_ScoNotesSimple.png" width="65" height="45" class="d-inline-block align-top logo" alt="ScoNotes"/>
+				<a  id="navHome" class="navbar-brand" href="/home">
+					<img src="/img/Logo_ScoNotesSimple.png" width="65" height="45" class="d-inline-block align-top logo" alt="ScoNotes"/>
 				</a>
 				<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
 					<span class="navbar-toggler-icon"></span>
@@ -36,25 +36,25 @@ class Nav {
 					navHTML+=`
 						<li class="nav-item">
 							<a class="nav-link d-flex flex-column align-items-center text-center" id="navRecap" href="/recap">
-								<img src="./img/Recapitulatif.svg" width="25" height="25" class="d-inline-block align-top" alt="Récapitulatif"/>
+								<img src="/img/Recapitulatif.svg" width="25" height="25" class="d-inline-block align-top" alt="Récapitulatif"/>
 								<span>Récapitulatif</span>
 							</a>
 						</li>
 						<li class="nav-item">
 							<a class="nav-link d-flex flex-column align-items-center text-center " id="navExport" href="/export">
-								<img src="./img/Export.svg" width="25" height="25" class="d-inline-block align-top"  alt="Exportation"/>
+								<img src="/img/Export.svg" width="25" height="25" class="d-inline-block align-top"  alt="Exportation"/>
 								<span>Exportation</span>
 							</a>
 						</li>
 						<li class="nav-item">
 							<a class="nav-link d-flex flex-column align-items-center text-center" href="#">
-								<img src="./img/Profil.svg" width="25" height="25" class="d-inline-block align-top" alt="Profil"/>
+								<img src="/img/Profil.svg" width="25" height="25" class="d-inline-block align-top" alt="Profil"/>
 								<span>Profil</span>
 							</a>
 						</li>
 						<li class="nav-item">
 							<a class="nav-link d-flex align-items-center justify-content-center" onclick="nav.arrowAnimation()" href="#">
-								<img src="./img/Arrow.svg" width="25" height="25" class="arrow" alt=""/>
+								<img src="/img/Arrow.svg" width="25" height="25" class="arrow" alt=""/>
 							</a>
 						</li>
 					</ul>
