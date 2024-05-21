@@ -30,7 +30,7 @@ class Nav {
 			if (this.isAdmin == 'true') {
 				navHTML += `<li class="nav-item">
 							<a class="nav-link d-flex flex-column align-items-center text-center" id="navImport" href="/import">
-								<img src="./img/Import.svg" width="25" height="25" class="d-inline-block align-top" alt="Importation"/>
+								<img src="/img/Import.svg" width="25" height="25" class="d-inline-block align-top" alt="Importation"/>
 								<span>Importation</span>
 							</a>
 						</li>`
