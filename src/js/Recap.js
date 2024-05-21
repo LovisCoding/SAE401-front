@@ -7,8 +7,8 @@ class Recap {
 	}
 
 	loadTableau() {
-		var semestre = "Semestre 2" // déterminer le semestre dans la période 
-		var type = "Jury" // déterminer le type
+		var semestre = "Semestre 1" // déterminer le semestre dans la période 
+		var type = "Commission" // déterminer le type
 
 		if (type == "Commission") {
 			afficherCommission(semestre);
@@ -78,11 +78,11 @@ async function afficherCommission(semestre) {
 
 
 		let cptUEReussie = 0;
-
+		console.log(lstEtuComp[0].id_comp);
 		for (let i = 0; i < lstCompetences.length; i++) {
 			let idComp = lstCompetences[i].id_comp;
-			let etuComp = lstEtuComp.filter(item => item.id_comp = idComp && item.id_etu == etudiant.id_etu)[0];
-
+			let etuComp = lstEtuComp.filter(item => item.id_comp == idComp && item.id_etu == etudiant.id_etu)[0];
+			
 			if (!etuComp) {
 				break;
 			}

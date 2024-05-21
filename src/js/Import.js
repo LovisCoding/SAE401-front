@@ -917,7 +917,8 @@ async function loadInfoImports() {
 			const numSemestre = match ? parseInt(match[0]) : null;
 			const img = document.getElementById(file.type+""+numSemestre);
 			if (img) {
-				img.classList = ["visibleImg"];
+				img.classList.add("visibleImg");
+				img.classList.remove("invisibleImg")
 				img.title = file.nom_fichier;
 			}
 			
