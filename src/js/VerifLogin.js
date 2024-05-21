@@ -2,7 +2,6 @@ class VerifLogin {
 	constructor() {
 		this.token = localStorage.getItem('token');
 		if (this.token == null || this.token == undefined ) {
-			console.log(';a');
 			window.location.href = 'http://localhost:8080/login';
 		}
 		this.request();
@@ -15,15 +14,15 @@ class VerifLogin {
 			success: function(data){
 				console.log(data);
 				const jsData = JSON.parse(data);
-				if (!jsData.token) {
-					console.log('pas de token');
+				if (!jsData.token ) {
 					window.location.href = 'http://localhost:8080/login';
 				}
+				// Si il y a un token qui est retourné c'est QUE le token est valide
 					
 
 			},
 			headers: {
-				'Authorization': 'Basic ' + this.token	
+				'Authorization': this.token	
 			},
 			xhrFields: {
 				withCredentials: true

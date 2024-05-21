@@ -1,0 +1,28 @@
+body {
+	font-family: 'Inter', sans-serif;
+	background: #EEECEC;
+}
+
+.table {
+	background-color: white;
+}
+
+.vert {
+	background-color: #89c48f;
+}
+
+.rouge {
+	background-color: #e68f86;
+}
+
+.orange {
+	background-color: #e8ad55;
+}
+
+.bleu {
+	background-color: #82CDD0;
+}
+
+.gris {
+	background-color: #adadad;
+}
