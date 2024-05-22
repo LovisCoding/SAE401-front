@@ -5,10 +5,9 @@ class Export {
 		this.settingsPanel = document.querySelector(settingsPanelSelector);
 		this.setupListeners();
 		this.loadStudent();
-		this.setupStudentProcessListener();
+		this.verifyStudentInListAvis();
 		this.setupSubmitListener();
-		this.setupAddAvisListener();
-		this.isAddProcess = false;
+		this.setupStudentProcessListener();
 	}
 
 	setupListeners() {
@@ -50,18 +49,25 @@ class Export {
 			dataType: 'json',
 			success: function(data){
 				$.each(data, function(index, etudiant){
-					$('.student').append('<option value="' + etudiant.id_etu + '">' + etudiant.nom_etu + ' ' + etudiant.prenom_etu + '</option>');
+					if (etudiant.cursus.includes("S5")) {
+						$('.student').append('<option value="' + etudiant.id_etu + '">' + etudiant.nom_etu + ' ' + etudiant.prenom_etu + '</option>');
+					}
 				});
 			},
 			error: function(jqXHR, textStatus, errorThrown){
-				
+				console.error("Error loading students:", textStatus, errorThrown);
 			}
 		});
+	}
+
+	verifyStudentInListAvis() {
+		
 	}
 
 	setupStudentProcessListener() {
 		$('#addStudent').click(() => {
 			const selectedStudentId = $('.student').val();
+			console.log(selectedStudentId);
 
 			$.ajax({
 				url: 'http://localhost:8000/api/avis',
@@ -72,7 +78,6 @@ class Export {
 					if (avis) {
 						$('#avisMaster').val(avis.avis_master || 'Sans avis');
 						$('#avisEcoleIngenieur').val(avis.avis_inge || 'Sans avis');
-						this.isAddProcess = true;
 					} else {
 						$('#avisMaster').val('Sans avis');
 						$('#avisEcoleIngenieur').val('Sans avis');
@@ -86,19 +91,7 @@ class Export {
 		});
 	}
 
-	setupAddAvisListener() {
-		$(document).on('click', '#addAvis', () => {
-			if (this.isAddProcess) {
-				this.addProcess();
-			} else {
-				console.log('update');
-				this.updateProcess();
-			}
-		});
-	}
-
 	updateProcess() {
-
 		const selectedStudentId = $('.student').val();
 		const avisMaster = $('#avisMaster').val();
 		const avisEcoleIngenieur = $('#avisEcoleIngenieur').val();
@@ -110,19 +103,18 @@ class Export {
 			avis_inge: avisEcoleIngenieur,
 			commentaire: comment
 		};
-
-		
 	
 		$.ajax({
 			url: 'http://localhost:8000/api/updateAvis',
 			type: 'PUT',
 			dataType: 'json',
 			data: JSON.stringify([requestData]),
-			success: function(data){
+			success: (data) => {
 				$('#avisModal').modal('hide');
+				this.verifyStudentInListAvis();
 			},
 			error: function(jqXHR, textStatus, errorThrown){
-				
+				console.error("Error updating avis:", textStatus, errorThrown);
 			}
 		});
 	}
@@ -145,18 +137,40 @@ class Export {
 			type: 'POST',
 			contentType: 'application/json',
 			data: JSON.stringify([requestData]),
-			success: function(data){
+			success: (data) => {
 				$('#avisModal').modal('hide');
+				this.verifyStudentInListAvis();
 			},
 			error: function(jqXHR, textStatus, errorThrown){
-				console.log('Erreur : ' + errorThrown);
+				console.error("Error adding avis:", textStatus, errorThrown);
 			}
 		});
 	}
-	
+
 	setupSubmitListener() {
-		$('#avisModal .btn-primary').click(() => {
-			this.updateProcess();
+		const addAvisButton = document.getElementById('addAvis');
+		
+		addAvisButton.addEventListener('click', () => {
+			const selectedStudentId = $('.student').val();
+	
+			$.ajax({
+				url: 'http://localhost:8000/api/avis',
+				type: 'GET',
+				dataType: 'json',
+				success: (data) => {
+					const avisExists = data.some(avis => avis.id_etu === parseInt(selectedStudentId));
+					if (avisExists) {
+						console.log('update');
+						this.updateProcess();
+					} else {
+						console.log('add');
+						this.addProcess();
+					}
+				},
+				error: function(jqXHR, textStatus, errorThrown){
+					console.error("Error checking student's avis:", textStatus, errorThrown);
+				}
+			});
 		});
 	}
 }
