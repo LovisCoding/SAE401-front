@@ -9,8 +9,6 @@ class Recap {
 	loadTableau() {
 		var semestre = "Semestre 1" // déterminer le semestre dans la période 
 		var type = "Commission" // déterminer le type
-		var semestre = "Semestre 1" // déterminer le semestre dans la période 
-		var type = "Commission" // déterminer le type
 
 		if (type == "Commission") {
 			afficherCommission(semestre);
@@ -18,8 +16,6 @@ class Recap {
 			afficherJury(semestre);
 		}
 	}
-
-
 	
 }
 

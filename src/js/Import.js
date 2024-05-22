@@ -78,8 +78,8 @@ class Import {
 					const cleanEnTete = enTete.replace(/_.*/, '');
 					if (/^BIN\d/.test(cleanEnTete)) {
 						enteteBIN = cleanEnTete;
-						entetesAssociatifs[enteteBIN] = [];
-					} else if (enteteBIN && (cleanEnTete.startsWith('BINR') || cleanEnTete.startsWith('BINS') || cleanEnTete.startsWith('BINP') || cleanEnTete.startsWith('Bonus') )) {
+						entetesAssociatifs[enteteBIN] = ["Bonus " + enteteBIN];
+					} else if (enteteBIN && (cleanEnTete.startsWith('BINR') || cleanEnTete.startsWith('BINS') || cleanEnTete.startsWith('BINP'))) {
 						entetesAssociatifs[enteteBIN].push(cleanEnTete);
 						if (!enteteModule.includes(cleanEnTete)) {
 							enteteModule.push(cleanEnTete);
@@ -346,7 +346,6 @@ async function ajouterDonnees(jsonData, entetesAssociatifs, enteteModule, entete
 
 			const etuComp = [];
 			const etuModule = [];
-
             for (const competenceLabel in entetesAssociatifs) {
                 if (entetesAssociatifs.hasOwnProperty(competenceLabel)) {
                     entetesAssociatifs[competenceLabel].forEach(moduleLabel => {
@@ -389,7 +388,6 @@ async function ajouterCompetencesEtModules(jsonData, entetesAssociatifs, enteteM
 	var lblSem = selectedOption.text;
 
 	var idSemestre = await getIdSemestreByIdAnneeAndLabel(idAnnee, lblSem);
-
 
 	await ajouterSemestre(idSemestre, idAnnee, lblSem)
 
@@ -471,6 +469,7 @@ async function ajouterSemestre(idSemestre, idAnnee, lblSem) {
 }
 
 async function updateEtudiant(idEtu, data) {
+	console.log(updateEtudiant);
 	$.ajax({
 		url: 'http://localhost:8000/api/updateEtudiant',
 		type: 'PUT',
@@ -486,6 +485,7 @@ async function updateEtudiant(idEtu, data) {
 }
 
 async function ajouterEtudiant(data) {
+	console.log(JSON.stringify([data]));
 	const exists = await verifEtudiantExists(data.id_etu)
 	if (exists) {
 		
@@ -522,6 +522,7 @@ async function ajouterEtuModule(idEtu, idCoefficient, note) {
 }
 
 async function ajouterManyEtuModule($manyData) {
+	console.log($manyData)
 	$.ajax({
 		url: 'http://localhost:8000/api/addManyEtuModule',
 		type: 'POST',
@@ -537,6 +538,7 @@ async function ajouterManyEtuModule($manyData) {
 }
 
 async function ajouterManyEtuSemestre($manyData) {
+	console.log($manyData);
 	$.ajax({
 		url: 'http://localhost:8000/api/addManyEtuSemestre',
 		type: 'POST',
@@ -597,6 +599,7 @@ async function updatePassageEtuComp(idEtu, idComp, passage = "") {
 }
 
 async function ajouterManyEtuComp($manyData) {
+	console.log(JSON.stringify($manyData))
 	$.ajax({
 		url: 'http://localhost:8000/api/addManyEtuComp',
 		type: 'POST',
