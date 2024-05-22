@@ -50,7 +50,7 @@ h6 {
 
 .labelStudent {
 	margin-top: 3rem;
-	margin-left: 4rem;
+	
 }
 
 .type {
@@ -69,10 +69,6 @@ h6 {
 
 .labelSemester {
 	margin-top: 1.5rem;
-}
-
-#semester {
-	margin-left: 1.2rem;
 }
 
 .settings {
@@ -162,4 +158,31 @@ h6 {
 #avisMaster,
 #avisEcoleIngenieur {
 	margin-left: 1rem;
+}
+.styled-select {
+	width: 150px;
+	height: 40px;
+	padding: 5px 10px;
+	font-size: 16px;
+	color: #333;
+	background-color: #f0f0f0;
+	border: 1px solid #ccc;
+	border-radius: 5px;
+	appearance: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	background-image: url('data:image/svg+xml,<svg data-slot="icon" fill="none" stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"></path></svg>');
+	background-repeat: no-repeat;
+	background-position: right 10px center;
+	background-size: 10px;
+	cursor: pointer;
+}
+
+.styled-select:focus {
+	border-color: #666;
+	box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+}
+
+.styled-select option {
+	padding: 10px;
 }

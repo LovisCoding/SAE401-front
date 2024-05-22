@@ -25,9 +25,9 @@ class Year {
 				console.log(data);
 				$.each(data, function(index, annee){
 					if (annee.id_annee == localStorage.getItem('currentYear')) {
-						$('.form-control').append('<option value="' + annee.id_annee + '" selected>' + annee.annee + '</option>');
+						$('#ddlYear').append('<option value="' + annee.id_annee + '" selected>' + annee.annee + '</option>');
 					} else {
-						$('.form-control').append('<option value="' + annee.id_annee + '">' + annee.annee + '</option>');
+						$('#ddlYear').append('<option value="' + annee.id_annee + '">' + annee.annee + '</option>');
 					}
 				});
 			},
@@ -40,10 +40,10 @@ class Year {
 	// Méthode pour ajouter une année
 
 	addYear() {
-		$('.form-control').after('<button id="addYearBtn" class="btn btn-primary">Ajouter</button>');
+		$('#ddlYear').after('<button id="addYearBtn" class="btn btn-primary">Ajouter</button>');
 
 		$(document).on('click', '#addYearBtn', function(){
-			var beforeLastYear = $('.form-control option:nth-last-child(1)').text();
+			var beforeLastYear = $('#ddlYear option:nth-last-child(1)').text();
 			var yearParts = beforeLastYear.split('-');
 			var startYear = parseInt(yearParts[0]) + 1;
 			var endYear = parseInt(yearParts[1]) + 1;
@@ -57,7 +57,7 @@ class Year {
 				data: JSON.stringify([{ annee: newYear }]),
 				success: function(data){
 					console.log(data);
-					$('.form-control').append('<option value="' + data.id_annee + '">' + data.annee + '</option>');
+					$('#ddlYear').append('<option value="' + data.id_annee + '">' + data.annee + '</option>');
 				},
 				
 				error: function(jqXHR, textStatus, errorThrown){

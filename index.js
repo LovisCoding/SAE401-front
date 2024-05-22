@@ -13,7 +13,7 @@ app.use(cors({
 
 // sendFile will go here
 app.get('/', function(req, res) {
-  res.sendFile(path.join(__dirname, '/src/html/index.html'));
+  res.redirect('/home');
 });
 app.get('/login', function(req, res) {
 	res.sendFile(path.join(__dirname, '/src/html/connection.html'));
