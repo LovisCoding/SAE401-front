@@ -7,7 +7,39 @@ class Export {
 		this.loadStudent();
 		this.setupSubmitListener();
 		this.setupStudentProcessListener();
+
+		const idAnnee = localStorage.getItem('currentYear');
+		this.loadSemestre(idAnnee);
 	}
+
+	async loadSemestre(idAnnee) {
+		let lstSemestres = await this.getSemestres();
+		let semesters = lstSemestres.filter(item => item.id_annee == idAnnee);
+		semesters.sort((a, b) => a.label.localeCompare(b.label));
+		const selectElement = document.getElementById('semester');
+	
+		semesters.forEach(semester => {
+			const option = document.createElement('option');
+			option.textContent = semester.label;
+			selectElement.appendChild(option);
+		});
+	
+	}
+
+	async getSemestres() {
+		try {
+			const response = await fetch(`http://localhost:8000/api/semestre`);	
+			const data = await response.json();
+			if (data && Array.isArray(data)) {
+				return data; 
+			}
+			return []; // Retourner une liste vide si aucune compétence n'est trouvée
+		} catch (error) {
+			console.error('Une erreur s\'est produite :', error);
+			return []; // Retourner une liste vide en cas d'erreur
+		}
+	}
+	
 
 	setupListeners() {
 		this.settingsImage.addEventListener('click', (event) => {
