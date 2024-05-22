@@ -191,6 +191,16 @@ async function createPdf(type) {
 		const moduleR207 = modules.find(m => m.label === 'BINR207');
 		const moduleR208 = modules.find(m => m.label === 'BINR208');
 		const moduleR209 = modules.find(m => m.label === 'BINR209');
+		const moduleR308 = modules.find(m => m.label === 'BINR308');
+		const moduleR309 = modules.find(m => m.label === 'BINR309');
+		const moduleR412 = modules.find(m => m.label === 'BINR412');
+		const moduleR511 = modules.find(m => m.label === 'BINR511');
+		const moduleR512 = modules.find(m => m.label === 'BINR512');
+		const moduleR110 = modules.find(m => m.label === 'BINR110');
+		const moduleR212 = modules.find(m => m.label === 'BINR212');
+		const moduleR312 = modules.find(m => m.label === 'BINR312');
+		const moduleR405 = modules.find(m => m.label === 'BINR405');
+		const moduleR514 = modules.find(m => m.label === 'BINR514');
 
 		const coefficients = await getCoefficents();
 		const coeffR106 = coefficients.find(c => c.id_module === moduleR106.id_module);
@@ -198,6 +208,16 @@ async function createPdf(type) {
 		const coeffR207 = coefficients.find(c => c.id_module === moduleR207.id_module);
 		const coeffR208 = coefficients.find(c => c.id_module === moduleR208.id_module);
 		const coeffR209 = coefficients.find(c => c.id_module === moduleR209.id_module);
+		const coeffR308 = coefficients.find(c => c.id_module === moduleR308.id_module);
+		const coeffR309 = coefficients.find(c => c.id_module === moduleR309.id_module);
+		const coeffR412 = coefficients.find(c => c.id_module === moduleR412.id_module);
+		const coeffR511 = coefficients.find(c => c.id_module === moduleR511.id_module);
+		const coeffR512 = coefficients.find(c => c.id_module === moduleR512.id_module);
+		const coeffR110 = coefficients.find(c => c.id_module === moduleR110.id_module);
+		const coeffR212 = coefficients.find(c => c.id_module === moduleR212.id_module);
+		const coeffR312 = coefficients.find(c => c.id_module === moduleR312.id_module);
+		const coeffR405 = coefficients.find(c => c.id_module === moduleR405.id_module);
+		const coeffR514 = coefficients.find(c => c.id_module === moduleR514.id_module);
 
 		const etumodules = await getEtumodules();
 		const etumoduleR106 = etumodules.find(e => e.id_coef === coeffR106.id_coef && e.id_etu === studentsInfo.id_etu);
@@ -205,10 +225,36 @@ async function createPdf(type) {
 		const etumoduleR207 = etumodules.find(e => e.id_coef === coeffR207.id_coef && e.id_etu === studentsInfo.id_etu);
 		const etumoduleR208 = etumodules.find(e => e.id_coef === coeffR208.id_coef && e.id_etu === studentsInfo.id_etu);
 		const etumoduleR209 = etumodules.find(e => e.id_coef === coeffR209.id_coef && e.id_etu === studentsInfo.id_etu);
+		const etumoduleR308 = etumodules.find(e => e.id_coef === coeffR308.id_coef && e.id_etu === studentsInfo.id_etu);
+		const etumoduleR309 = etumodules.find(e => e.id_coef === coeffR309.id_coef && e.id_etu === studentsInfo.id_etu);
+		const etumoduleR412 = etumodules.find(e => e.id_coef === coeffR412.id_coef && e.id_etu === studentsInfo.id_etu);
+		const etumoduleR511 = etumodules.find(e => e.id_coef === coeffR511.id_coef && e.id_etu === studentsInfo.id_etu);
+		const etumoduleR512 = etumodules.find(e => e.id_coef === coeffR512.id_coef && e.id_etu === studentsInfo.id_etu);
+		const etumoduleR110 = etumodules.find(e => e.id_coef === coeffR110.id_coef && e.id_etu === studentsInfo.id_etu);
+		const etumoduleR212 = etumodules.find(e => e.id_coef === coeffR212.id_coef && e.id_etu === studentsInfo.id_etu);
+		const etumoduleR312 = etumodules.find(e => e.id_coef === coeffR312.id_coef && e.id_etu === studentsInfo.id_etu);
+		const etumoduleR405 = etumodules.find(e => e.id_coef === coeffR405.id_coef && e.id_etu === studentsInfo.id_etu);
+		const etumoduleR514 = etumodules.find(e => e.id_coef === coeffR514.id_coef && e.id_etu === studentsInfo.id_etu);
+
 		const moyenne = ((parseFloat(etumoduleR106.note) || 0) + (parseFloat(etumoduleR107.note) || 0) + (parseFloat(etumoduleR207.note) || 0) + (parseFloat(etumoduleR208.note) || 0) + (parseFloat(etumoduleR209.note) || 0)) / 5;
+		const moyenneBUT2 = ((parseFloat(etumoduleR308.note) || 0) + (parseFloat(etumoduleR309.note) || 0) + (parseFloat(etumoduleR412.note) || 0)) / 3;
+		const moyenneBUT3 = ((parseFloat(etumoduleR511.note) || 0) + (parseFloat(etumoduleR512.note) || 0)) / 2;
+		const moyenneAnglais = ((parseFloat(etumoduleR110.note) || 0) + (parseFloat(etumoduleR212.note) || 0)) / 2;
+		const moyenneAnglaisBUT2 = ((parseFloat(etumoduleR312.note) || 0) + (parseFloat(etumoduleR405.note) || 0)) / 2;
 
 		niveau_X = 259;
 		page.drawText(moyenne.toFixed(2) + '', { x: niveau_X - 28, y: height - 4 * 89, size: 10, font: font, color: color });
+		niveau_X = 330;
+		page.drawText(moyenneBUT2.toFixed(2) + '', { x: niveau_X - 28, y: height - 4 * 89, size: 10, font: font, color: color });
+		niveau_X = 309;
+		page.drawText(moyenneBUT3.toFixed(2) + '', { x: niveau_X - 28, y: height - 4 * 127.5, size: 10, font: font, color: color });
+
+		niveau_X = 259;
+		page.drawText(moyenneAnglais.toFixed(2) + '', { x: niveau_X - 28, y: height - 4 * 92, size: 10, font: font, color: color });
+		niveau_X = 330;
+		page.drawText(moyenneAnglaisBUT2.toFixed(2) + '', { x: niveau_X - 28, y: height - 4 * 92, size: 10, font: font, color: color });
+		niveau_X = 309;
+		page.drawText((etumoduleR514.note).toFixed(2), { x: niveau_X - 28, y: height - 4 * 130.5, size: 10, font: font, color: color });
 
 		const absences = await getAbsencesEtudiant(studentsInfo.id_etu);
 		const semestreAbsences = Array.from({ length: 6 }, () => []);

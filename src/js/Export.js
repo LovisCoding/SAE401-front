@@ -70,7 +70,6 @@ class Export {
 				dataType: 'json',
 			}).then((data) => {
 				const avisExists = data.some(avis => avis.id_etu === parseInt(studentId));
-				console.log('Student ' + studentId + ' has avis:', avisExists);
 				if (!avisExists) {
 					$('#exportStudent').prop('disabled', true);
 					$('#exportStudent').addClass('disabled');
@@ -82,10 +81,6 @@ class Export {
 				console.error("Error checking student's avis:", textStatus, errorThrown);
 			});
 			promises.push(promise);
-		});
-
-		Promise.all(promises).then(() => {
-			console.log('All students have been checked.');
 		});
 	}
 
