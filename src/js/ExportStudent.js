@@ -136,6 +136,24 @@ async function createPdf(type) {
 			}
 		});
 
+		const allStudentScores = await getAllStudentsScores();
+		const allCompetenceScores = {}
+
+		allStudentScores.forEach((studentScores) => {
+			if (!allCompetenceScores[studentScores.id_comp]) {
+				allCompetenceScores[studentScores.id_comp] = [];
+			}
+			allCompetenceScores[studentScores.id_comp].push(studentScores.moyenne_comp);
+		});
+
+		const calculateRank = (score, scoresArray) => {
+			scoresArray.push(score);
+			scoresArray.sort((a, b) => b - a);
+			const rank = scoresArray.indexOf(score);
+			scoresArray.pop();
+			return rank;
+		};
+
 		const drawTextWithOffset = (text, x, y, offset, index) => {
 			page.drawText(text, { x: x, y: y - 4 * (offset + 3.7 * index), size: 10, font: font, color: color });
 		};
@@ -150,10 +168,13 @@ async function createPdf(type) {
 					const nextSemesterScore = nextSemesterScores[index];
 					if (nextSemesterScore !== undefined) {
 						const updatedScore = (parseFloat(score) + parseFloat(nextSemesterScore)) / 2;
+						const rank = calculateRank(updatedScore.toFixed(2), allCompetenceScores[index + 1]);
+						console.log(allCompetenceScores[index + 1])
 						if (semesterIndex === 4 && index === 2) {
 							niveau_Y += 11;
 						}
 						drawTextWithOffset(updatedScore.toFixed(2) + '', niveau_X, height, niveau_Y, index);
+						drawTextWithOffset(rank + '', niveau_X + 50, height, niveau_Y, index);
 					}
 				});
 			}
@@ -339,5 +360,10 @@ async function getStudentScores(studentId) {
 
 async function getAbsencesEtudiant(etudiantId) {
 	const response = await fetch(`http://localhost:8000/api/etuSemestre/${etudiantId}`);
+	return response.json();
+}
+
+async function getAllStudentsScores() {
+	const response = await fetch('http://localhost:8000/api/etuComp');
 	return response.json();
 }
