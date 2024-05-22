@@ -30,7 +30,7 @@ class Connection {
 						
 						localStorage.setItem('token', jsData.token);
 						localStorage.setItem('isadmin', jsData.isadmin);
-						localStorage.setItem('currentYear',jsData.currentYear);
+						localStorage.setItem('currentYear', 1);
 						localStorage.setItem('identifiant', identifiant);
 						window.location.href = 'http://localhost:8080/home';
 
