@@ -102,18 +102,60 @@ async function createPdf() {
 	const year = $(".form-control option:selected").text();
 	const yearBefore = (parseInt(year.split('-')[0]) - 1) + '-' + (parseInt(year.split('-')[1]) - 1);
 	const yearBefore2 = (parseInt(year.split('-')[0]) - 2) + '-' + (parseInt(year.split('-')[1]) - 2);
+	const yearPromo = (parseInt(year.split('-')[0]) - 2) + '-' + (parseInt(year.split('-')[1]));
 	page.drawText(yearBefore2, { x: 251, y: niveau_Y, size: 10, font: font, color: color });
 	page.drawText(yearBefore, { x: 371, y: niveau_Y, size: 10, font: font, color: color });
 	page.drawText(year, { x: 485, y: niveau_Y, size: 10, font: font, color: color });
+	page.drawText(yearPromo, { x: 410, y: height - 4 * 21, size: 10, font: font, color: color, });
 
 	let niveau_X = 229;
 	niveau_Y = 66.6;
 
-	async function getCompetenceMoyenne(studentId, semestre, competence) {
-		const moyenneData = await fetch(`http://localhost:8000/api/etuComp/`).then(res => res.json());
-		const moyenne = moyenneData.find(data => data.id_etu === studentId && data.id_comp === competence);
-		return moyenne.moyenne_comp;
-	}
+	const students = await getStudents();
+	const studentsInfo = students.find(s => s.nom_etu === studentName + "." && s.prenom_etu === studentPrenom);
+
+	const competences = await getCompetences();
+	const scores = await getStudentScores(studentsInfo.id_etu);
+
+	const semestreScores = Array.from({ length: 6 }, () => []);
+
+	competences.forEach((competence) => {
+		const score = scores.find(s => s.id_comp === competence.id_comp);
+		if (score) {
+			const semestreIndex = competence.id_semestre - 1;
+			semestreScores[semestreIndex].push(score.moyenne_comp || 0);
+		}
+	});
+
+	const drawTextWithOffset = (text, x, y, offset, index) => {
+		page.drawText(text, { x: x, y: y - 4 * (offset + 3.7 * index), size: 10, font: font, color: color });
+	};
+
+	niveau_X = 230;
+	niveau_Y = 66.6;
+
+	console.log(semestreScores);
+
+	semestreScores.forEach((scores, semesterIndex) => {
+		if (semesterIndex % 2 === 0 && semesterIndex < semestreScores.length - 1) {
+			const nextSemesterScores = semestreScores[semesterIndex + 1];
+			scores.forEach((score, index) => {
+				const nextSemesterScore = nextSemesterScores[index];
+				if (nextSemesterScore !== undefined) {
+					const updatedScore = (parseFloat(score) + parseFloat(nextSemesterScore)) / 2;
+					drawTextWithOffset(updatedScore.toFixed(2) + '', niveau_X, height, niveau_Y, index);
+				}
+			});
+		}
+		if (semesterIndex < 2) {
+			niveau_X += 36;
+		} else {
+			niveau_X = 270;
+			niveau_Y = 108.5;
+		}
+	});
+
+	/*
 
 	page.drawText('10.05', { x: niveau_X, y: height - 4 * niveau_Y, size: 10, font: font, color: color });
 	page.drawText('14.00', { x: niveau_X, y: height - 4 * (niveau_Y + 3.7 * 1), size: 10, font: font, color: color });
@@ -179,6 +221,7 @@ async function createPdf() {
 	page.drawText('5', { x: niveau_X, y: height - 4 * (niveau_Y + 3.7 * 4), size: 10, font: font, color: color });
 	page.drawText('6', { x: niveau_X, y: height - 4 * (niveau_Y + 3.7 * 5), size: 10, font: font, color: color });
 	page.drawText('7', { x: niveau_X, y: height - 4 * (niveau_Y + 3.7 * 6), size: 10, font: font, color: color });
+	*/
 
 	const avisMaster = document.getElementById('avisMaster').value;
 
@@ -293,4 +336,19 @@ async function fetchAndProcessAvis() {
 	});
 
 	return avisCounts;
+}
+
+async function getCompetences() {
+	const response = await fetch('http://localhost:8000/api/competence');
+	return response.json();
+}
+
+async function getStudents() {
+	const response = await fetch('http://localhost:8000/api/etudiant');
+	return response.json();
+}
+
+async function getStudentScores(studentId) {
+	const response = await fetch(`http://localhost:8000/api/etuComp/${studentId}`);
+	return response.json();
 }
