@@ -49,6 +49,7 @@ class Export {
 			dataType: 'json',
 			success: function(data){
 				$.each(data, function(index, etudiant){
+					console.log(etudiant);
 					if (etudiant.cursus.includes("S5")) {
 						$('.student').append('<option value="' + etudiant.id_etu + '">' + etudiant.nom_etu + ' ' + etudiant.prenom_etu + '</option>');
 					}
