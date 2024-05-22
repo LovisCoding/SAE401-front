@@ -106,7 +106,7 @@ body {
 	transition: transform 0.5s ease;
 }
 
-.form-control {
+.form-control-modified {
 	width: 8.5rem;
 	margin-top: 10rem;
 	margin-left: 5rem;
