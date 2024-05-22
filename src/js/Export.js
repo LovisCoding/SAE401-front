@@ -5,7 +5,6 @@ class Export {
 		this.settingsPanel = document.querySelector(settingsPanelSelector);
 		this.setupListeners();
 		this.loadStudent();
-		this.verifyStudentInListAvis();
 		this.setupSubmitListener();
 		this.setupStudentProcessListener();
 	}
@@ -49,11 +48,11 @@ class Export {
 			dataType: 'json',
 			success: function(data){
 				$.each(data, function(index, etudiant){
-					console.log(etudiant);
 					if (etudiant.cursus.includes("S5")) {
 						$('.student').append('<option value="' + etudiant.id_etu + '">' + etudiant.nom_etu + ' ' + etudiant.prenom_etu + '</option>');
 					}
 				});
+				exportInstance.verifyStudentInListAvis();
 			},
 			error: function(jqXHR, textStatus, errorThrown){
 				console.error("Error loading students:", textStatus, errorThrown);
@@ -62,13 +61,37 @@ class Export {
 	}
 
 	verifyStudentInListAvis() {
-		
+		const promises = [];
+		$('.student option').each(function() {
+			const studentId = $(this).val();
+			const promise = $.ajax({
+				url: 'http://localhost:8000/api/avis',
+				type: 'GET',
+				dataType: 'json',
+			}).then((data) => {
+				const avisExists = data.some(avis => avis.id_etu === parseInt(studentId));
+				console.log('Student ' + studentId + ' has avis:', avisExists);
+				if (!avisExists) {
+					$('#exportStudent').prop('disabled', true);
+					$('#exportStudent').addClass('disabled');
+					$('#exportStudent').css('background-color', 'grey');
+					$('#exportStudent').css('cursor', 'not-allowed');
+					return false;
+				}
+			}).catch((jqXHR, textStatus, errorThrown) => {
+				console.error("Error checking student's avis:", textStatus, errorThrown);
+			});
+			promises.push(promise);
+		});
+
+		Promise.all(promises).then(() => {
+			console.log('All students have been checked.');
+		});
 	}
 
 	setupStudentProcessListener() {
 		$('#addStudent').click(() => {
 			const selectedStudentId = $('.student').val();
-			console.log(selectedStudentId);
 
 			$.ajax({
 				url: 'http://localhost:8000/api/avis',
