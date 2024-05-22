@@ -1,25 +1,229 @@
 class Recap {
+    // Déclaration du constructeur
+    constructor() {
+        const idAnnee = 1;
+        loadSemestre(idAnnee);
 
-	// Déclaration du constructeur
+        this.setupListeners();
 
-	constructor() {
-		this.loadTableau();
-	}
+        this.lstRowIndex = [];
+        this.lstColIndex = [];
+        this.lstNewValue = [];
+        this.lstRow = [];
+        this.lstHeaders = [];
 
-	loadTableau() {
-		var semestre = "Semestre 1" // déterminer le semestre dans la période 
-		var type = "Commission" // déterminer le type
+        this.loadTableau("Semestre 1", "Commission");
+    }
 
-		if (type == "Commission") {
-			afficherCommission(semestre);
-		} else {
-			afficherJury(semestre);
+    loadTableau(semestre, type) {
+        this.resetTable();
+        if (type == "Commission") {
+            afficherCommission(semestre);
+        } else {
+            afficherJury(semestre);
+        }
+    }
+
+    setupListeners() {
+        const selectElement = document.getElementById('semester');
+        const radioButtons = document.querySelectorAll('input[name="type"]');
+
+        // Écouteur pour le changement du menu déroulant
+        selectElement.addEventListener('change', () => {
+            const selectedSemestre = selectElement.options[selectElement.selectedIndex].text;
+            const selectedType = document.querySelector('input[name="type"]:checked + label').textContent;
+            this.loadTableau(selectedSemestre, selectedType);
+        });
+
+        // Écouteurs pour le changement des boutons radio
+        radioButtons.forEach(radio => {
+            radio.addEventListener('change', () => {
+                const selectedSemestre = selectElement.options[selectElement.selectedIndex].text;
+                const selectedType = document.querySelector('input[name="type"]:checked + label').textContent;
+                this.loadTableau(selectedSemestre, selectedType);
+            });
+        });
+    }
+
+    resetTable() {
+        const table = document.getElementById('tableau');
+        const thead = table.querySelector('thead');
+        const tbody = table.querySelector('tbody');
+
+        // Vider le contenu des éléments <thead> et <tbody>
+        thead.innerHTML = '';
+        tbody.innerHTML = '';
+    }
+
+    makeTableEditable() {
+        const table = document.getElementById('tableau');
+        const headers = table.querySelectorAll('thead th');
+        const rows = table.querySelectorAll('tbody tr');
+
+        // Identifiez les index des colonnes à rendre éditables
+        const editableColumns = [];
+        headers.forEach((header, index) => {
+            const headerText = header.textContent.trim();
+			let labelEditable = ["BINR", "BINS", "Bonus", "Prenom", "Nom", "Cursus"]
+            if (labelEditable.includes(headerText)) {
+                editableColumns.push(index);
+            }
+        });
+
+        headers.forEach(element => {
+            this.lstHeaders.push(element.innerHTML);
+        });
+
+        // Ajoutez des écouteurs d'événements aux cellules des colonnes éditables
+        rows.forEach((row, rowIndex) => {
+            row.querySelectorAll('td').forEach((cell, colIndex) => {
+                if (editableColumns.includes(colIndex)) {
+                    cell.addEventListener('click', () => {
+                        if (cell.querySelector('input')) return;
+
+                        const currentText = cell.textContent;
+                        cell.innerHTML = '';
+
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.value = currentText;
+                        cell.appendChild(input);
+                        input.focus();
+
+                        input.addEventListener('blur', () => {
+                            const newValue = input.value;
+                            cell.textContent = newValue;
+                            this.lstRowIndex.push(rowIndex);
+                            this.lstColIndex.push(colIndex);
+                            this.lstNewValue.push(newValue);
+                            this.lstRow.push(row);
+                        });
+
+                        input.addEventListener('keydown', (event) => {
+                            if (event.key === 'Enter') {
+                                input.blur();
+                            }
+                        });
+                    });
+                }
+            });
+        });
+
+		if (localStorage.getItem('isadmin')) {
+			let btnValider = document.getElementById("btnValider")
+			btnValider.addEventListener("click",this.updateValuesBeforeUnload.bind(this));
 		}
-	}
-	
+		
+    }
+
+    async updateValuesBeforeUnload(event) {
+        await updateValue(this.lstRowIndex, this.lstColIndex, this.lstNewValue, this.lstRow, this.lstHeaders);
+
+		this.resetTable();
+
+		const selectElement = document.getElementById('semester');
+		const radioButtons = document.querySelectorAll('input[name="type"]');
+
+		const selectedSemestre = selectElement.options[selectElement.selectedIndex].text;
+		const selectedType = document.querySelector('input[name="type"]:checked + label').textContent;
+		this.loadTableau(selectedSemestre, selectedType);
+    }
+
 }
 
 const recapInstance = new Recap();
+
+async function updateValue(lstRowIndex, lstColIndex, lstNewValue, lstRow, lstHeaders) {
+	if (!lstRowIndex || !lstColIndex || !lstNewValue || !lstRow || !lstHeaders) {
+		return;
+	}
+
+	let lstCompetences = await getCompetences();
+	let lstModules = await getModules();
+	let lstCoefficients = await getCoefficients();
+	let lstEtuModule = await getEtuModule();
+	let lstEtuComp = await getEtuComp();
+	let lstEtudiants = await getEtudiants();
+
+	for (let i = 0; i < lstRowIndex.length; i++) {
+		let rowIndex = lstRowIndex[i];
+		let colIndex = lstColIndex[i];
+		let newValue = lstNewValue[i];
+		let row = lstRow[i];
+
+		let colonneHeader = lstHeaders[colIndex];
+		if (colonneHeader.startsWith('BINR') || colonneHeader.startsWith('BINS')) {
+			let labelComp = "";
+
+			const regex = /^BIN\d{2}/;
+			for (let j = 0; j < colIndex; j++) {
+				if (regex.test(lstHeaders[j])) {
+					labelComp = lstHeaders[j];
+				}
+			}
+
+			let idComp = lstCompetences.filter(item => item.label == labelComp)[0].id_comp;
+			let idModule = lstModules.filter(item => item.label == colonneHeader)[0].id_module;
+
+			if (rowIndex !== 0) {
+				let idCoeff = lstCoefficients.filter(item => item.id_comp == idComp && item.id_module == idModule)[0].id_coef;
+				let idEtu = Number(row.querySelectorAll('td')[0].textContent);
+
+				let etuModule = lstEtuModule.filter(item => item.id_coef == idCoeff && item.id_etu == idEtu)[0];
+				etuModule.note = Number(newValue);
+
+				updateEtuModule(etuModule);
+			} else {
+				if (idComp && !colonneHeader.startsWith("Prenom") && !colonneHeader.startsWith("Nom") && !colonneHeader.startsWith("Cursus")) {
+					let coeff = lstCoefficients.filter(item => item.id_comp == idComp && item.id_module == idModule)[0];
+					coeff.coef = Number(newValue);
+
+					updateCoeff(coeff);
+				}
+			}
+
+		} else if (colonneHeader.startsWith('Bonus')) {
+			const labelComp = colonneHeader.slice(-5);
+			let idComp = lstCompetences.filter(item => item.label == labelComp)[0].id_comp;
+			let idEtu = Number(row.querySelectorAll('td')[0].textContent);
+
+			let etuComp = lstEtuComp.filter(item => item.id_comp == idComp && item.id_etu == idEtu)[0];
+			etuComp.bonus = Number(newValue);
+
+			updateEtuComp(etuComp);
+		} else if (colonneHeader.startsWith("Nom") || colonneHeader.startsWith("Prenom") || colonneHeader.startsWith("Cursus")) {
+			if (rowIndex == 0) {
+				return;
+			}
+			let idEtu = Number(row.querySelectorAll('td')[0].textContent);
+			let etu = lstEtudiants.filter(item => item.id_etu == idEtu)[0];
+
+			if (colonneHeader.startsWith("Nom")) {
+				etu.nom_etu = newValue;
+			} else if (colonneHeader.startsWith("Prenom")) {
+				etu.prenom_etu = newValue;
+			} else {
+				etu.cursus = newValue;
+			}
+
+			updateEtudiant(etu);
+		}
+	}
+}
+
+async function loadSemestre(idAnnee) {
+    let lstSemestres = await getSemestres();
+    let semesters = lstSemestres.filter(item => item.id_annee == idAnnee);
+    semesters.sort((a, b) => a.label.localeCompare(b.label));
+    const selectElement = document.getElementById('semester');
+
+    semesters.forEach(semester => {
+        const option = document.createElement('option');
+        option.textContent = semester.label;
+        selectElement.appendChild(option);
+    });
+}
+
 
 async function afficherCommission(semestre) {
 	var idAnnee = 1;
@@ -29,8 +233,8 @@ async function afficherCommission(semestre) {
 	let lstCoefficients = await getCoefficients();
 
 	// Récupération des entetes
-	let lstEntetes = ["Rang", "Nom", "Prenom", "Cursus", "UEs", "Moy"]
-	let lstCoeffAffiche = ["", "", "", "", "", ""]
+	let lstEntetes = ["Code nip", "Rang", "Nom", "Prenom", "Cursus", "UEs", "Moy"]
+	let lstCoeffAffiche = ["", "", "", "", "", "", ""]
 	for (let i = 0; i < lstCompetences.length; i++) {
 
 		lstEntetes.push(lstCompetences[i].label);
@@ -66,6 +270,7 @@ async function afficherCommission(semestre) {
 		let etudiant = lstEtudiants[i];
 		
 		// Info de l'étudiant
+		lstInfoEtudiant.push(etudiant.code_etu);
 		lstInfoEtudiant.push(i + 1);
 		lstInfoEtudiant.push(etudiant.nom_etu);
 		lstInfoEtudiant.push(etudiant.prenom_etu);
@@ -76,7 +281,6 @@ async function afficherCommission(semestre) {
 		var totalComp = 0;
 
 		let cptUEReussie = 0;
-		console.log(lstEtuComp[0].id_comp);
 		for (let i = 0; i < lstCompetences.length; i++) {
 			let idComp = lstCompetences[i].id_comp;
 			let etuComp = lstEtuComp.filter(item => item.id_comp == idComp && item.id_etu == etudiant.id_etu)[0];
@@ -126,6 +330,10 @@ async function afficherCommission(semestre) {
 			lstEtudiantAffiche.push(element)
 		);
 		ajouterValeurs(lstEtudiantAffiche, lstEntetes, "Commission");
+	}
+
+	if (localStorage.getItem('isadmin')) {
+		recapInstance.makeTableEditable();
 	}
 
 }
@@ -298,8 +506,9 @@ async function afficherJury(semestre) {
 		ajouterValeurs(lstEtudiantAffiche, lstEntetes, "Jury");
 	}
 
-
-	
+	if (localStorage.getItem('isadmin')) {
+		recapInstance.makeTableEditable();
+	}
 
 }
 
@@ -576,4 +785,81 @@ async function getCompetences() {
 		console.error('Une erreur s\'est produite :', error);
 		return []; // Retourner une liste vide en cas d'erreur
 	}
+}
+
+async function getModules() {
+	try {
+		const response = await fetch(`http://localhost:8000/api/module`);	
+		const data = await response.json();
+		if (data && Array.isArray(data)) {
+			return data; 
+		}
+		return []; // Retourner une liste vide si aucune compétence n'est trouvée
+	} catch (error) {
+		console.error('Une erreur s\'est produite :', error);
+		return []; // Retourner une liste vide en cas d'erreur
+	}
+}
+
+async function updateEtuModule(etuModule) {
+	console.log(JSON.stringify([{id_etu:etuModule.id_etu, id_coef:etuModule.id_coef, note:etuModule.note}]))
+	$.ajax({
+		url: 'http://localhost:8000/api/updateEtuModule',
+		type: 'PUT',
+		dataType: 'json',
+		data: JSON.stringify([{id_etu:etuModule.id_etu, id_coef:etuModule.id_coef, note:etuModule.note}]),
+		success: function(data) {
+			
+		},
+		error: function(jqXHR, textStatus, errorThrown) {
+			
+		}
+	});
+}
+
+
+async function updateEtuComp(etuComp) {
+	$.ajax({
+		url: 'http://localhost:8000/api/updateEtuComp',
+		type: 'PUT',
+		dataType: 'json',
+		data: JSON.stringify([{id_etu:etuComp.id_etu, id_comp:etuComp.id_comp, moyenne_comp:etuComp.moyenne_comp, passage:etuComp.passage, bonus:etuComp.bonus}]),
+		success: function(data) {
+			
+		},
+		error: function(jqXHR, textStatus, errorThrown) {
+			
+		}
+	});
+}
+
+async function updateCoeff(coeff) {
+	$.ajax({
+		url: 'http://localhost:8000/api/updateCoefficient',
+		type: 'PUT',
+		dataType: 'json',
+		data: JSON.stringify([{id_coef:coeff.id_coef, coef:coeff.coef}]),
+		success: function(data) {
+			
+		},
+		error: function(jqXHR, textStatus, errorThrown) {
+			
+		}
+	});
+}
+
+async function updateEtudiant(etu) {
+	var alternant = etu.alternant ? 1 : 0;
+	$.ajax({
+		url: 'http://localhost:8000/api/updateEtudiant',
+		type: 'PUT',
+		dataType: 'json',
+		data: JSON.stringify([{id_etu:etu.id_etu, nom_etu:etu.nom_etu, prenom_etu:etu.prenom_etu, groupe_TD:etu.groupe_td, groupe_TP:etu.groupe_tp, cursus:etu.cursus, alternant:alternant}]),
+		success: function(data) {
+			
+		},
+		error: function(jqXHR, textStatus, errorThrown) {
+			
+		}
+	});
 }

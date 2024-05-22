@@ -4,10 +4,18 @@ class Year {
 
 	constructor() {
 		this.loadYears();
+		this.setEventListeners();
 	}
 
-	// Méthode pour charger les années
+	// Méthode pour ajouter les écouteurs d'événements
 
+	setEventListeners() {
+		$('.form-control').change(function(){
+			var idAnnee = $(this).val();
+			localStorage.setItem('currentYear', idAnnee);
+		});
+	// Méthode pour charger les années
+	}
 	loadYears() {
 		$.ajax({
 			url: 'http://localhost:8000/api/annee',
@@ -16,7 +24,11 @@ class Year {
 			success: function(data){
 				console.log(data);
 				$.each(data, function(index, annee){
-					$('.form-control').append('<option value="' + annee.id_annee + '">' + annee.annee + '</option>');
+					if (annee.id_annee == localStorage.getItem('currentYear')) {
+						$('.form-control').append('<option value="' + annee.id_annee + '" selected>' + annee.annee + '</option>');
+					} else {
+						$('.form-control').append('<option value="' + annee.id_annee + '">' + annee.annee + '</option>');
+					}
 				});
 			},
 			error: function(jqXHR, textStatus, errorThrown){
