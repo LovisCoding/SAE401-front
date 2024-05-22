@@ -13,6 +13,8 @@ class Year {
 		$('.form-control').change(function(){
 			var idAnnee = $(this).val();
 			localStorage.setItem('currentYear', idAnnee);
+
+			window.location.reload();
 		});
 	// Méthode pour charger les années
 	}

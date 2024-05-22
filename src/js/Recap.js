@@ -4,13 +4,13 @@ class Recap {
         const idAnnee = localStorage.getItem('currentYear');
         loadSemestre(idAnnee);
 
-        this.setupListeners();
-
-        this.lstRowIndex = [];
+		this.lstRowIndex = [];
         this.lstColIndex = [];
         this.lstNewValue = [];
         this.lstRow = [];
         this.lstHeaders = [];
+
+        this.setupListeners();
 
     }
 
@@ -42,6 +42,13 @@ class Recap {
                 this.loadTableau(selectedSemestre, selectedType);
             });
         });
+
+		let btnValider = document.getElementById("btnValider")
+		if (localStorage.getItem('isadmin')) {
+			btnValider.addEventListener("click",this.updateValuesBeforeUnload.bind(this));
+		} else {
+			btnValider.style.display = 'none'
+		}
     }
 
     resetTable() {
@@ -52,6 +59,12 @@ class Recap {
         // Vider le contenu des éléments <thead> et <tbody>
         thead.innerHTML = '';
         tbody.innerHTML = '';
+
+		this.lstRowIndex = [];
+        this.lstColIndex = [];
+        this.lstNewValue = [];
+        this.lstRow = [];
+        this.lstHeaders = [];
     }
 
     makeTableEditable() {
@@ -63,7 +76,7 @@ class Recap {
         const editableColumns = [];
         headers.forEach((header, index) => {
             const headerText = header.textContent.trim();
-			let labelEditable = ["Prenom", "Nom", "Cursus"]
+			let labelEditable = ["Prenom", "Nom", "Cursus", "Décision"]
             if (labelEditable.includes(headerText) || headerText.startsWith("Bonus")   || headerText.startsWith("BINR")  || headerText.startsWith("BINS")) {
                 editableColumns.push(index);
             }
@@ -107,11 +120,6 @@ class Recap {
                 }
             });
         });
-
-		if (localStorage.getItem('isadmin')) {
-			let btnValider = document.getElementById("btnValider")
-			btnValider.addEventListener("click",this.updateValuesBeforeUnload.bind(this));
-		}
 		
     }
 
@@ -146,6 +154,7 @@ async function updateValue(lstRowIndex, lstColIndex, lstNewValue, lstRow, lstHea
 	let lstEtuModule = await getEtuModule();
 	let lstEtuComp = await getEtuComp();
 	let lstEtudiants = await getEtudiants();
+	let lstEtuSemestre = await getEtuSemestre();
 
 	for (let i = 0; i < lstRowIndex.length; i++) {
 		let rowIndex = lstRowIndex[i];
@@ -154,6 +163,7 @@ async function updateValue(lstRowIndex, lstColIndex, lstNewValue, lstRow, lstHea
 		let row = lstRow[i];
 
 		let colonneHeader = lstHeaders[colIndex];
+		console.log(colonneHeader)
 		if (colonneHeader.startsWith('BINR') || colonneHeader.startsWith('BINS')) {
 			let labelComp = "";
 
@@ -209,9 +219,25 @@ async function updateValue(lstRowIndex, lstColIndex, lstNewValue, lstRow, lstHea
 			}
 
 			updateEtudiant(etu);
+		} else if (colonneHeader.startsWith("Décision")) {
+			let idEtu = Number(row.querySelectorAll('td')[0].textContent);
+			let idAnnee = localStorage.getItem('currentYear');
+
+
+			const selectElement = document.getElementById('semester');
+			const selectedSemestre = selectElement.options[selectElement.selectedIndex].text;
+
+			let idSemestre = await getIdSemestreByIdAnneeAndLabel(idAnnee, selectedSemestre)
+
+			let etuSemestre = lstEtuSemestre.filter(item => item.id_etu == idEtu && item.id_semestre == idSemestre)[0];
+			etuSemestre.validation = newValue
+			updateEtuSemestre(etuSemestre);
+
 		}
 	}
 }
+
+
 
 async function loadSemestre(idAnnee) {
     let lstSemestres = await getSemestres();
@@ -600,7 +626,7 @@ function ajouterValeurs(lstValeurs, lstEntetes, type) {
 	lstValeurs.forEach(valeur => {
 		const td = document.createElement('td');
 		td.textContent = valeur;
-
+		
 		if (lstEntetes[cptValeur].startsWith("UEs")) {
 			if (type !== "Jury") {
 				if (Number(valeur[2]) == 3) {
@@ -799,6 +825,21 @@ async function getEtuModule() {
 }
 
 
+async function getEtuSemestre() {
+	try {
+		const response = await fetch(`http://localhost:8000/api/etuSemestre`);	
+		const data = await response.json();
+
+		if (data && Array.isArray(data)) {
+			return data; 
+		}
+		return []; // Retourner une liste vide si aucune compétence n'est trouvée
+	} catch (error) {
+		console.error('Une erreur s\'est produite :', error);
+		return []; // Retourner une liste vide en cas d'erreur
+	}
+}
+
 async function getEtuComp() {
 	try {
 		const response = await fetch(`http://localhost:8000/api/etuComp`);	
@@ -813,19 +854,6 @@ async function getEtuComp() {
 	}
 }
 
-async function getEtuSemestre() {
-	try {
-		const response = await fetch(`http://localhost:8000/api/etuSemestre`);	
-		const data = await response.json();
-		if (data && Array.isArray(data)) {
-			return data; 
-		}
-		return []; // Retourner une liste vide si aucune compétence n'est trouvée
-	} catch (error) {
-		console.error('Une erreur s\'est produite :', error);
-		return []; // Retourner une liste vide en cas d'erreur
-	}
-}
 
 async function getSemestres() {
 	try {
@@ -890,6 +918,21 @@ async function updateEtuComp(etuComp) {
 		type: 'PUT',
 		dataType: 'json',
 		data: JSON.stringify([{id_etu:etuComp.id_etu, id_comp:etuComp.id_comp, moyenne_comp:etuComp.moyenne_comp, passage:etuComp.passage, bonus:etuComp.bonus}]),
+		success: function(data) {
+			
+		},
+		error: function(jqXHR, textStatus, errorThrown) {
+			
+		}
+	});
+}
+
+async function updateEtuSemestre(etuSemestre) {
+	$.ajax({
+		url: 'http://localhost:8000/api/updateEtuSemestre',
+		type: 'PUT',
+		dataType: 'json',
+		data: JSON.stringify([{id_etu:etuSemestre.id_etu, id_semestre:etuSemestre.id_semestre, absences:etuSemestre.absences, rang:etuSemestre.rang, moyenne:etuSemestre.moyenne, validation:etuSemestre.validation}]),
 		success: function(data) {
 			
 		},
