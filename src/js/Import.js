@@ -89,6 +89,8 @@ class Import {
 
 			const enTetesManquants = enTetesAttendus.filter(enTete => !enTetesFichier.includes(enTete));
 
+			const alternant = document.getElementById('alternant').checked;
+
 			if (enTetesManquants.length > 0) {
 				document.getElementById('resultat').innerHTML = "Les en-têtes suivants sont manquants dans le fichier Excel: " + enTetesManquants.join(', ');
 			} else {
@@ -98,7 +100,10 @@ class Import {
 				let enteteBIN = null;
 				enTetesFichier.forEach(enTete => {
 					// Retirer le '_' et tout ce qui vient après
-					const cleanEnTete = enTete.replace(/_.*/, '');
+					var cleanEnTete = enTete.replace(/_.*/, '');
+					if (alternant) {
+						cleanEnTete = cleanEnTete.slice(0, -1);
+					}
 					if (/^BIN\d/.test(cleanEnTete)) {
 						enteteBIN = cleanEnTete;
 						entetesAssociatifs[enteteBIN] = ["Bonus " + enteteBIN];
@@ -143,7 +148,7 @@ class Import {
 			const worksheet = workbook.Sheets[firstSheetName];
 			const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-			const enTetesAttendus = ['etudid', 'code_nip', 'Rg', 'Nom', 'Prénom', 'TD', 'TP', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'Année'];
+			const enTetesAttendus = ['etudid', 'code_nip', 'Rg', 'Nom', 'Prénom', 'TD', 'TP', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6'];
 			const enTetesFichier = Object.keys(jsonData[0]);
 
 			const enTetesManquants = enTetesAttendus.filter(enTete => !enTetesFichier.includes(enTete));
@@ -212,7 +217,7 @@ class Import {
 const importInstance = new Import();
 
 async function ajouterCoeff(jsonData, fichier) {
-	const idAnnee = $(".form-control").val();
+	const idAnnee = localStorage.getItem('currentYear');
 
 	var lstCompFichier = ["C1", "C2", "C3", "C4", "C5", "C6"]
 
@@ -267,7 +272,7 @@ async function ajouterCoeff(jsonData, fichier) {
 }
 
 async function ajouterJuryDonnees(jsonData, fichier) {
-	const idAnnee = $(".form-control").val();
+	const idAnnee = localStorage.getItem('currentYear');
 
 	const isChecked = document.getElementById('alternant').checked;
 	const alternant = isChecked ? 1 : 0;
@@ -304,7 +309,7 @@ async function ajouterJuryDonnees(jsonData, fichier) {
 
         // Attendre l'ajout de l'étudiant et récupérer l'id de l'étudiant
         updateEtudiant(idEtu, {
-            code_etu: codeEtu, nom_etu: element.Nom, prenom_etu: element.Prénom, groupe_TD: element.TD, groupe_TP: element.TP, cursus: element.Cursus, alternant: alternant
+            code_etu: codeEtu, nom_etu: element.Nom_1, prenom_etu: element.Prénom, groupe_TD: element.TD, groupe_TP: element.TP, cursus: element.Cursus, alternant: alternant
         }); 
 
 		updateValidationEtuSemestre(idEtu, idSemestre, element.Année);
@@ -315,24 +320,43 @@ async function ajouterJuryDonnees(jsonData, fichier) {
 
 		var lstCompFichier = ["C1", "C2", "C3", "C4", "C5", "C6"]
 
-		for (let i = 0; i < lstCompFichier.length; i++) {
-			let compLabel = lstCompFichier[i];
-			if (numSemestre % 2 == 0) {
+		if (numSemestre >= 5) {
+			lstCompFichier = ["C1", "C2", "C6"]
+		}
+
+		const semestreMapping = {
+			2: ["BIN11BIN21", "BIN12BIN22", "BIN13BIN23", "BIN14BIN24", "BIN15BIN25", "BIN16BIN26"],
+			4: ["BIN31BIN41", "BIN32BIN42", "BIN33BIN43", "BIN34BIN44", "BIN35BIN45", "BIN36BIN46"],
+			6: ["C1", "C2", "C6"]
+		};
+
+		var lstCompFichierPair = semestreMapping[numSemestre];
+
+		if (numSemestre % 2 == 0) {
+			for (let i = 0; i < lstCompFichierPair.length; i++) {
+				let compLabel = lstCompFichierPair[i];
 				updatePassageEtuComp(idEtu, lstCompImport[i].id_comp, element[compLabel + "_1"]);
-			} else {
+			}
+		} else {
+			for (let i = 0; i < lstCompFichier.length; i++) {
+				let compLabel = lstCompFichier[i];
 				updatePassageEtuComp(idEtu, lstCompImport[i].id_comp, element[compLabel]);
 			}
 		}
 		
 	}
 
-	ajouterLogoFichier(fichier.name)
-	this.loadingFile.classList.add('d-none');
-	this.btnAddFile.disabled = false;
+	ajouterLogoFichier(fichier.name);
+
+	let loadingFile = document.getElementById('loadingFile');
+	loadingFile.classList.add('d-none');
+
+	let btnAddFile = document.getElementById('addFile');
+	btnAddFile.disabled = false;
 }
 
 async function ajouterLogoFichier(fileInput) {
-	const idAnnee = $(".form-control").val();
+	const idAnnee = localStorage.getItem('currentYear');
 
 	var selectElement = document.getElementById("semester");
 	var selectedOption = selectElement.options[selectElement.selectedIndex];
@@ -368,7 +392,7 @@ async function ajouterLogoFichier(fileInput) {
 
 async function ajouterDonnees(jsonData, entetesAssociatifs, enteteModule, entetesObligatoires, hmCompetences, hmCoefficient) {
 
-	const idAnnee = $(".form-control").val();
+	const idAnnee = localStorage.getItem('currentYear');
 
 	const isChecked = document.getElementById('alternant').checked;
 	const alternant = isChecked ? 1 : 0;
@@ -386,7 +410,7 @@ async function ajouterDonnees(jsonData, entetesAssociatifs, enteteModule, entete
         const codeEtu = Number(element.etudid);
         // Attendre l'ajout de l'étudiant et récupérer l'id de l'étudiant
         await ajouterEtudiant({ id_etu: codeEtu,
-            code_etu: codeEtu, nom_etu: element.Nom, prenom_etu: element.Prénom, groupe_TD: element.TD, groupe_TP: element.TP, cursus: element.Cursus, alternant: alternant
+            code_etu: codeEtu, nom_etu: element.Nom_1, prenom_etu: element.Prénom, groupe_TD: element.TD, groupe_TP: element.TP, cursus: element.Cursus, alternant: alternant
         });
 
 
@@ -403,10 +427,21 @@ async function ajouterDonnees(jsonData, entetesAssociatifs, enteteModule, entete
                         if (moduleLabel.startsWith("Bonus")) {
                             const idComp = hmCompetences[competenceLabel];
                             const bonus = element[moduleLabel] != null ? element[moduleLabel] : 0;
-                            etuComp.push({ id_etu: idEtu, id_comp: idComp, moyenne_comp: element[competenceLabel], passage: "", bonus: bonus });
+							if (isChecked) {
+								etuComp.push({ id_etu: idEtu, id_comp: idComp, moyenne_comp: element[competenceLabel + "A"], passage: "", bonus: bonus });
+							} else {
+								etuComp.push({ id_etu: idEtu, id_comp: idComp, moyenne_comp: element[competenceLabel], passage: "", bonus: bonus });
+							}
                         } else {
                             const idCoeff = hmCoefficient[moduleLabel + "-" + competenceLabel];
-							var note =  Number(element[moduleLabel])
+							var note = 0;
+
+							if (isChecked) {
+								note =  Number(element[moduleLabel + "A"]);
+							} else {
+								note =  Number(element[moduleLabel]);
+							}
+							
 							if (element[moduleLabel] == "0") {
 								note = 0;
 							}
@@ -429,10 +464,16 @@ async function ajouterDonnees(jsonData, entetesAssociatifs, enteteModule, entete
 	
 	ajouterManyEtuSemestre(etuSemestre);
 
+	let loadingFile = document.getElementById('loadingFile');
+	loadingFile.classList.add('d-none');
+
+	let btnAddFile = document.getElementById('addFile');
+	btnAddFile.disabled = false;
+
 }
 async function ajouterCompetencesEtModules(jsonData, entetesAssociatifs, enteteModule, enTetesAttendus, fichier) {
 
-	const idAnnee = $(".form-control").val();
+	const idAnnee = localStorage.getItem('currentYear');
 
 	var selectElement = document.getElementById("semester");
 	var selectedOption = selectElement.options[selectElement.selectedIndex];
@@ -477,12 +518,15 @@ async function ajouterCompetencesEtModules(jsonData, entetesAssociatifs, enteteM
 			if (entetesAssociatifs.hasOwnProperty(competence)) {
 				for (const module of entetesAssociatifs[competence]) {
 					if (!module.startsWith('Bonus')) {
-						const idCo = idCoeff + cptCoeff;
+						var idCo = idCoeff + cptCoeff;
 						const verifCoeff = await verifCoeffExist(hmModules[module], hmCompetences[competence])
 						if (!verifCoeff) {
-							coeff.push({ id_module: hmModules[module], id_comp: hmCompetences[competence], coef: 0 })
+							coeff.push({ id_module: hmModules[module], id_comp: hmCompetences[competence], coef: 0 });
 							hmCoefficient[module + "-" + competence] = idCo;
 							cptCoeff++;
+						} else {
+							idCo = await getIdCoeffByModuleAndComp(hmModules[module], hmCompetences[competence]);
+							hmCoefficient[module + "-" + competence] = idCo;
 						}
 						
 					}
@@ -491,8 +535,6 @@ async function ajouterCompetencesEtModules(jsonData, entetesAssociatifs, enteteM
 		}
 
 		ajouterManyCoeff(coeff);
-		this.loadingFile.classList.add('d-none');
-		this.btnAddFile.disabled = false;
 	} catch (error) {
 		console.error("Une erreur s'est produite :", error);
 	}
@@ -521,7 +563,6 @@ async function ajouterSemestre(idSemestre, idAnnee, lblSem) {
 }
 
 async function updateEtudiant(idEtu, data) {
-	console.log(updateEtudiant);
 	$.ajax({
 		url: 'http://localhost:8000/api/updateEtudiant',
 		type: 'PUT',
@@ -537,7 +578,6 @@ async function updateEtudiant(idEtu, data) {
 }
 
 async function ajouterEtudiant(data) {
-	console.log(JSON.stringify([data]));
 	const exists = await verifEtudiantExists(data.id_etu)
 	if (exists) {
 		
@@ -574,7 +614,6 @@ async function ajouterEtuModule(idEtu, idCoefficient, note) {
 }
 
 async function ajouterManyEtuModule($manyData) {
-	console.log($manyData)
 	$.ajax({
 		url: 'http://localhost:8000/api/addManyEtuModule',
 		type: 'POST',
@@ -590,7 +629,6 @@ async function ajouterManyEtuModule($manyData) {
 }
 
 async function ajouterManyEtuSemestre($manyData) {
-	console.log($manyData);
 	$.ajax({
 		url: 'http://localhost:8000/api/addManyEtuSemestre',
 		type: 'POST',
@@ -651,7 +689,6 @@ async function updatePassageEtuComp(idEtu, idComp, passage = "") {
 }
 
 async function ajouterManyEtuComp($manyData) {
-	console.log(JSON.stringify($manyData))
 	$.ajax({
 		url: 'http://localhost:8000/api/addManyEtuComp',
 		type: 'POST',
@@ -698,6 +735,22 @@ async function verifCoeffExist(idModule, idComp) {
 		return false;
 	}
 }
+
+async function getIdCoeffByModuleAndComp(idModule, idComp) {
+	try {
+		const response = await fetch(`http://localhost:8000/api/coefficient`);
+		const data = await response.json();
+		const coeff = data.find(item => item.id_comp == idComp && item.id_module == idModule);
+		if (data && Array.isArray(data) && coeff) {
+			return coeff.id_coef;
+		}
+		return -1;
+	} catch (error) {
+		console.error('Une erreur s\'est produite :', error);
+		return -1;
+	}
+}
+
 
 async function getIdCompByLabel(label) {
 	try {
@@ -976,7 +1029,7 @@ async function updateCoeff(idCoeff, coeff) {
 }
 
 async function loadInfoImports() {
-	const idAnnee = $(".form-control").val();
+	const idAnnee = localStorage.getItem('currentYear');
 	var lstFiles = await getAllFile(idAnnee);
 	if (lstFiles) {
 		for (file of lstFiles) {
@@ -992,15 +1045,20 @@ async function loadInfoImports() {
 			
 		}
 	}
-	this.loadingCoeff.classList.add('d-none');
-	this.btnAddCoeff.disabled = false;
+
+	let loadingCoeff = document.getElementById('loadingCoeff');
+	loadingCoeff.classList.add('d-none');
+
+	let btnAddCoeff = document.getElementById('addFileCoeff');
+	btnAddCoeff.disabled = false;
 }
 
 async function getAllFile(idAnnee) {
 	try {
 		const response = await fetch(`http://localhost:8000/api/fichier`);
-		const data = await response.json();
+		var data = await response.json();
 		if (data && Object.keys(data).length !== 0) {
+			data = data.filter(item => item.id_annee == idAnnee)
 			return data
 		}
 		return; 
