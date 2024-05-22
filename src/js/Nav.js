@@ -20,7 +20,7 @@ class Nav {
 			let navHTML = `
 			<nav class="navbar navbar-expand-lg navbar-light bg-light">
 				<a   class="navbar-brand" href="/home">
-					<img src="/img/Logo_ScoNotesSimple.png" width="65" height="45" class="d-inline-block align-top logo" alt="ScoNotes"/>
+					<img src="/img/Logo_ScoNotesSimple.png" width="65" height="45" class="d-inline-block align-top logo" alt="ScoNotes" id="navHome"/>
 				</a>
 				<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
 					<span class="navbar-toggler-icon"></span>
@@ -138,7 +138,6 @@ class Nav {
 			case '/recap':
 				case '/recap/':
 				document.getElementById('navRecap').classList.add('nav-selected');
-				log('recap');
 				break;
 			case '/export':
 				case '/export/':

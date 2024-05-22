@@ -4,7 +4,18 @@ class Import {
 
 	constructor() {
 		this.btnAddFile = document.getElementById('addFile');
+		this.file = document.getElementById('file');
+		this.labelFile = document.getElementById('labelito');
+		this.iconFile = document.getElementById('validateIcon');
+		this.spanTextFile = document.getElementById('spanText');
+		this.fileCoeff = document.getElementById('fileCoeff');
+		this.loadingFile = document.getElementById('loadingFile');
+		
 		this.btnAddCoeff = document.getElementById('addFileCoeff');
+		this.spanTextCoeff = document.getElementById('spanTextCoeff');
+		this.iconCoeff = document.getElementById('validateIcon2');
+		this.labelCoeff = document.getElementById('labelitoCoeff')
+		this.loadingCoeff = document.getElementById('loadingCoeff');
 
 		this.setupListeners();
 		loadInfoImports();
@@ -12,9 +23,9 @@ class Import {
 
 	setupListeners() {
 		this.btnAddFile.addEventListener('click', (event) => {
-
+			this.loadingFile.classList.remove('d-none');
+			this.btnAddFile.disabled = true;
 			const radios = document.getElementsByName('type');
-
 			var type = '';
 			radios.forEach(radio => {
 				if (radio.checked) {
@@ -28,18 +39,26 @@ class Import {
 			else {
 				this.importerFichier();
 			}
-
+			
+		});
+		this.file.addEventListener('change', () => {
+			this.labelFile.style.borderColor = 'green';
+			this.iconFile.classList.add('validate')
+			this.spanTextFile.innerHTML = this.file.files[0].name;
 		});
 
+		this.fileCoeff.addEventListener('change', () => {
+			this.labelCoeff.style.borderColor = 'green';
+			this.iconCoeff.classList.add('validate')
+			this.spanTextCoeff.innerHTML = this.fileCoeff.files[0].name;
+		});
 		this.btnAddCoeff.addEventListener('click', (event) => {
+			this.loadingCoeff.classList.remove('d-none');
+			this.btnAddCoeff.disabled = true;
 			this.importerCoeff();
+			
 		});
-		document.getElementById('file').addEventListener('change', function() {
-			document.getElementById('labelito').style.borderColor = 'green';
-			const icon = document.getElementById('validateIcon');
-			icon.classList.add('validate')
-			document.getElementById('spanText').innerHTML = document.getElementById('file').files[0].name;
-		});
+
 
 	}
 
@@ -49,6 +68,10 @@ class Import {
 
 		if (!fichier) {
 			alert("Veuillez sélectionner un fichier Excel.");
+			this.loadingFile.classList.add('d-none');
+			this.loadingCoeff.classList.add('d-none');
+			this.btnAddCoeff.disabled = false;
+			this.btnAddFile.disabled = false;
 			return;
 		}
 
@@ -104,6 +127,10 @@ class Import {
 
 		if (!fichier) {
 			alert("Veuillez sélectionner un fichier Excel.");
+			this.loadingFile.classList.add('d-none');
+			this.loadingCoeff.classList.add('d-none');
+			this.btnAddCoeff.disabled = false;
+			this.btnAddFile.disabled = false;
 			return;
 		}
 
@@ -123,6 +150,10 @@ class Import {
 
 			if (enTetesManquants.length > 0) {
 				alert("entetes manquants " + enTetesManquants);
+				this.loadingFile.classList.add('d-none');
+				this.loadingCoeff.classList.add('d-none');
+				this.btnAddCoeff.disabled = false;
+				this.btnAddFile.disabled = false;
 			} else {
 				ajouterJuryDonnees(jsonData, fichier);
 			}
@@ -130,6 +161,7 @@ class Import {
 		};
 
 		reader.readAsArrayBuffer(fichier);
+		
 	}
 
 	importerCoeff() {
@@ -139,6 +171,10 @@ class Import {
 
 		if (!fichier) {
 			alert("Veuillez sélectionner un fichier Excel.");
+			this.loadingFile.classList.add('d-none');
+			this.loadingCoeff.classList.add('d-none');
+			this.btnAddCoeff.disabled = false;
+			this.btnAddFile.disabled = false;
 			return;
 		}
 
@@ -158,6 +194,10 @@ class Import {
 
 			if (enTetesManquants.length > 0) {
 				alert("entetes manquants " + enTetesManquants);
+				this.loadingFile.classList.add('d-none');
+				this.loadingCoeff.classList.add('d-none');
+				this.btnAddCoeff.disabled = false;
+				this.btnAddFile.disabled = false;
 			} else {
 				ajouterCoeff(jsonData, fichier);
 			}
@@ -240,6 +280,10 @@ async function ajouterJuryDonnees(jsonData, fichier) {
 
 	if (idSemestre == -1) {
 		alert("Veuillez importer les moyennes de ce semestre avant !");
+		this.loadingFile.classList.add('d-none');
+		this.loadingCoeff.classList.add('d-none');
+		this.btnAddCoeff.disabled = false;
+		this.btnAddFile.disabled = false;
 	}
 	etuSemestre = []
 
@@ -247,6 +291,10 @@ async function ajouterJuryDonnees(jsonData, fichier) {
 
 	if (lstCompImport.length == 0) {
 		alert("Veuillez importer les moyennes de ce semestre avant !");
+		this.loadingFile.classList.add('d-none');
+		this.loadingCoeff.classList.add('d-none');
+		this.btnAddCoeff.disabled = false;
+		this.btnAddFile.disabled = false;
 	}
 
 	
@@ -275,9 +323,12 @@ async function ajouterJuryDonnees(jsonData, fichier) {
 				updatePassageEtuComp(idEtu, lstCompImport[i].id_comp, element[compLabel]);
 			}
 		}
+		
 	}
 
 	ajouterLogoFichier(fichier.name)
+	this.loadingFile.classList.add('d-none');
+	this.btnAddFile.disabled = false;
 }
 
 async function ajouterLogoFichier(fileInput) {
@@ -435,7 +486,8 @@ async function ajouterCompetencesEtModules(jsonData, entetesAssociatifs, enteteM
 		}
 
 		ajouterManyCoeff(coeff);
-
+		this.loadingFile.classList.add('d-none');
+		this.btnAddFile.disabled = false;
 	} catch (error) {
 		console.error("Une erreur s'est produite :", error);
 	}
@@ -930,6 +982,8 @@ async function loadInfoImports() {
 			
 		}
 	}
+	this.loadingCoeff.classList.add('d-none');
+	this.btnAddCoeff.disabled = false;
 }
 
 async function getAllFile(idAnnee) {
