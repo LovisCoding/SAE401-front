@@ -16,8 +16,6 @@ class Recap {
 			afficherJury(semestre);
 		}
 	}
-
-
 	
 }
 
@@ -75,14 +73,14 @@ async function afficherCommission(semestre) {
 
 		// Note de l'étudiant
 		lstNoteEtudiant.push(etudiant.moyenne);
-
+		var totalComp = 0;
 
 		let cptUEReussie = 0;
 		console.log(lstEtuComp[0].id_comp);
 		for (let i = 0; i < lstCompetences.length; i++) {
 			let idComp = lstCompetences[i].id_comp;
 			let etuComp = lstEtuComp.filter(item => item.id_comp == idComp && item.id_etu == etudiant.id_etu)[0];
-			
+
 			if (!etuComp) {
 				break;
 			}
@@ -104,7 +102,17 @@ async function afficherCommission(semestre) {
 			for (let i = 0; i < lstCoefficientsByComp.length; i++) {
 				let idCoeff = lstCoefficientsByComp[i].id_coef;
 				let etuModule = lstEtuModule.filter(item => item.id_coef == idCoeff && item.id_etu == etudiant.id_etu)[0];
-				lstNoteEtudiant.push(etuModule.note);
+				if (etuModule) {
+					if (etuModule.note == -1) {
+						lstNoteEtudiant.push("~");
+					} else {
+						lstNoteEtudiant.push(etuModule.note);
+					}
+				}
+				else {
+					lstNoteEtudiant.push("")
+				}
+				
 			}
 		}
 
@@ -117,7 +125,7 @@ async function afficherCommission(semestre) {
 		lstNoteEtudiant.forEach(element =>
 			lstEtudiantAffiche.push(element)
 		);
-		ajouterValeurs(lstEtudiantAffiche, lstEntetes);
+		ajouterValeurs(lstEtudiantAffiche, lstEntetes, "Commission");
 	}
 
 }
@@ -130,7 +138,7 @@ async function afficherJury(semestre) {
 	var idSemestre = await getIdSemestreByIdAnneeAndLabel(idAnnee, semestre);
 	var lstEntetes = []
 	if (numSemestre !== 1) {
-		lstEntetes = ["Rang", "Nom", "Prenom", "Code nip","Pacours", "Cursus","UEs"] //"Moy"]
+		lstEntetes = ["Rang", "Nom", "Prenom", "Code nip","Pacours", "Cursus","UEs", "Moy"]
 		for (let i = 0; i < (numSemestre-1)/2; i++) { 
 			lstEntetes.push("C1");
 			lstEntetes.push("C2");
@@ -140,9 +148,8 @@ async function afficherJury(semestre) {
 			lstEntetes.push("C6");
 		}
 		
-		lstEntetes.push("Moy");
 	} else {
-		lstEntetes = ["Rang", "Nom", "Prenom", "Code nip","Pacours", "Cursus","UEs", "C1", "C2", "C3", "C4", "C5", "C6", "Moy"]
+		lstEntetes = ["Rang", "Nom", "Prenom", "Code nip","Pacours", "Cursus","UEs","Moy" ,"C1", "C2", "C3", "C4", "C5", "C6"]
 	}
 	
 
@@ -206,24 +213,24 @@ async function afficherJury(semestre) {
 							lstNoteEtudiant.push("");
 						}
 					} else {
-						let idSemestreAncien = lstSemestres.filter(item => item.id_annee = idAnnee - 2 && item.label == labelAncienSemestre)[0];
+						let idSemestreAncien = lstSemestres.filter(item => item.id_annee == idAnnee - 2 && item.label == labelAncienSemestre)[0];
 						let lstAncienneComp = lstAllCompetences.filter(item => item.id_semestre == idSemestreAncien);
 
 						for (let i = 0; i < lstAncienneComp.length; i++) {
 							let idComp = lstAncienneComp[i].id_comp;
-							let etuComp = lstEtuComp.filter(item => item.id_comp = idComp && item.id_etu == etudiant.id_etu)[0];
+							let etuComp = lstEtuComp.filter(item => item.id_comp == idComp && item.id_etu == etudiant.id_etu)[0];
 							lstNoteEtudiant.push(etuComp.passage);
 						}
 					}
 					labelAncienSemestre = 4;
 				}
 	
-				let idSemestreAncien = lstSemestres.filter(item => item.id_annee = idAnnee - 1 && item.label == labelAncienSemestre)[0];
+				let idSemestreAncien = lstSemestres.filter(item => item.id_annee == idAnnee - 1 && item.label == labelAncienSemestre)[0];
 				let lstAncienneComp = lstAllCompetences.filter(item => item.id_semestre == idSemestreAncien);
 
 				for (let i = 0; i < lstAncienneComp.length; i++) {
 					let idComp = lstAncienneComp[i].id_comp;
-					let etuComp = lstEtuComp.filter(item => item.id_comp = idComp && item.id_etu == etudiant.id_etu)[0];
+					let etuComp = lstEtuComp.filter(item => item.id_comp == idComp && item.id_etu == etudiant.id_etu)[0];
 					lstNoteEtudiant.push(etuComp.passage);
 				}
 			}
@@ -233,18 +240,20 @@ async function afficherJury(semestre) {
 		if (numSemestre%2 == 0) {
 			for (let i = 0; i < lstCompetences.length; i++) {
 				let idComp = lstCompetences[i].id_comp;
-				let etuComp = lstEtuComp.filter(item => item.id_comp = idComp && item.id_etu == etudiant.id_etu)[0];
+				let etuComp = lstEtuComp.filter(item => item.id_comp == idComp && item.id_etu == etudiant.id_etu)[0];
 				lstNoteEtudiant.push(etuComp.passage);
 			}
 		}
 
-		lstNoteEtudiant.push(etudiant.moyenne);
+		//lstNoteEtudiant.push(etudiant.moyenne);
+		var totalComp = 0.0;
 
 		let cptUEReussie = 0;
+		var totalComp = 0;
 
 		for (let i = 0; i < lstCompetences.length; i++) {
 			let idComp = lstCompetences[i].id_comp;
-			let etuComp = lstEtuComp.filter(item => item.id_comp = idComp && item.id_etu == etudiant.id_etu)[0];
+			let etuComp = lstEtuComp.filter(item => item.id_comp == idComp && item.id_etu == etudiant.id_etu)[0];
 
 			if (!etuComp) {
 				break;
@@ -257,13 +266,13 @@ async function afficherJury(semestre) {
 				let idSemestre1 = lstSemestres.filter(item => item.id_annee == idAnnee && item.label == labelSemestre)[0].id_semestre;
 				let lstCompetencesSem1 = lstAllCompetences.filter(item => item.id_semestre == idSemestre1);
 				let idCompSem1 = lstCompetencesSem1[i].id_comp;
-				let etuCompSem1 = lstEtuComp.filter(item => item.id_comp = idCompSem1 && item.id_etu == etudiant.id_etu)[0];
-
-				moyenne_comp = (moyenne_comp + etuCompSem1.moyenne_comp) / 2;
+				let etuCompSem1 = lstEtuComp.filter(item => item.id_comp == idCompSem1 && item.id_etu == etudiant.id_etu)[0];
+				moyenne_comp = (Number(Number(etuCompSem1.moyenne_comp) + Number(moyenne_comp)) / 2).toFixed(2);
 
 			} 
 
 			lstNoteEtudiant.push(moyenne_comp);
+			totalComp = totalComp + Number(moyenne_comp);
 
 			if (moyenne_comp >= 10) {
 				cptUEReussie ++;
@@ -282,10 +291,11 @@ async function afficherJury(semestre) {
 			lstEtudiantAffiche.push(element)
 		);
 
+		lstEtudiantAffiche.push(Number(totalComp/6).toFixed(2))
 		lstNoteEtudiant.forEach(element =>
 			lstEtudiantAffiche.push(element)
 		);
-		ajouterValeurs(lstEtudiantAffiche, lstEntetes);
+		ajouterValeurs(lstEtudiantAffiche, lstEntetes, "Jury");
 	}
 
 
@@ -322,7 +332,7 @@ function ajouterCoefficients(lstValeurs) {
 	tbody.appendChild(newValueRow);
 }
 
-function ajouterValeurs(lstValeurs, lstEntetes) {
+function ajouterValeurs(lstValeurs, lstEntetes, type) {
 	const tableau = document.getElementById('tableau');
 	const newValueRow = document.createElement('tr');
 
@@ -331,12 +341,19 @@ function ajouterValeurs(lstValeurs, lstEntetes) {
 		const td = document.createElement('td');
 		td.textContent = valeur;
 
-		const regexFraction = "^-?\d+\/\d+$"
-		const match = regexFraction.match(valeur);
-
 		if (lstEntetes[cptValeur].startsWith("UEs")) {
-			if (Number(valeur[0]) <= 4) {
-				td.classList.add("rouge");
+			if (type !== "Jury") {
+				if (Number(valeur[0]) <= 4) {
+					td.classList.add("rouge");
+				}
+			} else {
+				if (Number(valeur[0]) < 4) {
+					td.classList.add("rouge");
+				} else if (Number(valeur[0]) == 6) {
+					td.classList.add("vert");
+				} else {
+					td.classList.add("orange");
+				}
 			}
 		}
 
@@ -351,6 +368,20 @@ function ajouterValeurs(lstValeurs, lstEntetes) {
 				td.classList.add("rouge");
 			}
 		}
+
+		if (type == "Jury") {
+			let lstAdmission = ["C1", "C2", "C3", "C4", "C5", "C6"]
+			if (lstAdmission.includes(lstEntetes[cptValeur])) {
+				if (valeur == "ADM") {
+					td.classList.add("vert");
+				} else if (valeur == "AJ") {
+					td.classList.add("rouge");
+				} else if (valeur !== "") {
+					td.classList.add("orange");
+				}
+			}
+		}
+		
 		
 		cptValeur ++;
 		newValueRow.appendChild(td);
