@@ -23,12 +23,14 @@ class Connection {
 				type: 'POST',
 				dataType: 'text',
 				success: function(data){
+					console.log(data);
 					const jsData = JSON.parse(data);
 					
 					if (jsData.token) {
 						
 						localStorage.setItem('token', jsData.token);
 						localStorage.setItem('isadmin', jsData.isadmin);
+						localStorage.setItem('currentYear',jsData.currentYear);
 						localStorage.setItem('identifiant', identifiant);
 						window.location.href = 'http://localhost:8080/home';
 

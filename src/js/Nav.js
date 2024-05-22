@@ -105,6 +105,7 @@ class Nav {
 					localStorage.removeItem('token');
 					localStorage.removeItem('isadmin');
 					localStorage.removeItem('identifiant');
+					localStorage.removeItem('currentYear');
 					window.location.href = 'http://localhost:8080/login';
 				}
 			});
