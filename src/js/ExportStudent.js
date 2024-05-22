@@ -169,7 +169,6 @@ async function createPdf(type) {
 					if (nextSemesterScore !== undefined) {
 						const updatedScore = (parseFloat(score) + parseFloat(nextSemesterScore)) / 2;
 						const rank = calculateRank(updatedScore.toFixed(2), allCompetenceScores[index + 1]);
-						console.log(allCompetenceScores[index + 1])
 						if (semesterIndex === 4 && index === 2) {
 							niveau_Y += 11;
 						}
@@ -185,6 +184,31 @@ async function createPdf(type) {
 				niveau_Y = 108.5;
 			}
 		});
+
+		const modules = await getModules();
+		const moduleR106 = modules.find(m => m.label === 'BINR106');
+		const moduleR107 = modules.find(m => m.label === 'BINR107');
+		const moduleR207 = modules.find(m => m.label === 'BINR207');
+		const moduleR208 = modules.find(m => m.label === 'BINR208');
+		const moduleR209 = modules.find(m => m.label === 'BINR209');
+
+		const coefficients = await getCoefficents();
+		const coeffR106 = coefficients.find(c => c.id_module === moduleR106.id_module);
+		const coeffR107 = coefficients.find(c => c.id_module === moduleR107.id_module);
+		const coeffR207 = coefficients.find(c => c.id_module === moduleR207.id_module);
+		const coeffR208 = coefficients.find(c => c.id_module === moduleR208.id_module);
+		const coeffR209 = coefficients.find(c => c.id_module === moduleR209.id_module);
+
+		const etumodules = await getEtumodules();
+		const etumoduleR106 = etumodules.find(e => e.id_coef === coeffR106.id_coef && e.id_etu === studentsInfo.id_etu);
+		const etumoduleR107 = etumodules.find(e => e.id_coef === coeffR107.id_coef && e.id_etu === studentsInfo.id_etu);
+		const etumoduleR207 = etumodules.find(e => e.id_coef === coeffR207.id_coef && e.id_etu === studentsInfo.id_etu);
+		const etumoduleR208 = etumodules.find(e => e.id_coef === coeffR208.id_coef && e.id_etu === studentsInfo.id_etu);
+		const etumoduleR209 = etumodules.find(e => e.id_coef === coeffR209.id_coef && e.id_etu === studentsInfo.id_etu);
+		const moyenne = ((parseFloat(etumoduleR106.note) || 0) + (parseFloat(etumoduleR107.note) || 0) + (parseFloat(etumoduleR207.note) || 0) + (parseFloat(etumoduleR208.note) || 0) + (parseFloat(etumoduleR209.note) || 0)) / 5;
+
+		niveau_X = 259;
+		page.drawText(moyenne.toFixed(2) + '', { x: niveau_X - 28, y: height - 4 * 89, size: 10, font: font, color: color });
 
 		const absences = await getAbsencesEtudiant(studentsInfo.id_etu);
 		const semestreAbsences = Array.from({ length: 6 }, () => []);
@@ -365,5 +389,20 @@ async function getAbsencesEtudiant(etudiantId) {
 
 async function getAllStudentsScores() {
 	const response = await fetch('http://localhost:8000/api/etuComp');
+	return response.json();
+}
+
+async function getModules() {
+	const response = await fetch('http://localhost:8000/api/module');
+	return response.json();
+}
+
+async function getCoefficents() {
+	const response = await fetch('http://localhost:8000/api/coefficient');
+	return response.json();
+}
+
+async function getEtumodules() {
+	const response = await fetch('http://localhost:8000/api/etuModule');
 	return response.json();
 }
