@@ -98,9 +98,9 @@ async function createPdf(type) {
 		let niveau_Y = height - 4 * 38.7;
 
 		const studentData = await fetch(`http://localhost:8000/api/etudiant`).then(res => res.json());
-		const studentName = stud.split('. ')[0];
-		const studentPrenom = stud.split('. ')[1];
-		const studentInfo = studentData.find(s => s.nom_etu === studentName + "." && s.prenom_etu === studentPrenom);
+		const studentName = stud.split(' ')[0];
+		const studentPrenom = stud.split(' ')[1];
+		const studentInfo = studentData.find(s => s.nom_etu === studentName && s.prenom_etu === studentPrenom);
 		const isAlternant = studentInfo.alternant;
 
 		page.drawText('Non', { x: 251, y: niveau_Y, size: 10, font: font, color: color });
@@ -108,7 +108,7 @@ async function createPdf(type) {
 		page.drawText(isAlternant ? 'Oui' : 'Non', { x: 485, y: niveau_Y, size: 10, font: font, color: color });
 
 		niveau_Y = height - 4 * 41.7;
-		const year = $(".form-control option:selected").text();
+		const year = $(".form-control-modified option:selected").text();
 		const yearBefore = (parseInt(year.split('-')[0]) - 1) + '-' + (parseInt(year.split('-')[1]) - 1);
 		const yearBefore2 = (parseInt(year.split('-')[0]) - 2) + '-' + (parseInt(year.split('-')[1]) - 2);
 		const yearPromo = (parseInt(year.split('-')[0]) - 2) + '-' + (parseInt(year.split('-')[1]));
@@ -121,7 +121,7 @@ async function createPdf(type) {
 		niveau_Y = 66.6;
 
 		const students = await getStudents();
-		const studentsInfo = students.find(s => s.nom_etu === studentName + "." && s.prenom_etu === studentPrenom);
+		const studentsInfo = students.find(s => s.nom_etu === studentName && s.prenom_etu === studentPrenom);
 
 		const competences = await getCompetences();
 		const scores = await getStudentScores(studentsInfo.id_etu);
@@ -137,7 +137,7 @@ async function createPdf(type) {
 		});
 
 		const allStudentScores = await getAllStudentsScores();
-		const allCompetenceScores = {}
+		const allCompetenceScores = {};
 
 		allStudentScores.forEach((studentScores) => {
 			if (!allCompetenceScores[studentScores.id_comp]) {
@@ -149,7 +149,7 @@ async function createPdf(type) {
 		const calculateRank = (score, scoresArray) => {
 			scoresArray.push(score);
 			scoresArray.sort((a, b) => b - a);
-			const rank = scoresArray.indexOf(score);
+			const rank = scoresArray.indexOf(score) + 1;
 			scoresArray.pop();
 			return rank;
 		};
@@ -158,31 +158,42 @@ async function createPdf(type) {
 			page.drawText(text, { x: x, y: y - 4 * (offset + 3.7 * index), size: 10, font: font, color: color });
 		};
 
-		niveau_X = 230;
-		niveau_Y = 66.6;
-
+		const annualScores = Array.from({ length: 3 }, () => []);
 		semestreScores.forEach((scores, semesterIndex) => {
-			if (semesterIndex % 2 === 0 && semesterIndex < semestreScores.length - 1) {
-				const nextSemesterScores = semestreScores[semesterIndex + 1];
-				scores.forEach((score, index) => {
-					const nextSemesterScore = nextSemesterScores[index];
-					if (nextSemesterScore !== undefined) {
-						const updatedScore = (parseFloat(score) + parseFloat(nextSemesterScore)) / 2;
-						const rank = calculateRank(updatedScore.toFixed(2), allCompetenceScores[index + 1]);
-						if (semesterIndex === 4 && index === 2) {
-							niveau_Y += 11;
-						}
-						drawTextWithOffset(updatedScore.toFixed(2) + '', niveau_X, height, niveau_Y, index);
-						drawTextWithOffset(rank + '', niveau_X + 50, height, niveau_Y, index);
-					}
-				});
-			}
-			if (semesterIndex < 2) {
-				niveau_X += 36;
-			} else {
-				niveau_X = 270;
-				niveau_Y = 108.5;
-			}
+			const yearIndex = Math.floor(semesterIndex / 2);
+			scores.forEach((score, index) => {
+				if (annualScores[yearIndex][index] === undefined) {
+					annualScores[yearIndex][index] = 0;
+				}
+				annualScores[yearIndex][index] += score / 2;
+			});
+		});
+
+		const annualRanks = annualScores.map((scores, yearIndex) => {
+			return scores.map((score, index) => {
+				const compId = competences.find(c => c.id_semestre === (yearIndex * 2 + 1)).id_comp;
+				return calculateRank(score.toFixed(2), allCompetenceScores[compId]);
+			});
+		});
+
+		annualScores.forEach((scores, yearIndex) => {
+			scores.forEach((score, index) => {
+				if (yearIndex === 2) {
+					niveau_X = 270;
+					niveau_Y = 108.5;
+				}
+				if (yearIndex === 2 && index === 2) {
+					niveau_Y = 119.8;
+				}
+
+				drawTextWithOffset(score.toFixed(2) + '', niveau_X, height, niveau_Y, index);
+				if (yearIndex === 2) {
+					drawTextWithOffset(annualRanks[yearIndex][index] + '', niveau_X + 65, height, niveau_Y, index);
+				} else {
+					drawTextWithOffset(annualRanks[yearIndex][index] + '', niveau_X + 45, height, niveau_Y, index);
+				}
+			});
+			niveau_X += 75;
 		});
 
 		const modules = await getModules();
@@ -200,7 +211,6 @@ async function createPdf(type) {
 		const moduleR212 = modules.find(m => m.label === 'BINR212');
 		const moduleR312 = modules.find(m => m.label === 'BINR312');
 		const moduleR405 = modules.find(m => m.label === 'BINR405');
-		const moduleR514 = modules.find(m => m.label === 'BINR514');
 
 		const coefficients = await getCoefficents();
 		const coeffR106 = coefficients.find(c => c.id_module === moduleR106.id_module);
@@ -217,44 +227,48 @@ async function createPdf(type) {
 		const coeffR212 = coefficients.find(c => c.id_module === moduleR212.id_module);
 		const coeffR312 = coefficients.find(c => c.id_module === moduleR312.id_module);
 		const coeffR405 = coefficients.find(c => c.id_module === moduleR405.id_module);
-		const coeffR514 = coefficients.find(c => c.id_module === moduleR514.id_module);
 
 		const etumodules = await getEtumodules();
-		const etumoduleR106 = etumodules.find(e => e.id_coef === coeffR106.id_coef && e.id_etu === studentsInfo.id_etu);
-		const etumoduleR107 = etumodules.find(e => e.id_coef === coeffR107.id_coef && e.id_etu === studentsInfo.id_etu);
-		const etumoduleR207 = etumodules.find(e => e.id_coef === coeffR207.id_coef && e.id_etu === studentsInfo.id_etu);
-		const etumoduleR208 = etumodules.find(e => e.id_coef === coeffR208.id_coef && e.id_etu === studentsInfo.id_etu);
-		const etumoduleR209 = etumodules.find(e => e.id_coef === coeffR209.id_coef && e.id_etu === studentsInfo.id_etu);
-		const etumoduleR308 = etumodules.find(e => e.id_coef === coeffR308.id_coef && e.id_etu === studentsInfo.id_etu);
-		const etumoduleR309 = etumodules.find(e => e.id_coef === coeffR309.id_coef && e.id_etu === studentsInfo.id_etu);
-		const etumoduleR412 = etumodules.find(e => e.id_coef === coeffR412.id_coef && e.id_etu === studentsInfo.id_etu);
-		const etumoduleR511 = etumodules.find(e => e.id_coef === coeffR511.id_coef && e.id_etu === studentsInfo.id_etu);
-		const etumoduleR512 = etumodules.find(e => e.id_coef === coeffR512.id_coef && e.id_etu === studentsInfo.id_etu);
-		const etumoduleR110 = etumodules.find(e => e.id_coef === coeffR110.id_coef && e.id_etu === studentsInfo.id_etu);
-		const etumoduleR212 = etumodules.find(e => e.id_coef === coeffR212.id_coef && e.id_etu === studentsInfo.id_etu);
-		const etumoduleR312 = etumodules.find(e => e.id_coef === coeffR312.id_coef && e.id_etu === studentsInfo.id_etu);
-		const etumoduleR405 = etumodules.find(e => e.id_coef === coeffR405.id_coef && e.id_etu === studentsInfo.id_etu);
-		const etumoduleR514 = etumodules.find(e => e.id_coef === coeffR514.id_coef && e.id_etu === studentsInfo.id_etu);
+		const etumoduleR106 = etumodules.find(e => e.id_coef === coeffR106.id_coef && e.id_etu === studentsInfo.id_etu) || 0;
+		const etumoduleR107 = etumodules.find(e => e.id_coef === coeffR107.id_coef && e.id_etu === studentsInfo.id_etu) || 0;
+		const etumoduleR207 = etumodules.find(e => e.id_coef === coeffR207.id_coef && e.id_etu === studentsInfo.id_etu) || 0;
+		const etumoduleR208 = etumodules.find(e => e.id_coef === coeffR208.id_coef && e.id_etu === studentsInfo.id_etu) || 0;
+		const etumoduleR209 = etumodules.find(e => e.id_coef === coeffR209.id_coef && e.id_etu === studentsInfo.id_etu) || 0;
+		const etumoduleR308 = etumodules.find(e => e.id_coef === coeffR308.id_coef && e.id_etu === studentsInfo.id_etu) || 0;
+		const etumoduleR309 = etumodules.find(e => e.id_coef === coeffR309.id_coef && e.id_etu === studentsInfo.id_etu) || 0;
+		const etumoduleR412 = etumodules.find(e => e.id_coef === coeffR412.id_coef && e.id_etu === studentsInfo.id_etu) || 0;
+		const etumoduleR511 = etumodules.find(e => e.id_coef === coeffR511.id_coef && e.id_etu === studentsInfo.id_etu) || 0;
+		const etumoduleR512 = etumodules.find(e => e.id_coef === coeffR512.id_coef && e.id_etu === studentsInfo.id_etu) || 0;
+		const etumoduleR110 = etumodules.find(e => e.id_coef === coeffR110.id_coef && e.id_etu === studentsInfo.id_etu) || 0;
+		const etumoduleR212 = etumodules.find(e => e.id_coef === coeffR212.id_coef && e.id_etu === studentsInfo.id_etu) || 0;
+		const etumoduleR312 = etumodules.find(e => e.id_coef === coeffR312.id_coef && e.id_etu === studentsInfo.id_etu) || 0;
+		const etumoduleR405 = etumodules.find(e => e.id_coef === coeffR405.id_coef && e.id_etu === studentsInfo.id_etu) || 0;
 
 		const moyenne = ((parseFloat(etumoduleR106.note) || 0) + (parseFloat(etumoduleR107.note) || 0) + (parseFloat(etumoduleR207.note) || 0) + (parseFloat(etumoduleR208.note) || 0) + (parseFloat(etumoduleR209.note) || 0)) / 5;
 		const moyenneBUT2 = ((parseFloat(etumoduleR308.note) || 0) + (parseFloat(etumoduleR309.note) || 0) + (parseFloat(etumoduleR412.note) || 0)) / 3;
 		const moyenneBUT3 = ((parseFloat(etumoduleR511.note) || 0) + (parseFloat(etumoduleR512.note) || 0)) / 2;
 		const moyenneAnglais = ((parseFloat(etumoduleR110.note) || 0) + (parseFloat(etumoduleR212.note) || 0)) / 2;
 		const moyenneAnglaisBUT2 = ((parseFloat(etumoduleR312.note) || 0) + (parseFloat(etumoduleR405.note) || 0)) / 2;
+		const allMoyenneScores = allCompetenceScores[moduleR106.id_module];
+		const allMoyenneScoresAnglais = allCompetenceScores[moduleR110.id_module];
+		const rankMoyenne = calculateRank(moyenne.toFixed(2), allMoyenneScores);
+		const rankMoyenneAnglais = calculateRank(moyenneAnglais.toFixed(2), allMoyenneScoresAnglais);
 
 		niveau_X = 259;
 		page.drawText(moyenne.toFixed(2) + '', { x: niveau_X - 28, y: height - 4 * 89, size: 10, font: font, color: color });
+		niveau_X += 15;
+		page.drawText(rankMoyenne + '', { x: niveau_X, y: height - 4 * 89, size: 10, font: font, color: color });
 		niveau_X = 330;
 		page.drawText(moyenneBUT2.toFixed(2) + '', { x: niveau_X - 28, y: height - 4 * 89, size: 10, font: font, color: color });
 		niveau_X = 309;
-		page.drawText(moyenneBUT3.toFixed(2) + '', { x: niveau_X - 28, y: height - 4 * 127.5, size: 10, font: font, color: color });
+		page.drawText(moyenneBUT3.toFixed(2) + '', { x: niveau_X - 38, y: height - 4 * 130.5, size: 10, font: font, color: color });
 
 		niveau_X = 259;
 		page.drawText(moyenneAnglais.toFixed(2) + '', { x: niveau_X - 28, y: height - 4 * 92, size: 10, font: font, color: color });
+		niveau_X += 15;
+		page.drawText(rankMoyenneAnglais + '', { x: niveau_X, y: height - 4 * 92, size: 10, font: font, color: color });
 		niveau_X = 330;
 		page.drawText(moyenneAnglaisBUT2.toFixed(2) + '', { x: niveau_X - 28, y: height - 4 * 92, size: 10, font: font, color: color });
-		niveau_X = 309;
-		page.drawText((etumoduleR514.note).toFixed(2), { x: niveau_X - 28, y: height - 4 * 130.5, size: 10, font: font, color: color });
 
 		const absences = await getAbsencesEtudiant(studentsInfo.id_etu);
 		const semestreAbsences = Array.from({ length: 6 }, () => []);
