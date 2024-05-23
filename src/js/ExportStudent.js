@@ -137,7 +137,7 @@ async function createPdf(type) {
 		});
 
 		const allStudentScores = await getAllStudentsScores();
-		const allCompetenceScores = {}
+		const allCompetenceScores = {};
 
 		allStudentScores.forEach((studentScores) => {
 			if (!allCompetenceScores[studentScores.id_comp]) {
@@ -149,7 +149,7 @@ async function createPdf(type) {
 		const calculateRank = (score, scoresArray) => {
 			scoresArray.push(score);
 			scoresArray.sort((a, b) => b - a);
-			const rank = scoresArray.indexOf(score);
+			const rank = scoresArray.indexOf(score) + 1;
 			scoresArray.pop();
 			return rank;
 		};
@@ -158,35 +158,42 @@ async function createPdf(type) {
 			page.drawText(text, { x: x, y: y - 4 * (offset + 3.7 * index), size: 10, font: font, color: color });
 		};
 
-		niveau_X = 230;
-		niveau_Y = 66.6;
-
+		const annualScores = Array.from({ length: 3 }, () => []);
 		semestreScores.forEach((scores, semesterIndex) => {
-			if (semesterIndex % 2 === 0 && semesterIndex < semestreScores.length - 1) {
-				const nextSemesterScores = semestreScores[semesterIndex + 1];
-				scores.forEach((score, index) => {
-					const nextSemesterScore = nextSemesterScores[index] || 0;
-					if (nextSemesterScore !== undefined) {
-						const updatedScore = (parseFloat(score) + parseFloat(nextSemesterScore)) / 2;
-						const rank = calculateRank(updatedScore.toFixed(2), allCompetenceScores[index + 1]);
-						if (semesterIndex === 4 && index === 2) {
-							niveau_Y += 11;
-						}
-						drawTextWithOffset(updatedScore.toFixed(2) + '', niveau_X, height, niveau_Y, index);
-						if (semesterIndex >= 4) {
-							drawTextWithOffset(rank + '', niveau_X + 65, height, niveau_Y, index);
-						} else {
-							drawTextWithOffset(rank + '', niveau_X + 40, height, niveau_Y, index);
-						}
-					}
-				});
-			}
-			if (semesterIndex < 2) {
-				niveau_X += 36;
-			} else {
-				niveau_X = 270;
-				niveau_Y = 108.5;
-			}
+			const yearIndex = Math.floor(semesterIndex / 2);
+			scores.forEach((score, index) => {
+				if (annualScores[yearIndex][index] === undefined) {
+					annualScores[yearIndex][index] = 0;
+				}
+				annualScores[yearIndex][index] += score / 2;
+			});
+		});
+
+		const annualRanks = annualScores.map((scores, yearIndex) => {
+			return scores.map((score, index) => {
+				const compId = competences.find(c => c.id_semestre === (yearIndex * 2 + 1)).id_comp;
+				return calculateRank(score.toFixed(2), allCompetenceScores[compId]);
+			});
+		});
+
+		annualScores.forEach((scores, yearIndex) => {
+			scores.forEach((score, index) => {
+				if (yearIndex === 2) {
+					niveau_X = 270;
+					niveau_Y = 108.5;
+				}
+				if (yearIndex === 2 && index === 2) {
+					niveau_Y = 119.8;
+				}
+
+				drawTextWithOffset(score.toFixed(2) + '', niveau_X, height, niveau_Y, index);
+				if (yearIndex === 2) {
+					drawTextWithOffset(annualRanks[yearIndex][index] + '', niveau_X + 65, height, niveau_Y, index);
+				} else {
+					drawTextWithOffset(annualRanks[yearIndex][index] + '', niveau_X + 45, height, niveau_Y, index);
+				}
+			});
+			niveau_X += 75;
 		});
 
 		const modules = await getModules();
@@ -204,7 +211,6 @@ async function createPdf(type) {
 		const moduleR212 = modules.find(m => m.label === 'BINR212');
 		const moduleR312 = modules.find(m => m.label === 'BINR312');
 		const moduleR405 = modules.find(m => m.label === 'BINR405');
-		const moduleR514 = modules.find(m => m.label === 'BINR514');
 
 		const coefficients = await getCoefficents();
 		const coeffR106 = coefficients.find(c => c.id_module === moduleR106.id_module);
@@ -243,9 +249,15 @@ async function createPdf(type) {
 		const moyenneBUT3 = ((parseFloat(etumoduleR511.note) || 0) + (parseFloat(etumoduleR512.note) || 0)) / 2;
 		const moyenneAnglais = ((parseFloat(etumoduleR110.note) || 0) + (parseFloat(etumoduleR212.note) || 0)) / 2;
 		const moyenneAnglaisBUT2 = ((parseFloat(etumoduleR312.note) || 0) + (parseFloat(etumoduleR405.note) || 0)) / 2;
+		const allMoyenneScores = allCompetenceScores[moduleR106.id_module];
+		const allMoyenneScoresAnglais = allCompetenceScores[moduleR110.id_module];
+		const rankMoyenne = calculateRank(moyenne.toFixed(2), allMoyenneScores);
+		const rankMoyenneAnglais = calculateRank(moyenneAnglais.toFixed(2), allMoyenneScoresAnglais);
 
 		niveau_X = 259;
 		page.drawText(moyenne.toFixed(2) + '', { x: niveau_X - 28, y: height - 4 * 89, size: 10, font: font, color: color });
+		niveau_X += 15;
+		page.drawText(rankMoyenne + '', { x: niveau_X, y: height - 4 * 89, size: 10, font: font, color: color });
 		niveau_X = 330;
 		page.drawText(moyenneBUT2.toFixed(2) + '', { x: niveau_X - 28, y: height - 4 * 89, size: 10, font: font, color: color });
 		niveau_X = 309;
@@ -253,6 +265,8 @@ async function createPdf(type) {
 
 		niveau_X = 259;
 		page.drawText(moyenneAnglais.toFixed(2) + '', { x: niveau_X - 28, y: height - 4 * 92, size: 10, font: font, color: color });
+		niveau_X += 15;
+		page.drawText(rankMoyenneAnglais + '', { x: niveau_X, y: height - 4 * 92, size: 10, font: font, color: color });
 		niveau_X = 330;
 		page.drawText(moyenneAnglaisBUT2.toFixed(2) + '', { x: niveau_X - 28, y: height - 4 * 92, size: 10, font: font, color: color });
 
