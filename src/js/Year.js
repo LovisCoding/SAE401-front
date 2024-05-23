@@ -28,6 +28,7 @@ class Year {
 				$.each(data, function(index, annee){
 					if (annee.id_annee == localStorage.getItem('currentYear')) {
 						$('#ddlYear').append('<option value="' + annee.id_annee + '" selected>' + annee.annee + '</option>');
+						localStorage.setItem('labelCurrentYear', annee.annee);
 					} else {
 						$('#ddlYear').append('<option value="' + annee.id_annee + '">' + annee.annee + '</option>');
 					}

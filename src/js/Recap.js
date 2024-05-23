@@ -44,7 +44,7 @@ class Recap {
         });
 
 		let btnValider = document.getElementById("btnValider")
-		if (localStorage.getItem('isadmin')) {
+		if (localStorage.getItem('isadmin') == "true") {
 			btnValider.addEventListener("click",this.updateValuesBeforeUnload.bind(this));
 		} else {
 			btnValider.style.display = 'none'
@@ -246,7 +246,6 @@ async function loadSemestre(idAnnee) {
 		alert('Pas de semestre sur l\'annee courante');
 		return
 	}
-	console.log(semesters);
     semesters.sort((a, b) => a.label.localeCompare(b.label));
     const selectElement = document.getElementById('semester');
 
@@ -255,7 +254,6 @@ async function loadSemestre(idAnnee) {
         option.textContent = semester.label;
         selectElement.appendChild(option);
     });
-	console.log(selectElement.options[selectElement.selectedIndex]);
 	recapInstance.loadTableau(selectElement.options[selectElement.selectedIndex].text, "Commission")
 }
 
@@ -367,7 +365,8 @@ async function afficherCommission(semestre) {
 		ajouterValeurs(lstEtudiantAffiche, lstEntetes, "Commission");
 	}
 
-	if (localStorage.getItem('isadmin')) {
+	if (localStorage.getItem('isadmin') === "true") {
+		console.log("pass")
 		recapInstance.makeTableEditable();
 	}
 
@@ -444,6 +443,8 @@ async function afficherJury(semestre) {
 	let lstSemestres = await getSemestres();
 	let lstAllCompetences = await getCompetences();
 
+	let lstImport = []
+
 	for (let i = 0; i < lstEtudiants.length; i++) {
 		let lstEtudiantAffiche = []
 		let lstInfoEtudiant = []
@@ -452,7 +453,7 @@ async function afficherJury(semestre) {
 		
 		// Info de l'étudiant
 		lstInfoEtudiant.push(etudiant.code_etu);
-		lstInfoEtudiant.push(i + 1);
+		// lstInfoEtudiant.push(i + 1);
 		lstInfoEtudiant.push(etudiant.nom_etu);
 		lstInfoEtudiant.push(etudiant.prenom_etu);
 		lstInfoEtudiant.push("A");
@@ -482,7 +483,7 @@ async function afficherJury(semestre) {
 							lstNoteEtudiant.push("");
 						}
 					} else {
-						let idSemestreAncien = lstSemestres.filter(item => item.id_annee == idAnnee - 2 && item.label == labelAncienSemestre)[0];
+						let idSemestreAncien = lstSemestres.filter(item => item.id_annee == idAnnee - 2 && item.label == labelAncienSemestre)[0].id_semestre;
 						let lstAncienneComp = lstAllCompetences.filter(item => item.id_semestre == idSemestreAncien);
 						if (lstAncienneComp) {
 							for (let i = 0; i < lstAncienneComp.length; i++) {
@@ -506,13 +507,17 @@ async function afficherJury(semestre) {
 					labelAncienSemestre = "Semestre 4";
 				}
 	
-				let idSemestreAncien = lstSemestres.filter(item => item.id_annee == idAnnee - 1 && item.label == labelAncienSemestre)[0];
+				let idSemestreAncien = lstSemestres.filter(item => item.id_annee == idAnnee - 1 && item.label == labelAncienSemestre)[0].id_semestre;
 				let lstAncienneComp = lstAllCompetences.filter(item => item.id_semestre == idSemestreAncien);
 
 				for (let i = 0; i < lstAncienneComp.length; i++) {
 					let idComp = lstAncienneComp[i].id_comp;
 					let etuComp = lstEtuComp.filter(item => item.id_comp == idComp && item.id_etu == etudiant.id_etu)[0];
-					lstNoteEtudiant.push(etuComp.passage);
+					if (etuComp) {
+						lstNoteEtudiant.push(etuComp.passage);
+					} else {
+						lstNoteEtudiant.push("");
+					}
 				}
 			}
 		}
@@ -585,10 +590,20 @@ async function afficherJury(semestre) {
 		lstNoteEtudiant.forEach(element =>
 			lstEtudiantAffiche.push(element)
 		);
-		ajouterValeurs(lstEtudiantAffiche, lstEntetes, "Jury");
+		lstImport.push(lstEtudiantAffiche)
 	}
 
-	if (localStorage.getItem('isadmin')) {
+	lstImport.sort((a, b) => {
+		return parseFloat(b[6]) - parseFloat(a[6]);
+	});
+
+	for (let i = 0; i < lstImport.length; i++) {
+		let lstEtudiantAffiche = lstImport[i];
+		lstEtudiantAffiche.splice(1, 0, i+1);
+		ajouterValeurs(lstEtudiantAffiche, lstEntetes, "Jury");
+	}
+	
+	if (localStorage.getItem('isadmin') == "true") {
 		recapInstance.makeTableEditable();
 	}
 
