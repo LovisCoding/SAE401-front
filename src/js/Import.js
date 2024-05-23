@@ -17,6 +17,8 @@ class Import {
 		this.labelCoeff = document.getElementById('labelitoCoeff')
 		this.loadingCoeff = document.getElementById('loadingCoeff');
 
+		this.input = document.getElementById('file');
+
 		this.setupListeners();
 		loadInfoImports();
 	}
@@ -1046,6 +1048,7 @@ async function loadInfoImports() {
 			}
 			
 		}
+		
 	}
 
 	let loadingCoeff = document.getElementById('loadingCoeff');
@@ -1056,6 +1059,7 @@ async function loadInfoImports() {
 }
 
 async function getAllFile(idAnnee) {
+	
 	try {
 		const response = await fetch(`http://localhost:8000/api/fichier`);
 		var data = await response.json();
