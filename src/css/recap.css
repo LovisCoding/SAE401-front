@@ -1,46 +1,40 @@
 body {
-	font-family: 'Inter', sans-serif;
-	background: #EEECEC;
+    font-family: 'Inter', sans-serif;
+    background: #EEECEC;
 }
 
 
 .table {
-	background-color: white;
+    background-color: white;
 }
 
 .vert {
-	background-color: #89c48f;
+    background-color: #89c48f;
 }
 
 .rouge {
-	background-color: #e68f86;
+    background-color: #e68f86;
 }
 
 .orange {
-	background-color: #e8ad55;
+    background-color: #e8ad55;
 }
 
 .bleu {
-	background-color: #82CDD0;
+    background-color: #82CDD0;
 }
 
 .gris {
-	background-color: #adadad;
-}
-
-.table-responsive td, .table-responsive th {
-	border: 1px solid rgb(62, 62, 62);
-	white-space: nowrap;
-	text-align: center;
+    background-color: #adadad;
 }
 
 .table-responsive {
-	width: calc(100vw - 40px);
-	height: calc(100vh - 325px); 
-	margin: 20px;
-	overflow: auto;
-	box-sizing: border-box; 
-	
+    width: calc(100vw - 40px);
+    height: calc(100vh - 325px); 
+    margin: 20px;
+    overflow: auto;
+    box-sizing: border-box; 
+    
 }
 
 .center-button {
@@ -51,23 +45,23 @@ body {
 }
 
 .addBtn {
-	background-color: #82CDD0;
-	cursor: pointer;
-	font-weight: bold;
-	border-radius: 45px;
-	border: none;
-	color: #fff;
-	padding: 10px 20px;
+    background-color: #82CDD0;
+    cursor: pointer;
+    font-weight: bold;
+    border-radius: 45px;
+    border: none;
+    color: #fff;
+    padding: 10px 20px;
 }
 
 .table-responsive td, .table-responsive th {
-	white-space: nowrap;
-	text-align: center;
+    white-space: nowrap;
+    text-align: center;
 }
 
 .table-responsive thead th {
-	border-top: none; 
-	border-bottom: none; 
+    border-top: none; 
+    border-bottom: none; 
 }
 
 .table-responsive tr td:first-child {
@@ -79,15 +73,13 @@ body {
 }
 
 th {
-	background-color: #82CDD0;
-	position: sticky;
-	top: 0;
-}
-
-.table-bordered th {
-	border: none
-}
-
+    background-color: #82CDD0;
+    position: sticky;
+    top: 0;
+  }
+ .table-bordered th {
+    border: none
+ }
  .table-bordered {
 	border: 1px solid black;
 }
