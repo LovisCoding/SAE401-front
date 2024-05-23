@@ -188,3 +188,7 @@ h6 {
 .styled-select option {
 	padding: 10px;
 }
+.validate {
+	border: 1px solid #13c758;
+	border-style: solid;
+}
