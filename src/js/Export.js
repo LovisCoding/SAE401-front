@@ -131,6 +131,7 @@ class Export {
 				dataType: 'json',
 			}).then((data) => {
 				const avisExists = data.some(avis => avis.id_etu === parseInt(studentId));
+				return true;
 				if (!avisExists) {
 					$('#exportStudent').prop('disabled', true);
 					$('#exportStudent').addClass('disabled');

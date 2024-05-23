@@ -12,6 +12,8 @@ class Recap {
 
         this.setupListeners();
 
+		testRang();
+
     }
 
     loadTableau(semestre, type) {
@@ -991,4 +993,101 @@ async function updateEtudiant(etu) {
 			
 		}
 	});
+}
+
+
+
+
+
+
+
+async function testRang() {
+	
+	let lstImport = await getLstImport(4, 4, 2);
+	getRangEtu(lstImport, 8884);
+}
+
+async function getLstImport(idSemestre, numSemestre, idAnnee) {
+	let lstCompetences = await getCompetencesByIdSemestre(idSemestre);
+
+	let lstEtudiants = await getEtudiantsByIdSemestre(idSemestre);
+	let lstEtuComp = await getEtuComp();	
+
+	let lstSemestres = await getSemestres();
+	let lstAllCompetences = await getCompetences();
+
+	let lstImport = []
+	for (let i = 0; i < lstEtudiants.length; i++) {
+		let lstNoteEtudiant = []
+		let etudiant = lstEtudiants[i];
+		
+		// Info de l'étudiant
+		lstNoteEtudiant.push(etudiant.code_etu);
+
+		//lstNoteEtudiant.push(etudiant.moyenne);
+		var totalComp = 0.0;
+
+		let cptUEReussie = 0;
+		var totalComp = 0;
+
+		for (let i = 0; i < lstCompetences.length; i++) {
+			let idComp = lstCompetences[i].id_comp;
+			let etuComp = lstEtuComp.filter(item => item.id_comp == idComp && item.id_etu == etudiant.id_etu)[0];
+
+			if (!etuComp) {
+				lstNoteEtudiant.push("");
+			} else {
+				var moyenne_comp = etuComp.moyenne_comp
+
+				if (numSemestre%2 == 0) {
+					var labelSemestre = "Semestre " + (numSemestre - 1);
+					let idSemestre1 = lstSemestres.filter(item => item.id_annee == idAnnee && item.label == labelSemestre)[0].id_semestre;
+					let lstCompetencesSem1 = lstAllCompetences.filter(item => item.id_semestre == idSemestre1);
+					let idCompSem1 = lstCompetencesSem1[i].id_comp;
+					let etuCompSem1 = lstEtuComp.filter(item => item.id_comp == idCompSem1 && item.id_etu == etudiant.id_etu)[0];
+					moyenne_comp = (Number(Number(etuCompSem1.moyenne_comp) + Number(moyenne_comp)) / 2).toFixed(2);
+
+				} 
+
+				lstNoteEtudiant.push(moyenne_comp);
+				totalComp = totalComp + Number(moyenne_comp);
+
+				if (moyenne_comp >= 10) {
+					cptUEReussie ++;
+				}
+			}
+
+		}
+
+		lstImport.push(lstNoteEtudiant)
+	}
+
+	return lstImport;
+}
+
+async function getRangEtu(lstImport, idEtu) {
+	let lstRangEtu = [];
+	if (!lstImport || !lstImport[0]) {
+		return;
+	}
+	let numComp = lstImport[0].length - 1;
+
+	for (let i=1 ; i<=numComp ; i++) {
+		lstImport.sort((a, b) => {
+			return parseFloat(b[i]) - parseFloat(a[i]);
+		});
+
+		var rangEtu = -1
+		for (let i = 0; i < lstImport.length; i++) {
+			if (Number(lstImport[i][0]) == idEtu) {
+				rangEtu = i+1;
+			}
+		}
+
+		lstRangEtu.push(rangEtu);
+
+	}
+
+	console.log(lstRangEtu);
+	return lstRangEtu;
 }
