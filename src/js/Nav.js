@@ -124,17 +124,14 @@ class Nav {
 		});
 	}
 	setSelectedNav() {
-		console.log(document.location.pathname);
 		switch (document.location.pathname) {
 			case '/home':
 			case '/home/':
 				document.getElementById('navHome').classList.add('nav-selected');
-				console.log('home');
 				break;
 			case '/import':
 			case '/import/' :
 				document.getElementById('navImport').classList.add('nav-selected');
-				console.log('import');
 				break;
 			case '/recap':
 				case '/recap/':
@@ -143,7 +140,6 @@ class Nav {
 			case '/export':
 				case '/export/':
 				document.getElementById('navExport').classList.add('nav-selected');
-				console.log('export');
 				break;
 
 			default:

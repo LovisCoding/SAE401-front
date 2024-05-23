@@ -530,7 +530,7 @@ async function getLstImport(idSemestre, numSemestre, idAnnee) {
 	let lstCompetences = await getCompetencesByIdSemestre(idSemestre);
 
 	let lstEtudiants = await getEtudiantsByIdSemestre(idSemestre);
-	let lstEtuComp = await getEtuComp();	
+	let lstEtuComp = await getEtuComp();
 
 	let lstSemestres = await getSemestres();
 	let lstAllCompetences = await getCompetences();

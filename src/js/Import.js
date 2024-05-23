@@ -99,10 +99,10 @@ class Import {
 
 		if (!fichier) {
 			alert("Veuillez sélectionner un fichier Excel.");
-			this.loadingFile.classList.add('d-none');
-			this.loadingCoeff.classList.add('d-none');
-			this.btnAddCoeff.disabled = false;
-			this.btnAddFile.disabled = false;
+			document.getElementById('loadingFile').classList.add('d-none');
+			document.getElementById('loadingCoeff').classList.add('d-none');
+			document.getElementById('addFileCoeff').disabled = false;
+			document.getElementById('addFile').disabled = false;
 			return;
 		}
 
@@ -160,10 +160,10 @@ class Import {
 
 		if (!fichier) {
 			alert("Veuillez sélectionner un fichier Excel.");
-			this.loadingFile.classList.add('d-none');
-			this.loadingCoeff.classList.add('d-none');
-			this.btnAddCoeff.disabled = false;
-			this.btnAddFile.disabled = false;
+			document.getElementById('loadingFile').classList.add('d-none');
+			document.getElementById('loadingCoeff').classList.add('d-none');
+			document.getElementById('addFileCoeff').disabled = false;
+			document.getElementById('addFile').disabled = false;
 			return;
 		}
 
@@ -182,11 +182,11 @@ class Import {
 			const enTetesManquants = enTetesAttendus.filter(enTete => !enTetesFichier.includes(enTete));
 
 			if (enTetesManquants.length > 0) {
-				alert("entetes manquants " + enTetesManquants);
-				this.loadingFile.classList.add('d-none');
-				this.loadingCoeff.classList.add('d-none');
-				this.btnAddCoeff.disabled = false;
-				this.btnAddFile.disabled = false;
+				alert("Entêtes manquantes " + enTetesManquants);
+				document.getElementById('loadingFile').classList.add('d-none');
+				document.getElementById('loadingCoeff').classList.add('d-none');
+				document.getElementById('addFileCoeff').disabled = false;
+				document.getElementById('addFile').disabled = false;
 			} else {
 				ajouterJuryDonnees(jsonData, fichier);
 			}
@@ -204,10 +204,10 @@ class Import {
 
 		if (!fichier) {
 			alert("Veuillez sélectionner un fichier Excel.");
-			this.loadingFile.classList.add('d-none');
-			this.loadingCoeff.classList.add('d-none');
-			this.btnAddCoeff.disabled = false;
-			this.btnAddFile.disabled = false;
+			document.getElementById('loadingFile').classList.add('d-none');
+			document.getElementById('loadingCoeff').classList.add('d-none');
+			document.getElementById('addFileCoeff').disabled = false;
+			document.getElementById('addFile').disabled = false;
 			return;
 		}
 
@@ -226,11 +226,11 @@ class Import {
 			const enTetesManquants = enTetesAttendus.filter(enTete => !enTetesFichier.includes(enTete));
 
 			if (enTetesManquants.length > 0) {
-				alert("entetes manquants " + enTetesManquants);
-				this.loadingFile.classList.add('d-none');
-				this.loadingCoeff.classList.add('d-none');
-				this.btnAddCoeff.disabled = false;
-				this.btnAddFile.disabled = false;
+				alert("Entêtes manquantes " + enTetesManquants);
+				document.getElementById('loadingFile').classList.add('d-none');
+				document.getElementById('loadingCoeff').classList.add('d-none');
+				document.getElementById('addFileCoeff').disabled = false;
+				document.getElementById('addFile').disabled = false;
 			} else {
 				ajouterCoeff(jsonData, fichier);
 			}
@@ -313,10 +313,10 @@ async function ajouterJuryDonnees(jsonData, fichier) {
 
 	if (idSemestre == -1) {
 		alert("Veuillez importer les moyennes de ce semestre avant !");
-		this.loadingFile.classList.add('d-none');
-		this.loadingCoeff.classList.add('d-none');
-		this.btnAddCoeff.disabled = false;
-		this.btnAddFile.disabled = false;
+		document.getElementById('loadingFile').classList.add('d-none');
+		document.getElementById('loadingCoeff').classList.add('d-none');
+		document.getElementById('addFileCoeff').disabled = false;
+		document.getElementById('addFile').disabled = false;
 	}
 	etuSemestre = []
 
@@ -324,10 +324,10 @@ async function ajouterJuryDonnees(jsonData, fichier) {
 
 	if (lstCompImport.length == 0) {
 		alert("Veuillez importer les moyennes de ce semestre avant !");
-		this.loadingFile.classList.add('d-none');
-		this.loadingCoeff.classList.add('d-none');
-		this.btnAddCoeff.disabled = false;
-		this.btnAddFile.disabled = false;
+		document.getElementById('loadingFile').classList.add('d-none');
+		document.getElementById('loadingCoeff').classList.add('d-none');
+		document.getElementById('addFileCoeff').disabled = false;
+		document.getElementById('addFile').disabled = false;
 	}
 
 	
