@@ -92,13 +92,15 @@ h6 {
 .visibleImg {
 	display: block;
 }
+
 .logo-rightSide {
 	position: absolute;
-        top: 50%;
-        right: 10px;
-        transform: translateY(-50%);
-        display: none;
+		top: 50%;
+		right: 10px;
+		transform: translateY(-50%);
+		display: none;
 }
+
 .logo-rightSide.validate {
 	display: inline-block ;
 }

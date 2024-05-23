@@ -20,9 +20,6 @@ class VerifLogin {
 				if (!jsData.token ) {
 					window.location.href = 'http://localhost:8080/login';
 				}
-				// Si il y a un token qui est retourné c'est QUE le token est valide
-					
-
 			},
 			headers: {
 				'Authorization': this.token	

@@ -25,6 +25,7 @@ body {
 
 .form-text {
 	font-size: 0.7rem;
+	text-align: center;
 }
 
 .form-text a {
@@ -58,13 +59,16 @@ body {
 	padding: 20px;
 	border: 1px solid #888;
 	width: 80%;
+	position: relative;
 }
 
 .close {
 	color: #aaaaaa;
-	float: right;
+	top: 10px;
+	right: 30px;
 	font-size: 28px;
 	font-weight: bold;
+	position: absolute;
 }
 
 .close:hover,
@@ -76,4 +80,9 @@ body {
 
 .form-signin {
 	margin-top: 6rem;
+}
+
+.mailAdress {
+	margin-top: 2rem;
+	text-align: center;
 }

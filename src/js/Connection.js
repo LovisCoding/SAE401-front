@@ -1,48 +1,36 @@
-
 class Connection {
+
 	constructor() {
-
 		this.btnValidate = document.querySelector("#btnValidate");
-		this.btnValidate.addEventListener('click', function (event) {
-
+		this.btnValidate.addEventListener('click', (event) => {
 			event.preventDefault();
-
 
 			var identifiant = document.getElementById('identifiant').value;
 			var password = document.getElementById('password').value;
 			Connection.login(identifiant, password);
-
 		});
-			this.modal = document.getElementById("myModal");
 
-			// Get the button that opens the modal
-			this.btn = document.getElementById("aAcces");
-
-		// Get the <span> element that closes the modal
+		this.modal = document.getElementById("myModal");
+		this.btn = document.getElementById("aAcces");
 		this.span = document.getElementsByClassName("close")[0];
 
-		// When the user clicks the button, open the modal 
 		this.btn.onclick = (e) => {
-			e.preventDefault()
-			console.log(this.modal);
+			e.preventDefault();
 			this.modal.style.display = "block";
-		}
+		};
 
-		// When the user clicks on <span> (x), close the modal
-		this.span.onclick = function () {
+		this.span.onclick = () => {
 			this.modal.style.display = "none";
-		}
-		window.onclick = function (event) {	
+		};
+
+		window.onclick = (event) => {
 			if (event.target == this.modal) {
-				modal.style.display = "none";
+				this.modal.style.display = "none";
 			}
-		}
-		
+		};
 	}
 
 	static login(identifiant, password) {
-
-
 		$.ajax({
 			url: 'http://localhost:8000/api/verifyUser',
 			type: 'POST',
@@ -52,13 +40,11 @@ class Connection {
 				const jsData = JSON.parse(data);
 
 				if (jsData.token) {
-
 					localStorage.setItem('token', jsData.token);
 					localStorage.setItem('isadmin', jsData.isadmin);
 					localStorage.setItem('currentYear', 1);
 					localStorage.setItem('identifiant', identifiant);
 					window.location.href = 'http://localhost:8080/home';
-
 				} else {
 					const inputIdentifiant = document.getElementById('identifiant');
 					const inputPassword = document.getElementById('password');
@@ -71,7 +57,6 @@ class Connection {
 					inputPassword.className = 'form-control is-invalid';
 					divIdentifiantError.innerHTML = 'Identifiant ou mot de passe incorrect';
 					divPasswordError.innerHTML = 'Identifiant ou mot de passe incorrect';
-
 				}
 			},
 			beforeSend: function (xhr) {
@@ -80,12 +65,11 @@ class Connection {
 			xhrFields: {
 				withCredentials: true
 			},
-
 			error: function (jqXHR, textStatus, errorThrown) {
-
+				console.error("Error during login request:", textStatus, errorThrown);
 			}
 		});
-
 	}
 }
+
 new Connection();

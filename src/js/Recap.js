@@ -1,47 +1,47 @@
 class Recap {
-    // Déclaration du constructeur
-    constructor() {
-        const idAnnee = localStorage.getItem('currentYear');
-        loadSemestre(idAnnee);
+	// Déclaration du constructeur
+	constructor() {
+		const idAnnee = localStorage.getItem('currentYear');
+		loadSemestre(idAnnee);
 
 		this.lstRowIndex = [];
-        this.lstColIndex = [];
-        this.lstNewValue = [];
-        this.lstRow = [];
-        this.lstHeaders = [];
+		this.lstColIndex = [];
+		this.lstNewValue = [];
+		this.lstRow = [];
+		this.lstHeaders = [];
 
-        this.setupListeners();
+		this.setupListeners();
 
-    }
+	}
 
-    loadTableau(semestre, type) {
-        this.resetTable();
-        if (type == "Commission") {
-            afficherCommission(semestre);
-        } else {
-            afficherJury(semestre);
-        }
-    }
+	loadTableau(semestre, type) {
+		this.resetTable();
+		if (type == "Commission") {
+			afficherCommission(semestre);
+		} else {
+			afficherJury(semestre);
+		}
+	}
 
-    setupListeners() {
-        const selectElement = document.getElementById('semester');
-        const radioButtons = document.querySelectorAll('input[name="type"]');
+	setupListeners() {
+		const selectElement = document.getElementById('semester');
+		const radioButtons = document.querySelectorAll('input[name="type"]');
 
-        // Écouteur pour le changement du menu déroulant
-        selectElement.addEventListener('change', () => {
-            const selectedSemestre = selectElement.options[selectElement.selectedIndex].text;
-            const selectedType = document.querySelector('input[name="type"]:checked + label').textContent;
-            this.loadTableau(selectedSemestre, selectedType);
-        });
+		// Écouteur pour le changement du menu déroulant
+		selectElement.addEventListener('change', () => {
+			const selectedSemestre = selectElement.options[selectElement.selectedIndex].text;
+			const selectedType = document.querySelector('input[name="type"]:checked + label').textContent;
+			this.loadTableau(selectedSemestre, selectedType);
+		});
 
-        // Écouteurs pour le changement des boutons radio
-        radioButtons.forEach(radio => {
-            radio.addEventListener('change', () => {
-                const selectedSemestre = selectElement.options[selectElement.selectedIndex].text;
-                const selectedType = document.querySelector('input[name="type"]:checked + label').textContent;
-                this.loadTableau(selectedSemestre, selectedType);
-            });
-        });
+		// Écouteurs pour le changement des boutons radio
+		radioButtons.forEach(radio => {
+			radio.addEventListener('change', () => {
+				const selectedSemestre = selectElement.options[selectElement.selectedIndex].text;
+				const selectedType = document.querySelector('input[name="type"]:checked + label').textContent;
+				this.loadTableau(selectedSemestre, selectedType);
+			});
+		});
 
 		let btnValider = document.getElementById("btnValider")
 		if (localStorage.getItem('isadmin') == "true") {
@@ -49,85 +49,85 @@ class Recap {
 		} else {
 			btnValider.style.display = 'none'
 		}
-    }
+	}
 
-    resetTable() {
-        const table = document.getElementById('tableau');
-        const thead = table.querySelector('thead');
-        const tbody = table.querySelector('tbody');
+	resetTable() {
+		const table = document.getElementById('tableau');
+		const thead = table.querySelector('thead');
+		const tbody = table.querySelector('tbody');
 
-        // Vider le contenu des éléments <thead> et <tbody>
-        thead.innerHTML = '';
-        tbody.innerHTML = '';
+		// Vider le contenu des éléments <thead> et <tbody>
+		thead.innerHTML = '';
+		tbody.innerHTML = '';
 
 		this.lstRowIndex = [];
-        this.lstColIndex = [];
-        this.lstNewValue = [];
-        this.lstRow = [];
-        this.lstHeaders = [];
-    }
+		this.lstColIndex = [];
+		this.lstNewValue = [];
+		this.lstRow = [];
+		this.lstHeaders = [];
+	}
 
-    makeTableEditable() {
-        const table = document.getElementById('tableau');
-        const headers = table.querySelectorAll('thead th');
-        const rows = table.querySelectorAll('tbody tr');
+	makeTableEditable() {
+		const table = document.getElementById('tableau');
+		const headers = table.querySelectorAll('thead th');
+		const rows = table.querySelectorAll('tbody tr');
 
-        // Identifiez les index des colonnes à rendre éditables
-        const editableColumns = [];
-        headers.forEach((header, index) => {
-            const headerText = header.textContent.trim();
+		// Identifiez les index des colonnes à rendre éditables
+		const editableColumns = [];
+		headers.forEach((header, index) => {
+			const headerText = header.textContent.trim();
 			let labelEditable = ["Prenom", "Nom", "Cursus", "Décision"]
-            if (labelEditable.includes(headerText) || headerText.startsWith("Bonus")   || headerText.startsWith("BINR")  || headerText.startsWith("BINS")) {
-                editableColumns.push(index);
-            }
-        });
+			if (labelEditable.includes(headerText) || headerText.startsWith("Bonus")   || headerText.startsWith("BINR")  || headerText.startsWith("BINS")) {
+				editableColumns.push(index);
+			}
+		});
 
-        headers.forEach(element => {
-            this.lstHeaders.push(element.innerHTML);
-        });
+		headers.forEach(element => {
+			this.lstHeaders.push(element.innerHTML);
+		});
 
-        // Ajoutez des écouteurs d'événements aux cellules des colonnes éditables
-        rows.forEach((row, rowIndex) => {
-            row.querySelectorAll('td').forEach((cell, colIndex) => {
-                if (editableColumns.includes(colIndex)) {
-                    cell.addEventListener('click', () => {
-                        if (cell.querySelector('input')) return;
+		// Ajoutez des écouteurs d'événements aux cellules des colonnes éditables
+		rows.forEach((row, rowIndex) => {
+			row.querySelectorAll('td').forEach((cell, colIndex) => {
+				if (editableColumns.includes(colIndex)) {
+					cell.addEventListener('click', () => {
+						if (cell.querySelector('input')) return;
 
-                        const currentText = cell.textContent;
-                        cell.innerHTML = '';
+						const currentText = cell.textContent;
+						cell.innerHTML = '';
 
-                        const input = document.createElement('input');
-                        input.type = 'text';
-                        input.value = currentText;
-                        cell.appendChild(input);
-                        input.focus();
+						const input = document.createElement('input');
+						input.type = 'text';
+						input.value = currentText;
+						cell.appendChild(input);
+						input.focus();
 
-                        input.addEventListener('blur', () => {
-                            const newValue = input.value;
-                            cell.textContent = newValue;
-                            this.lstRowIndex.push(rowIndex);
-                            this.lstColIndex.push(colIndex);
-                            this.lstNewValue.push(newValue);
-                            this.lstRow.push(row);
-                        });
+						input.addEventListener('blur', () => {
+							const newValue = input.value;
+							cell.textContent = newValue;
+							this.lstRowIndex.push(rowIndex);
+							this.lstColIndex.push(colIndex);
+							this.lstNewValue.push(newValue);
+							this.lstRow.push(row);
+						});
 
-                        input.addEventListener('keydown', (event) => {
-                            if (event.key === 'Enter') {
-                                input.blur();
-                            }
-                        });
-                    });
-                }
-            });
-        });
+						input.addEventListener('keydown', (event) => {
+							if (event.key === 'Enter') {
+								input.blur();
+							}
+						});
+					});
+				}
+			});
+		});
 		
-    }
+	}
 
-    async updateValuesBeforeUnload(event) {
+	async updateValuesBeforeUnload(event) {
 		if (!this.lstRowIndex || !this.lstColIndex || !this.lstNewValue || !this.lstRow || !this.lstHeaders) {
 			return;
 		}
-        await updateValue(this.lstRowIndex, this.lstColIndex, this.lstNewValue, this.lstRow, this.lstHeaders);
+		await updateValue(this.lstRowIndex, this.lstColIndex, this.lstNewValue, this.lstRow, this.lstHeaders);
 
 		this.resetTable();
 
@@ -137,7 +137,7 @@ class Recap {
 		const selectedSemestre = selectElement.options[selectElement.selectedIndex].text;
 		const selectedType = document.querySelector('input[name="type"]:checked + label').textContent;
 		this.loadTableau(selectedSemestre, selectedType);
-    }
+	}
 
 }
 
@@ -239,20 +239,20 @@ async function updateValue(lstRowIndex, lstColIndex, lstNewValue, lstRow, lstHea
 
 
 async function loadSemestre(idAnnee) {
-    let lstSemestres = await getSemestres();
-    let semesters = lstSemestres.filter(item => item.id_annee == idAnnee);
+	let lstSemestres = await getSemestres();
+	let semesters = lstSemestres.filter(item => item.id_annee == idAnnee);
 	if (semesters.length === 0) {
 		alert('Pas de semestre sur l\'annee courante');
 		return
 	}
-    semesters.sort((a, b) => a.label.localeCompare(b.label));
-    const selectElement = document.getElementById('semester');
+	semesters.sort((a, b) => a.label.localeCompare(b.label));
+	const selectElement = document.getElementById('semester');
 
-    semesters.forEach(semester => {
-        const option = document.createElement('option');
-        option.textContent = semester.label;
-        selectElement.appendChild(option);
-    });
+	semesters.forEach(semester => {
+		const option = document.createElement('option');
+		option.textContent = semester.label;
+		selectElement.appendChild(option);
+	});
 	recapInstance.loadTableau(selectElement.options[selectElement.selectedIndex].text, "Commission")
 }
 
