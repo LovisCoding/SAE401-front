@@ -20,6 +20,18 @@ async function createPdf(type) {
 		student = Array.from(studentSelect.options).map(option => option.text);
 	}
 
+	const year = $(".form-control-modified option:selected").text();
+	const yearBefore = (parseInt(year.split('-')[0]) - 1) + '-' + (parseInt(year.split('-')[1]) - 1);
+	const yearBefore2 = (parseInt(year.split('-')[0]) - 2) + '-' + (parseInt(year.split('-')[1]) - 2);
+
+	const semester2 = await getSemestre('Semestre 2', getAnnee(yearBefore2));
+	const semester4 = await getSemestre('Semestre 4', getAnnee(yearBefore));
+	const semester5 = await getSemestre('Semestre 5', getAnnee(year));
+
+	const lstImportBUT1 = await getLstImport(semester2.id_semestre, 2, semester2.id_annee);
+	const lstImportBUT2 = await getLstImport(semester4.id_semestre, 4, semester4.id_annee);
+	const lstImportBUT3 = await getLstImport(semester5.id_semestre, 5, semester5.id_annee);
+
 	for (const stud of student) {
 		const existingPdfBytes = await fetch('./Avis_Poursuite_etudes_modele.pdf').then(res => res.arrayBuffer());
 		const pdfDoc = await PDFLib.PDFDocument.load(existingPdfBytes);
@@ -104,13 +116,10 @@ async function createPdf(type) {
 		const isAlternant = studentInfo.alternant;
 
 		page.drawText('Non', { x: 251, y: niveau_Y, size: 10, font: font, color: color });
-		page.drawText(isAlternant ? 'Oui' : 'Non', { x: 371, y: niveau_Y, size: 10, font: font, color: color });
+		page.drawText('Non', { x: 371, y: niveau_Y, size: 10, font: font, color: color });
 		page.drawText(isAlternant ? 'Oui' : 'Non', { x: 485, y: niveau_Y, size: 10, font: font, color: color });
 
 		niveau_Y = height - 4 * 41.7;
-		const year = $(".form-control-modified option:selected").text();
-		const yearBefore = (parseInt(year.split('-')[0]) - 1) + '-' + (parseInt(year.split('-')[1]) - 1);
-		const yearBefore2 = (parseInt(year.split('-')[0]) - 2) + '-' + (parseInt(year.split('-')[1]) - 2);
 		const yearPromo = (parseInt(year.split('-')[0]) - 2) + '-' + (parseInt(year.split('-')[1]));
 		page.drawText(yearBefore2, { x: 251, y: niveau_Y, size: 10, font: font, color: color });
 		page.drawText(yearBefore, { x: 371, y: niveau_Y, size: 10, font: font, color: color });
@@ -118,157 +127,192 @@ async function createPdf(type) {
 		page.drawText(yearPromo, { x: 410, y: height - 4 * 21, size: 10, font: font, color: color, });
 
 		let niveau_X = 229;
-		niveau_Y = 66.6;
+		niveau_Y = 500;
 
 		const students = await getStudents();
 		const studentsInfo = students.find(s => s.nom_etu === studentName && s.prenom_etu === studentPrenom);
 
-		const competences = await getCompetences();
-		const scores = await getStudentScores(studentsInfo.id_etu);
+		const moyenneBUT1 = await getMoyenneEtu(lstImportBUT1, studentsInfo.id_etu);
+		const moyenneBUT2 = await getMoyenneEtu(lstImportBUT2, studentsInfo.id_etu);
+		const moyenneBUT3 = await getMoyenneEtu(lstImportBUT3, studentsInfo.id_etu);
 
-		const semestreScores = Array.from({ length: 6 }, () => []);
+		const rangEtuBUT1 = await getRangEtu(lstImportBUT1, studentsInfo.id_etu);
+		const rangEtuBUT2 = await getRangEtu(lstImportBUT2, studentsInfo.id_etu);
+		const rangEtuBUT3 = await getRangEtu(lstImportBUT3, studentsInfo.id_etu);
 
-		competences.forEach((competence) => {
-			const score = scores.find(s => s.id_comp === competence.id_comp);
-			if (score) {
-				const semestreIndex = competence.id_semestre - 1;
-				semestreScores[semestreIndex].push(score.moyenne_comp || 0);
+		for (let index = moyenneBUT1.length - 1; index >= 0; index--) {
+			let moyenne = moyenneBUT1[index];
+			let rang = rangEtuBUT1[index];
+			page.drawText(moyenne + '', { x: niveau_X, y: niveau_Y, size: 10, font: font, color: color });
+			page.drawText(rang + '', { x: niveau_X + 45, y: niveau_Y, size: 10, font: font, color: color });
+			niveau_Y += 15;
+		}
+
+		niveau_X = 229 + 75;
+		niveau_Y = 500;
+
+		for (let index = moyenneBUT2.length - 1; index >= 0; index--) {
+			let moyenne = moyenneBUT2[index];
+			let rang = rangEtuBUT2[index];
+			page.drawText(moyenne + '', { x: niveau_X, y: niveau_Y, size: 10, font: font, color: color });
+			page.drawText(rang + '', { x: niveau_X + 45, y: niveau_Y, size: 10, font: font, color: color });
+			niveau_Y += 15;
+		}
+
+		niveau_X = 229 + 42;
+		niveau_Y = 392;
+
+		for (let index = moyenneBUT3.length - 1; index >= 0; index--) {
+			if (index === 0) {
+				niveau_Y = 378 - 45;
 			}
-		});
+			let moyenne = moyenneBUT3[index];
+			let rang = rangEtuBUT3[index];
+			page.drawText(moyenne + '', { x: niveau_X, y: niveau_Y, size: 10, font: font, color: color });
+			page.drawText(rang + '', { x: niveau_X + 65, y: niveau_Y, size: 10, font: font, color: color });
+			niveau_Y += 15;
+		}
 
-		const allStudentScores = await getAllStudentsScores();
-		const allCompetenceScores = {};
-
-		allStudentScores.forEach((studentScores) => {
-			if (!allCompetenceScores[studentScores.id_comp]) {
-				allCompetenceScores[studentScores.id_comp] = [];
-			}
-			allCompetenceScores[studentScores.id_comp].push(studentScores.moyenne_comp);
-		});
-
-		const calculateRank = (score, scoresArray) => {
-			scoresArray.push(score);
-			scoresArray.sort((a, b) => b - a);
-			const rank = scoresArray.indexOf(score) + 1;
-			scoresArray.pop();
-			return rank;
-		};
-
-		const drawTextWithOffset = (text, x, y, offset, index) => {
-			page.drawText(text, { x: x, y: y - 4 * (offset + 3.7 * index), size: 10, font: font, color: color });
-		};
-
-		const annualScores = Array.from({ length: 3 }, () => []);
-		semestreScores.forEach((scores, semesterIndex) => {
-			const yearIndex = Math.floor(semesterIndex / 2);
-			scores.forEach((score, index) => {
-				if (annualScores[yearIndex][index] === undefined) {
-					annualScores[yearIndex][index] = 0;
-				}
-				annualScores[yearIndex][index] += score / 2;
-			});
-		});
-
-		const annualRanks = annualScores.map((scores, yearIndex) => {
-			return scores.map((score, index) => {
-				const compId = competences.find(c => c.id_semestre === (yearIndex * 2 + 1)).id_comp;
-				return calculateRank(score.toFixed(2), allCompetenceScores[compId]);
-			});
-		});
-
-		annualScores.forEach((scores, yearIndex) => {
-			scores.forEach((score, index) => {
-				if (yearIndex === 2) {
-					niveau_X = 270;
-					niveau_Y = 108.5;
-				}
-				if (yearIndex === 2 && index === 2) {
-					niveau_Y = 119.8;
-				}
-
-				drawTextWithOffset(score.toFixed(2) + '', niveau_X, height, niveau_Y, index);
-				if (yearIndex === 2) {
-					drawTextWithOffset(annualRanks[yearIndex][index] + '', niveau_X + 65, height, niveau_Y, index);
-				} else {
-					drawTextWithOffset(annualRanks[yearIndex][index] + '', niveau_X + 45, height, niveau_Y, index);
-				}
-			});
-			niveau_X += 75;
-		});
+		const moduleLabels = ['BINR106', 'BINR107', 'BINR207', 'BINR208', 'BINR209', 'BINR308', 'BINR309', 'BINR412', 'BINR511', 'BINR512', 'BINR110', 'BINR212', 'BINR312', 'BINR405'];
 
 		const modules = await getModules();
-		const moduleR106 = modules.find(m => m.label === 'BINR106');
-		const moduleR107 = modules.find(m => m.label === 'BINR107');
-		const moduleR207 = modules.find(m => m.label === 'BINR207');
-		const moduleR208 = modules.find(m => m.label === 'BINR208');
-		const moduleR209 = modules.find(m => m.label === 'BINR209');
-		const moduleR308 = modules.find(m => m.label === 'BINR308');
-		const moduleR309 = modules.find(m => m.label === 'BINR309');
-		const moduleR412 = modules.find(m => m.label === 'BINR412');
-		const moduleR511 = modules.find(m => m.label === 'BINR511');
-		const moduleR512 = modules.find(m => m.label === 'BINR512');
-		const moduleR110 = modules.find(m => m.label === 'BINR110');
-		const moduleR212 = modules.find(m => m.label === 'BINR212');
-		const moduleR312 = modules.find(m => m.label === 'BINR312');
-		const moduleR405 = modules.find(m => m.label === 'BINR405');
-
 		const coefficients = await getCoefficents();
-		const coeffR106 = coefficients.find(c => c.id_module === moduleR106.id_module);
-		const coeffR107 = coefficients.find(c => c.id_module === moduleR107.id_module);
-		const coeffR207 = coefficients.find(c => c.id_module === moduleR207.id_module);
-		const coeffR208 = coefficients.find(c => c.id_module === moduleR208.id_module);
-		const coeffR209 = coefficients.find(c => c.id_module === moduleR209.id_module);
-		const coeffR308 = coefficients.find(c => c.id_module === moduleR308.id_module);
-		const coeffR309 = coefficients.find(c => c.id_module === moduleR309.id_module);
-		const coeffR412 = coefficients.find(c => c.id_module === moduleR412.id_module);
-		const coeffR511 = coefficients.find(c => c.id_module === moduleR511.id_module);
-		const coeffR512 = coefficients.find(c => c.id_module === moduleR512.id_module);
-		const coeffR110 = coefficients.find(c => c.id_module === moduleR110.id_module);
-		const coeffR212 = coefficients.find(c => c.id_module === moduleR212.id_module);
-		const coeffR312 = coefficients.find(c => c.id_module === moduleR312.id_module);
-		const coeffR405 = coefficients.find(c => c.id_module === moduleR405.id_module);
-
 		const etumodules = await getEtumodules();
-		const etumoduleR106 = etumodules.find(e => e.id_coef === coeffR106.id_coef && e.id_etu === studentsInfo.id_etu) || 0;
-		const etumoduleR107 = etumodules.find(e => e.id_coef === coeffR107.id_coef && e.id_etu === studentsInfo.id_etu) || 0;
-		const etumoduleR207 = etumodules.find(e => e.id_coef === coeffR207.id_coef && e.id_etu === studentsInfo.id_etu) || 0;
-		const etumoduleR208 = etumodules.find(e => e.id_coef === coeffR208.id_coef && e.id_etu === studentsInfo.id_etu) || 0;
-		const etumoduleR209 = etumodules.find(e => e.id_coef === coeffR209.id_coef && e.id_etu === studentsInfo.id_etu) || 0;
-		const etumoduleR308 = etumodules.find(e => e.id_coef === coeffR308.id_coef && e.id_etu === studentsInfo.id_etu) || 0;
-		const etumoduleR309 = etumodules.find(e => e.id_coef === coeffR309.id_coef && e.id_etu === studentsInfo.id_etu) || 0;
-		const etumoduleR412 = etumodules.find(e => e.id_coef === coeffR412.id_coef && e.id_etu === studentsInfo.id_etu) || 0;
-		const etumoduleR511 = etumodules.find(e => e.id_coef === coeffR511.id_coef && e.id_etu === studentsInfo.id_etu) || 0;
-		const etumoduleR512 = etumodules.find(e => e.id_coef === coeffR512.id_coef && e.id_etu === studentsInfo.id_etu) || 0;
-		const etumoduleR110 = etumodules.find(e => e.id_coef === coeffR110.id_coef && e.id_etu === studentsInfo.id_etu) || 0;
-		const etumoduleR212 = etumodules.find(e => e.id_coef === coeffR212.id_coef && e.id_etu === studentsInfo.id_etu) || 0;
-		const etumoduleR312 = etumodules.find(e => e.id_coef === coeffR312.id_coef && e.id_etu === studentsInfo.id_etu) || 0;
-		const etumoduleR405 = etumodules.find(e => e.id_coef === coeffR405.id_coef && e.id_etu === studentsInfo.id_etu) || 0;
+		const allStudent = await getStudents();
 
-		const moyenne = ((parseFloat(etumoduleR106.note) || 0) + (parseFloat(etumoduleR107.note) || 0) + (parseFloat(etumoduleR207.note) || 0) + (parseFloat(etumoduleR208.note) || 0) + (parseFloat(etumoduleR209.note) || 0)) / 5;
-		const moyenneBUT2 = ((parseFloat(etumoduleR308.note) || 0) + (parseFloat(etumoduleR309.note) || 0) + (parseFloat(etumoduleR412.note) || 0)) / 3;
-		const moyenneBUT3 = ((parseFloat(etumoduleR511.note) || 0) + (parseFloat(etumoduleR512.note) || 0)) / 2;
-		const moyenneAnglais = ((parseFloat(etumoduleR110.note) || 0) + (parseFloat(etumoduleR212.note) || 0)) / 2;
-		const moyenneAnglaisBUT2 = ((parseFloat(etumoduleR312.note) || 0) + (parseFloat(etumoduleR405.note) || 0)) / 2;
-		const allMoyenneScores = allCompetenceScores[moduleR106.id_module];
-		const allMoyenneScoresAnglais = allCompetenceScores[moduleR110.id_module];
-		const rankMoyenne = calculateRank(moyenne.toFixed(2), allMoyenneScores);
-		const rankMoyenneAnglais = calculateRank(moyenneAnglais.toFixed(2), allMoyenneScoresAnglais);
+		const moduleData = {};
+		const coeffData = {};
+		const etumoduleData = {};
 
-		niveau_X = 259;
-		page.drawText(moyenne.toFixed(2) + '', { x: niveau_X - 28, y: height - 4 * 89, size: 10, font: font, color: color });
-		niveau_X += 15;
-		page.drawText(rankMoyenne + '', { x: niveau_X, y: height - 4 * 89, size: 10, font: font, color: color });
-		niveau_X = 330;
-		page.drawText(moyenneBUT2.toFixed(2) + '', { x: niveau_X - 28, y: height - 4 * 89, size: 10, font: font, color: color });
-		niveau_X = 309;
-		page.drawText(moyenneBUT3.toFixed(2) + '', { x: niveau_X - 38, y: height - 4 * 130.5, size: 10, font: font, color: color });
+		moduleLabels.forEach(label => {
+			const module = modules.find(m => m.label === label);
+			const coeff = coefficients.find(c => c.id_module === module.id_module);
+			
+			moduleData[label] = module;
+			coeffData[label] = coeff;
+		});
 
-		niveau_X = 259;
-		page.drawText(moyenneAnglais.toFixed(2) + '', { x: niveau_X - 28, y: height - 4 * 92, size: 10, font: font, color: color });
-		niveau_X += 15;
-		page.drawText(rankMoyenneAnglais + '', { x: niveau_X, y: height - 4 * 92, size: 10, font: font, color: color });
-		niveau_X = 330;
-		page.drawText(moyenneAnglaisBUT2.toFixed(2) + '', { x: niveau_X - 28, y: height - 4 * 92, size: 10, font: font, color: color });
+		const studentAverages = {};
+
+		allStudent.forEach(student => {
+			const studentId = student.id_etu;
+			const studentModules = etumodules.filter(e => e.id_etu === studentId);
+
+			moduleLabels.forEach(label => {
+				const coeff = coeffData[label];
+				const etumodule = studentModules.find(e => e.id_coef === coeff.id_coef) || { note: 0 };
+				etumoduleData[label] = etumodule;
+			});
+
+			const moyenneMaths = moduleLabels.slice(0, 5).reduce((acc, label) => acc + (parseFloat(etumoduleData[label].note) || 0), 0) / 5;
+			const moyenneBUT2Maths = moduleLabels.slice(5, 8).reduce((acc, label) => acc + (parseFloat(etumoduleData[label].note) || 0), 0) / 3;
+			const moyenneBUT3Maths = moduleLabels.slice(8, 10).reduce((acc, label) => acc + (parseFloat(etumoduleData[label].note) || 0), 0) / 2;
+			const moyenneAnglais = moduleLabels.slice(10, 12).reduce((acc, label) => acc + (parseFloat(etumoduleData[label].note) || 0), 0) / 2;
+			const moyenneAnglaisBUT2 = moduleLabels.slice(12).reduce((acc, label) => acc + (parseFloat(etumoduleData[label].note) || 0), 0) / 2;
+
+			studentAverages[studentId] = {
+				moyenneMaths,
+				moyenneBUT2Maths,
+				moyenneBUT3Maths,
+				moyenneAnglais,
+				moyenneAnglaisBUT2
+			};
+		});
+
+		const rankStudents = (subject) => {
+			const averages = Object.values(studentAverages).map(avg => avg[subject]);
+			const sortedAverages = [...averages].sort((a, b) => b - a);
+
+			return allStudent.map(student => {
+				const studentId = student.id_etu;
+				const studentAverage = studentAverages[studentId][subject];
+				const rank = sortedAverages.indexOf(studentAverage) + 1;
+				
+				return {
+					studentId,
+					rank,
+					average: studentAverage
+				};
+			});
+		};
+
+		const specificStudentId = studentsInfo.id_etu;
+
+		const ranksMaths = rankStudents('moyenneMaths');
+		const ranksBUT2Maths = rankStudents('moyenneBUT2Maths');
+		const ranksBUT3Maths = rankStudents('moyenneBUT3Maths');
+		const ranksAnglais = rankStudents('moyenneAnglais');
+		const ranksAnglaisBUT2 = rankStudents('moyenneAnglaisBUT2');
+
+		const findStudentRank = (ranks, studentId) => {
+			const studentRank = ranks.find(rank => rank.studentId === studentId);
+			return studentRank ? studentRank.rank : null;
+		};
+
+		const specificStudentRanks = {
+			moyenneMaths: findStudentRank(ranksMaths, studentsInfo.id_etu),
+			moyenneBUT2Maths: findStudentRank(ranksBUT2Maths, studentsInfo.id_etu),
+			moyenneBUT3Maths: findStudentRank(ranksBUT3Maths, studentsInfo.id_etu),
+			moyenneAnglais: findStudentRank(ranksAnglais, studentsInfo.id_etu),
+			moyenneAnglaisBUT2: findStudentRank(ranksAnglaisBUT2, studentsInfo.id_etu)
+		};
+
+		const specificStudentAverages = studentAverages[studentsInfo.id_etu];
+
+		if (specificStudentAverages) {
+
+			const {
+				moyenneMaths,
+				moyenneBUT2Maths,
+				moyenneBUT3Maths,
+				moyenneAnglais,
+				moyenneAnglaisBUT2
+			} = specificStudentAverages;
+
+			const {
+				moyenneMaths: rankMaths,
+				moyenneBUT2Maths: rankBUT2Maths,
+				moyenneBUT3Maths: rankBUT3Maths,
+				moyenneAnglais: rankAnglais,
+				moyenneAnglaisBUT2: rankAnglaisBUT2
+			} = specificStudentRanks;
+		
+			niveau_X = 259;
+			page.drawText(moyenneMaths.toFixed(2) + '', { x: niveau_X - 30, y: height - 4 * 89, size: 10, font: font, color: color });
+			niveau_X += 45;
+			page.drawText(rankMaths + '', { x: niveau_X - 30, y: height - 4 * 89, size: 10, font: font, color: color });
+			niveau_X = 330;
+			page.drawText(moyenneBUT2Maths.toFixed(2) + '', { x: niveau_X - 25, y: height - 4 * 89, size: 10, font: font, color: color });
+			niveau_X += 49;
+			page.drawText(rankBUT2Maths + '', { x: niveau_X - 30, y: height - 4 * 89, size: 10, font: font, color: color });
+
+			niveau_X = 309;
+
+			if (moyenneBUT3Maths === 0) {
+				page.drawText('', { x: niveau_X - 32, y: height - 4 * 130.5, size: 10, font: font, color: color });
+			} else {
+				page.drawText(moyenneBUT3Maths.toFixed(2) + '', { x: niveau_X - 38, y: height - 4 * 130.5, size: 10, font: font, color: color });
+			}
+
+			niveau_X += 57;
+
+			if (moyenneBUT3Maths === 0) {
+				page.drawText('', { x: niveau_X - 32, y: height - 4 * 130.5, size: 10, font: font, color: color });
+			} else {
+				page.drawText(rankBUT3Maths + '', { x: niveau_X - 30, y: height - 4 * 130.5, size: 10, font: font, color: color });
+			}
+		
+			niveau_X = 259;
+			page.drawText(moyenneAnglais.toFixed(2) + '', { x: niveau_X - 30, y: height - 4 * 92.5, size: 10, font: font, color: color });
+			niveau_X += 45;
+			page.drawText(rankAnglais + '', { x: niveau_X - 30, y: height - 4 * 92.5, size: 10, font: font, color: color });
+			niveau_X = 330;
+			page.drawText(moyenneAnglaisBUT2.toFixed(2) + '', { x: niveau_X - 25, y: height - 4 * 92.5, size: 10, font: font, color: color });
+			niveau_X += 49;
+			page.drawText(rankAnglaisBUT2 + '', { x: niveau_X - 30, y: height - 4 * 92.5, size: 10, font: font, color: color });
+		} else {
+			console.error(`Averages for student ${specificStudentId} are not available.`);
+		}
 
 		const absences = await getAbsencesEtudiant(studentsInfo.id_etu);
 		const semestreAbsences = Array.from({ length: 6 }, () => []);
@@ -437,32 +481,130 @@ async function getStudents() {
 	return response.json();
 }
 
-async function getStudentScores(studentId) {
-	const response = await fetch(`http://localhost:8000/api/etuComp/${studentId}`);
-	return response.json();
-}
-
 async function getAbsencesEtudiant(etudiantId) {
 	const response = await fetch(`http://localhost:8000/api/etuSemestre/${etudiantId}`);
 	return response.json();
 }
 
-async function getAllStudentsScores() {
-	const response = await fetch('http://localhost:8000/api/etuComp');
+async function getEtumodules() {
+	const response = await fetch('http://localhost:8000/api/etuModule');
 	return response.json();
 }
 
-async function getModules() {
-	const response = await fetch('http://localhost:8000/api/module');
-	return response.json();
+async function getLstImport(idSemestre, numSemestre, idAnnee) {
+	let lstCompetences = await getCompetencesByIdSemestre(idSemestre);
+
+	let lstEtudiants = await getEtudiantsByIdSemestre(idSemestre);
+	let lstEtuComp = await getEtuComp();	
+
+	let lstSemestres = await getSemestres();
+	let lstAllCompetences = await getCompetences();
+
+	let lstImport = []
+	for (let i = 0; i < lstEtudiants.length; i++) {
+		let lstNoteEtudiant = []
+		let etudiant = lstEtudiants[i];
+		
+		// Info de l'étudiant
+		lstNoteEtudiant.push(etudiant.code_etu);
+
+		//lstNoteEtudiant.push(etudiant.moyenne);
+		var totalComp = 0.0;
+
+		let cptUEReussie = 0;
+		var totalComp = 0;
+
+		for (let i = 0; i < lstCompetences.length; i++) {
+			let idComp = lstCompetences[i].id_comp;
+			let etuComp = lstEtuComp.filter(item => item.id_comp == idComp && item.id_etu == etudiant.id_etu)[0];
+
+			if (!etuComp) {
+				lstNoteEtudiant.push("");
+			} else {
+				var moyenne_comp = etuComp.moyenne_comp
+
+				if (numSemestre%2 == 0) {
+					var labelSemestre = "Semestre " + (numSemestre - 1);
+					let idSemestre1 = lstSemestres.filter(item => item.id_annee == idAnnee && item.label == labelSemestre)[0].id_semestre;
+					let lstCompetencesSem1 = lstAllCompetences.filter(item => item.id_semestre == idSemestre1);
+					let idCompSem1 = lstCompetencesSem1[i].id_comp;
+					let etuCompSem1 = lstEtuComp.filter(item => item.id_comp == idCompSem1 && item.id_etu == etudiant.id_etu)[0];
+					moyenne_comp = (Number(Number(etuCompSem1.moyenne_comp) + Number(moyenne_comp)) / 2).toFixed(2);
+
+				} 
+
+				lstNoteEtudiant.push(moyenne_comp);
+				totalComp = totalComp + Number(moyenne_comp);
+
+				if (moyenne_comp >= 10) {
+					cptUEReussie ++;
+				}
+			}
+
+		}
+
+		lstImport.push(lstNoteEtudiant)
+	}
+
+	return lstImport;
+}
+
+async function getRangEtu(lstImport, idEtu) {
+	let lstRangEtu = [];
+	if (!lstImport || !lstImport[0]) {
+		return;
+	}
+	let numComp = lstImport[0].length - 1;
+
+	for (let i=1 ; i<=numComp ; i++) {
+		lstImport.sort((a, b) => {
+			return parseFloat(b[i]) - parseFloat(a[i]);
+		});
+
+		var rangEtu = -1
+		for (let i = 0; i < lstImport.length; i++) {
+			if (Number(lstImport[i][0]) == idEtu) {
+				rangEtu = i+1;
+			}
+		}
+
+		lstRangEtu.push(rangEtu);
+
+	}
+
+	return lstRangEtu;
+}
+
+async function getMoyenneEtu(lstImport, idEtu) {
+	let lstMoyenneEtu = [];
+	if (!lstImport || !lstImport[0]) {
+		return;
+	}
+
+	// Trouver la sous-liste contenant l'ID
+	let etudiant = lstImport.find(item => Number(item[0]) === idEtu);
+
+	// Si l'étudiant est trouvé, extraire les éléments après le premier
+	if (etudiant) {
+		lstMoyenneEtu = etudiant.slice(1);
+	}
+
+	return lstMoyenneEtu;
+}
+
+async function getSemestre(label) {
+	const response = await fetch(`http://localhost:8000/api/semestre`);
+	const data = await response.json();
+	return data.find(item => item.label == label);
+}
+
+async function getAnnee(annee) {
+	const response = await fetch(`http://localhost:8000/api/annee`);
+	const data = await response.json();
+	return data.find(item => item.annee == annee);
 }
 
 async function getCoefficents() {
 	const response = await fetch('http://localhost:8000/api/coefficient');
-	return response.json();
-}
-
-async function getEtumodules() {
-	const response = await fetch('http://localhost:8000/api/etuModule');
 	return response.json();
 }
