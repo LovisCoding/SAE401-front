@@ -17,6 +17,8 @@ class Import {
 		this.labelCoeff = document.getElementById('labelitoCoeff')
 		this.loadingCoeff = document.getElementById('loadingCoeff');
 
+		this.input = document.getElementById('file');
+
 		this.setupListeners();
 		loadInfoImports();
 	}
