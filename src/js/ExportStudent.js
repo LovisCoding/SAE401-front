@@ -44,10 +44,18 @@ async function createPdf(type) {
 
 		let page = pdfDoc.getPages()[0];
 
-		// si c'est unique promo on ajoute une nouvelle page
-
-		if (type === 'uniquePromo') {
+		if (type === 'uniquePromo' && student.indexOf(stud) !== 0) {
 			page = pdfDoc.addPage();
+			const backgroundBytes = await fetch('./Avis_Poursuite_etudes_modele.jpg').then(res => res.arrayBuffer());
+			const backgroundImage = await pdfDoc.embedJpg(backgroundBytes);
+			const { width, height } = page.getSize();
+			page.drawImage(backgroundImage, {
+				x: 0,
+				y: 0,
+				width: width,
+				height: height,
+				opacity: 1,
+			});
 		}
 	
 		const { width, height } = page.getSize();
@@ -422,6 +430,7 @@ async function createPdf(type) {
 		const downloadLink = document.createElement('a');
 		downloadLink.href = pdfUrl;
 		downloadLink.download = `Avis_Poursuite_Etudes_${year}.pdf`;
+		downloadLink.click();
 	}
 }
 
