@@ -147,9 +147,6 @@ class Import {
 				});
 
 				ajouterCompetencesEtModules(jsonData, entetesAssociatifs, enteteModule, enTetesAttendus, fichier);
-
-				// Ajout des compétences dans la BD
-
 			}
 		};
 
@@ -334,14 +331,14 @@ async function ajouterJuryDonnees(jsonData, fichier) {
 	}
 
 	
-    for (const element of jsonData) {
+	for (const element of jsonData) {
 		const codeEtu = Number(element.etudid);
 		var idEtu = codeEtu
 
-        // Attendre l'ajout de l'étudiant et récupérer l'id de l'étudiant
-        updateEtudiant(idEtu, {
-            code_etu: codeEtu, nom_etu: element.Nom_1, prenom_etu: element.Prénom, groupe_TD: element.TD, groupe_TP: element.TP, cursus: element.Cursus, alternant: alternant
-        }); 
+		// Attendre l'ajout de l'étudiant et récupérer l'id de l'étudiant
+		updateEtudiant(idEtu, {
+			code_etu: codeEtu, nom_etu: element.Nom_1, prenom_etu: element.Prénom, groupe_TD: element.TD, groupe_TP: element.TP, cursus: element.Cursus, alternant: alternant
+		}); 
 
 		updateValidationEtuSemestre(idEtu, idSemestre, element.Année);
 
@@ -438,34 +435,34 @@ async function ajouterDonnees(jsonData, entetesAssociatifs, enteteModule, entete
 	etuSemestre = []
 	
 
-    for (const element of jsonData) {
-        const codeEtu = Number(element.etudid);
-        // Attendre l'ajout de l'étudiant et récupérer l'id de l'étudiant
-        await ajouterEtudiant({ id_etu: codeEtu,
-            code_etu: codeEtu, nom_etu: element.Nom_1, prenom_etu: element.Prénom, groupe_TD: element.TD, groupe_TP: element.TP, cursus: element.Cursus, alternant: alternant
-        });
+	for (const element of jsonData) {
+		const codeEtu = Number(element.etudid);
+		// Attendre l'ajout de l'étudiant et récupérer l'id de l'étudiant
+		await ajouterEtudiant({ id_etu: codeEtu,
+			code_etu: codeEtu, nom_etu: element.Nom_1, prenom_etu: element.Prénom, groupe_TD: element.TD, groupe_TP: element.TP, cursus: element.Cursus, alternant: alternant
+		});
 
 
-        try {
+		try {
 
 			var idEtu = codeEtu;
 			etuSemestre.push({id_etu:idEtu, id_semestre:idSemestre, absences: element.Abs, rang:element.Rg, moyenne: element.Moy, validation:""});
 
 			const etuComp = [];
 			const etuModule = [];
-            for (const competenceLabel in entetesAssociatifs) {
-                if (entetesAssociatifs.hasOwnProperty(competenceLabel)) {
-                    entetesAssociatifs[competenceLabel].forEach(moduleLabel => {
-                        if (moduleLabel.startsWith("Bonus")) {
-                            const idComp = hmCompetences[competenceLabel];
-                            const bonus = element[moduleLabel] != null ? element[moduleLabel] : 0;
+			for (const competenceLabel in entetesAssociatifs) {
+				if (entetesAssociatifs.hasOwnProperty(competenceLabel)) {
+					entetesAssociatifs[competenceLabel].forEach(moduleLabel => {
+						if (moduleLabel.startsWith("Bonus")) {
+							const idComp = hmCompetences[competenceLabel];
+							const bonus = element[moduleLabel] != null ? element[moduleLabel] : 0;
 							if (isChecked) {
 								etuComp.push({ id_etu: idEtu, id_comp: idComp, moyenne_comp: element[competenceLabel + "A"], passage: "", bonus: bonus });
 							} else {
 								etuComp.push({ id_etu: idEtu, id_comp: idComp, moyenne_comp: element[competenceLabel], passage: "", bonus: bonus });
 							}
-                        } else {
-                            const idCoeff = hmCoefficient[moduleLabel + "-" + competenceLabel];
+						} else {
+							const idCoeff = hmCoefficient[moduleLabel + "-" + competenceLabel];
 							var note = 0;
 
 							if (isChecked) {
@@ -480,19 +477,19 @@ async function ajouterDonnees(jsonData, entetesAssociatifs, enteteModule, entete
 							else if (!note) {
 								note = -1;
 							}
-                            etuModule.push({ id_etu: idEtu, id_coef: idCoeff, note: note });
-                        }
-                    });
-                }
-            }
+							etuModule.push({ id_etu: idEtu, id_coef: idCoeff, note: note });
+						}
+					});
+				}
+			}
 
-            ajouterManyEtuComp(etuComp);
+			ajouterManyEtuComp(etuComp);
 			ajouterManyEtuModule(etuModule);   
 
-        } catch (error) {
-            console.error("Une erreur s'est produite :", error);
-        }
-    }
+		} catch (error) {
+			console.error("Une erreur s'est produite :", error);
+		}
+	}
 	
 	ajouterManyEtuSemestre(etuSemestre);
 

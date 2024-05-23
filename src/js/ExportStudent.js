@@ -32,6 +32,9 @@ async function createPdf(type) {
 	const lstImportBUT2 = await getLstImport(semester4.id_semestre, 4, semester4.id_annee);
 	const lstImportBUT3 = await getLstImport(semester5.id_semestre, 5, semester5.id_annee);
 
+	const loadingCoeff = document.getElementById('loadingCoeff');
+	loadingCoeff.classList.remove('d-none');
+
 	const existingPdfBytes = await fetch('./Avis_Poursuite_etudes_modele.pdf').then(res => res.arrayBuffer());
 	let pdfDoc = await PDFLib.PDFDocument.load(existingPdfBytes);
 
@@ -432,6 +435,8 @@ async function createPdf(type) {
 		downloadLink.download = `Avis_Poursuite_Etudes_${year}.pdf`;
 		downloadLink.click();
 	}
+
+	loadingCoeff.classList.add('d-none');
 }
 
 async function fetchAndProcessAvis() {
