@@ -24,7 +24,6 @@ class Year {
 			type: 'GET',
 			dataType: 'json',
 			success: function(data){
-				console.log(data);
 				$.each(data, function(index, annee){
 					if (annee.id_annee == localStorage.getItem('currentYear')) {
 						$('#ddlYear').append('<option value="' + annee.id_annee + '" selected>' + annee.annee + '</option>');

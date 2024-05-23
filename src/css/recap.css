@@ -38,10 +38,10 @@ body {
 }
 
 .center-button {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 100%;
 }
 
 .addBtn {
@@ -65,23 +65,21 @@ body {
 }
 
 .table-responsive tr td:first-child {
-    border-left: none; 
+	border-left: none; 
 }
 
 .table-responsive thead th:first-child {
-    border-left: none; 
+	border-left: none; 
 }
 
 th {
     background-color: #82CDD0;
     position: sticky;
-    top: 0; /* Don't forget this, required for the stickiness */
-    /*box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.4);*/
-    
+    top: 0;
   }
  .table-bordered th {
     border: none
  }
  .table-bordered {
-    border: 1px solid black;
+	border: 1px solid black;
 }

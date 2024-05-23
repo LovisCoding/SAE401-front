@@ -1,25 +1,36 @@
+body {
+	font-family: 'Inter', sans-serif;
+	background: #EEECEC;
+}
+
 .form-signin {
 	max-width: 300px;
 	padding: 0rem;
-  }
+}
+
 .form-label {
 	font-size: 0.8rem;
 	margin-bottom: .3rem;
 }
+
 .btn-primary {
 	background: #82CDD0 ;
 }
+
 .form-control {
 	font-size: 0.8rem;
 	padding: .2rem 0.3rem;
 	border-radius: 0.2rem;
 }
+
 .form-text {
 	font-size: 0.7rem;
 }
+
 .form-text a {
 	text-underline-offset: 3px;
 }
+
 .btnValidate {
 	padding-top: 0.2rem;
 	padding-bottom: 0.2rem;

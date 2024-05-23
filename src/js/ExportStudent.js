@@ -16,7 +16,7 @@ async function createPdf(type) {
 
 	if (type === 'unique') {
 		student.push(studentSelect.options[studentSelect.selectedIndex].text);
-	} else if (type === 'multiple') {
+	} else if (type === 'multiple' || type === 'uniquePromo') {
 		student = Array.from(studentSelect.options).map(option => option.text);
 	}
 
@@ -32,11 +32,34 @@ async function createPdf(type) {
 	const lstImportBUT2 = await getLstImport(semester4.id_semestre, 4, semester4.id_annee);
 	const lstImportBUT3 = await getLstImport(semester5.id_semestre, 5, semester5.id_annee);
 
+	const loadingCoeff = document.getElementById('loadingCoeff');
+	loadingCoeff.classList.remove('d-none');
+
+	const existingPdfBytes = await fetch('./Avis_Poursuite_etudes_modele.pdf').then(res => res.arrayBuffer());
+	let pdfDoc = await PDFLib.PDFDocument.load(existingPdfBytes);
+
 	for (const stud of student) {
-		const existingPdfBytes = await fetch('./Avis_Poursuite_etudes_modele.pdf').then(res => res.arrayBuffer());
-		const pdfDoc = await PDFLib.PDFDocument.load(existingPdfBytes);
-		
-		const page = pdfDoc.getPages()[0];
+
+		if (type === 'multiple') {
+			const existingPdfBytes = await fetch('./Avis_Poursuite_etudes_modele.pdf').then(res => res.arrayBuffer());
+			pdfDoc = await PDFLib.PDFDocument.load(existingPdfBytes);
+		}
+
+		let page = pdfDoc.getPages()[0];
+
+		if (type === 'uniquePromo' && student.indexOf(stud) !== 0) {
+			page = pdfDoc.addPage();
+			const backgroundBytes = await fetch('./Avis_Poursuite_etudes_modele.jpg').then(res => res.arrayBuffer());
+			const backgroundImage = await pdfDoc.embedJpg(backgroundBytes);
+			const { width, height } = page.getSize();
+			page.drawImage(backgroundImage, {
+				x: 0,
+				y: 0,
+				width: width,
+				height: height,
+				opacity: 1,
+			});
+		}
 	
 		const { width, height } = page.getSize();
 		const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
@@ -403,7 +426,17 @@ async function createPdf(type) {
 		link.href = URL.createObjectURL(zipBlob);
 		link.download = 'Avis_Poursuite_Etudes.zip';
 		link.click();
+	} else if (type === 'uniquePromo') {
+		const pdfBytes = await pdfDoc.save();
+		const pdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
+		const pdfUrl = URL.createObjectURL(pdfBlob);
+		const downloadLink = document.createElement('a');
+		downloadLink.href = pdfUrl;
+		downloadLink.download = `Avis_Poursuite_Etudes_${year}.pdf`;
+		downloadLink.click();
 	}
+
+	loadingCoeff.classList.add('d-none');
 }
 
 async function fetchAndProcessAvis() {
@@ -467,6 +500,8 @@ document.getElementById('exportStudent').addEventListener('click', function() {
 		createPdf('unique');
 	} else if (document.getElementById('fileMultiple').checked) {
 		createPdf('multiple');
+	} else if (document.getElementById('fileUniquePromo').checked) {
+		createPdf('uniquePromo');
 	}
 });
 

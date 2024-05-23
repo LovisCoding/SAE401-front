@@ -240,10 +240,8 @@ class Export {
 				success: (data) => {
 					const avisExists = data.some(avis => avis.id_etu === parseInt(selectedStudentId));
 					if (avisExists) {
-						console.log('update');
 						this.updateProcess();
 					} else {
-						console.log('add');
 						this.addProcess();
 					}
 				},
