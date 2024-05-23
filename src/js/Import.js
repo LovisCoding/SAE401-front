@@ -1048,6 +1048,7 @@ async function loadInfoImports() {
 			}
 			
 		}
+		
 	}
 
 	let loadingCoeff = document.getElementById('loadingCoeff');
@@ -1058,6 +1059,7 @@ async function loadInfoImports() {
 }
 
 async function getAllFile(idAnnee) {
+	
 	try {
 		const response = await fetch(`http://localhost:8000/api/fichier`);
 		var data = await response.json();
