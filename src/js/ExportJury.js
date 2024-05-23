@@ -378,7 +378,7 @@ $(document).ready(function() {
 		for (let i = 0; i < data.length; i++) {
 			for (let j = 0; j < data[i].length; j++) {
 				let cellValue = data[i][j];
-				if (!isNaN(cellValue)) {
+				if (cellValue !== "" && !isNaN(cellValue)) {
 					data[i][j] = parseFloat(cellValue);
 				}
 			}
