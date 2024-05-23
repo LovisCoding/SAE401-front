@@ -34,7 +34,7 @@ body {
     margin: 20px;
     overflow: auto;
     box-sizing: border-box; 
-	border: 0.2px solid rgb(62, 62, 62);
+	
 }
 
 .center-button {
@@ -55,7 +55,6 @@ body {
 }
 
 .table-responsive td, .table-responsive th {
-    border: 1px solid rgb(62, 62, 62);
 	white-space: nowrap;
 	text-align: center;
 }
@@ -77,6 +76,9 @@ th {
 	background-color: #82CDD0;
 	position: sticky;
 	top: 0; /* Don't forget this, required for the stickiness */
-	box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.4);
+	/*box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.4);*/
 	
   }
+ .table-bordered th {
+    border: none
+ }
