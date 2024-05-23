@@ -17,8 +17,6 @@ class Import {
 		this.labelCoeff = document.getElementById('labelitoCoeff')
 		this.loadingCoeff = document.getElementById('loadingCoeff');
 
-		this.input = document.getElementById('file');
-
 		this.setupListeners();
 		loadInfoImports();
 	}
@@ -47,6 +45,38 @@ class Import {
 			this.labelFile.style.borderColor = 'green';
 			this.iconFile.classList.add('validate')
 			this.spanTextFile.innerHTML = this.file.files[0].name;
+
+			// Récupérer le fichier importé
+			const input = document.getElementById('file');
+			const fichier = input.files[0];
+			
+			if (fichier) {
+				// Vérifier le nom du fichier et ajuster les boutons radio en conséquence
+				if (fichier.name.includes('moyennes')) {
+					document.getElementById('jury').checked = false;
+					document.getElementById('commission').checked = true;
+				} else if (fichier.name.includes('jury')) {
+					document.getElementById('jury').checked = true;
+					document.getElementById('commission').checked = false;
+				}
+
+				// Vérifier le nom du fichier et ajuster la liste déroulante en conséquence
+				const semesterSelect = document.getElementById('semester');
+				for (let i = 1; i <= 6; i++) {
+					if (fichier.name.includes('S' + i)) {
+						semesterSelect.value = i.toString();
+						break;
+					}
+				}
+
+				// Vérifier le nom du fichier et cocher la case alternant si nécessaire
+				const alternantCheckbox = document.getElementById('alternant');
+				if (fichier.name.includes('FAP')) {
+					alternantCheckbox.checked = true;
+				} else {
+					alternantCheckbox.checked = false;
+				}
+			}
 		});
 
 		this.fileCoeff.addEventListener('change', () => {
@@ -60,7 +90,6 @@ class Import {
 			this.importerCoeff();
 			
 		});
-
 
 	}
 
