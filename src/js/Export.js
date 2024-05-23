@@ -3,6 +3,13 @@ class Export {
 	constructor(settingsSelector, settingsPanelSelector) {
 		this.settingsImage = document.querySelector(settingsSelector);
 		this.settingsPanel = document.querySelector(settingsPanelSelector);
+		this.labelFileSign = document.getElementById('labelFileSign');
+		this.logoFileSign = document.getElementById('logoFileSign');
+		this.labelLogo2 = document.getElementById('labelLogo2');
+		this.logoLogo2 = document.getElementById('logoLogo2');
+		this.logoLogo = document.getElementById('logoLogo');
+		this.labelLogo = document.getElementById('labelLogo');
+
 		this.setupListeners();
 		this.loadStudent();
 		this.setupSubmitListener();
@@ -55,6 +62,24 @@ class Export {
 				this.hideSettingsPanel();
 			}
 		});
+		this.labelFileSign.addEventListener('change', () => {
+			this.labelFileSign.classList.add('validate');
+			this.logoFileSign.src = '/img/Check.svg';
+			this.logoFileSign.width = 20;
+			this.logoFileSign.height = 20;
+		})
+		this.labelLogo2.addEventListener('change', () => {
+			this.labelLogo2.classList.add('validate');
+			this.logoLogo2.src = '/img/Check.svg';
+			this.logoLogo2.width = 20;
+			this.logoLogo2.height = 20;
+		})
+		this.labelLogo.addEventListener('change', () => {
+			this.labelLogo.classList.add('validate');
+			this.logoLogo.src = '/img/Check.svg';
+			this.logoLogo.width = 20;
+			this.logoLogo.height = 20;
+		})
 	}
 
 	toggleSettingsPanel() {
