@@ -82,3 +82,6 @@ th {
  .table-bordered th {
     border: none
  }
+ .table-bordered {
+    border: 1px solid black;
+}
