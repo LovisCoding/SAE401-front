@@ -131,6 +131,7 @@ class Export {
 				dataType: 'json',
 			}).then((data) => {
 				const avisExists = data.some(avis => avis.id_etu === parseInt(studentId));
+				return true;
 				if (!avisExists) {
 					$('#exportStudent').prop('disabled', true);
 					$('#exportStudent').addClass('disabled');
@@ -240,10 +241,8 @@ class Export {
 				success: (data) => {
 					const avisExists = data.some(avis => avis.id_etu === parseInt(selectedStudentId));
 					if (avisExists) {
-						console.log('update');
 						this.updateProcess();
 					} else {
-						console.log('add');
 						this.addProcess();
 					}
 				},
