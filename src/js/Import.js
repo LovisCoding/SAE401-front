@@ -384,6 +384,7 @@ async function ajouterLogoFichier(fileInput) {
 		await updateFichier(idFichier, fileInput)
 	}
 	else {
+		console.log('ici');
 		await ajouterFichier(fileInput, type, idSemestre, idAnnee)
 	}
 
@@ -1033,6 +1034,7 @@ async function loadInfoImports() {
 	var lstFiles = await getAllFile(idAnnee);
 	if (lstFiles) {
 		for (file of lstFiles) {
+
 			const labelSemestre = "" + await getLabelSemestreById(file.id_semestre);
 			const match = labelSemestre.match(/\d+/);
 			const numSemestre = match ? parseInt(match[0]) : null;

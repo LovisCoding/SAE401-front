@@ -10,7 +10,7 @@ class Year {
 	// Méthode pour ajouter les écouteurs d'événements
 
 	setEventListeners() {
-		$('.form-control').change(function(){
+		$('#ddlYear').change(function(){
 			var idAnnee = $(this).val();
 			localStorage.setItem('currentYear', idAnnee);
 

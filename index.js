@@ -33,7 +33,7 @@ app.get('/import', function(req, res) {
 });
 
 
-app.get('/export', function(req, res) {
+app.get('/export/', function(req, res) {
   res.sendFile(path.join(__dirname, '/src/html/export.html'));
 });
 
