@@ -33,7 +33,7 @@ async function createPdf(type) {
 	const lstImportBUT3 = await getLstImport(semester5.id_semestre, 5, semester5.id_annee);
 
 	const existingPdfBytes = await fetch('./Avis_Poursuite_etudes_modele.pdf').then(res => res.arrayBuffer());
-	const pdfDoc = await PDFLib.PDFDocument.load(existingPdfBytes);
+	let pdfDoc = await PDFLib.PDFDocument.load(existingPdfBytes);
 
 	for (const stud of student) {
 
