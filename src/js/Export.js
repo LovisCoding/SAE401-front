@@ -137,6 +137,12 @@ class Export {
 					$('#exportStudent').css('background-color', 'grey');
 					$('#exportStudent').css('cursor', 'not-allowed');
 					return false;
+				} else {
+					$('#exportStudent').prop('disabled', false);
+					$('#exportStudent').removeClass('disabled');
+					$('#exportStudent').css('background-color', '#007bff');
+					$('#exportStudent').css('cursor', 'pointer');
+					return true;
 				}
 			}).catch((jqXHR, textStatus, errorThrown) => {
 				console.error("Error checking student's avis:", textStatus, errorThrown);
