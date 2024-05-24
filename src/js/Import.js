@@ -252,7 +252,8 @@ async function ajouterCoeff(jsonData, fichier) {
 	const lstIdSemestre = await getLstSemestreByIdAnnee(idAnnee);	
 	var cptIdSemestre = 0;
 	var lstCompImport = await getCompetencesByIdSemestre(lstIdSemestre[cptIdSemestre].id_semestre);
-
+	console.log(lstCompImport);
+	var aModif = false;
 
 	for (const element of jsonData) {
 		if (/^BINR\d01$/.test(element.BIN)) {
@@ -263,14 +264,22 @@ async function ajouterCoeff(jsonData, fichier) {
 
 			lstCompImport = await getCompetencesByIdSemestre(lstIdSemestre[cptIdSemestre].id_semestre);
 
+
 			if (lstCompImport.length === 0) {
 				break;
 			}
 
-			cptIdSemestre++;
+			if (element.BIN == "BINR501") {
+				lstCompFichier = ["C1", "C2", "C6"]
+			}
+
+			if (aModif) {
+				cptIdSemestre++;
+				aModif = false;
+			}
 		}
 		
-		for (let i = 0; i < lstCompFichier.length; i++) {
+		for (let i = 0; i < lstCompImport.length; i++) {
 			let labelComp = lstCompFichier[i];
 			var idComp = lstCompImport[i].id_comp
 			var idMod = await getIdModuleByLabel(element.BIN);
@@ -278,13 +287,14 @@ async function ajouterCoeff(jsonData, fichier) {
 			var idCoeff = await getIdCoeffByModAndComp(idComp, idMod);
 			var coeff = element[labelComp];
 
-			if (coeff !== "" && coeff !== null) {
+			if (idCoeff !== -1 && coeff !== "" && coeff !== null) {
 				updateCoeff(idCoeff, Number(coeff));
+				aModif = true;
 			}
 			
 		}
 
-		cptIdSemestre ++;
+		// cptIdSemestre ++;
 	}
 	
 	const idFichier = await getFichierByAnneeAndSemestreAndType(idAnnee, 1, "coefficient");
