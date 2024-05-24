@@ -338,7 +338,7 @@ async function createPdf(type) {
 		}
 
 		const absences = await getAbsencesEtudiant(studentsInfo.id_etu);
-		const semestreAbsences = Array.from({ length: 5 }, () => []);
+		const semestreAbsences = Array.from({ length: 6 }, () => []);
 
 		absences.forEach((absence) => {
 			const semestreIndex = absence.id_semestre - 1;

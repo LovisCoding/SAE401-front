@@ -145,7 +145,7 @@ class Export {
 			if (allHaveAvis) {
 				$('#exportStudent').prop('disabled', false);
 				$('#exportStudent').removeClass('disabled');
-				$('#exportStudent').css('background-color', '#007bff');
+				$('#exportStudent').css('background-color', '#82CDD0');
 				$('#exportStudent').css('cursor', 'pointer');
 			} else {
 				$('#exportStudent').prop('disabled', true);
