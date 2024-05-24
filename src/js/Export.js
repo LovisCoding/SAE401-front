@@ -123,6 +123,7 @@ class Export {
 
 	verifyStudentInListAvis() {
 		const promises = [];
+	
 		$('.student option').each(function() {
 			const studentId = $(this).val();
 			const promise = $.ajax({
@@ -131,25 +132,30 @@ class Export {
 				dataType: 'json',
 			}).then((data) => {
 				const avisExists = data.some(avis => avis.id_etu === parseInt(studentId));
-				if (!avisExists) {
-					$('#exportStudent').prop('disabled', true);
-					$('#exportStudent').addClass('disabled');
-					$('#exportStudent').css('background-color', 'grey');
-					$('#exportStudent').css('cursor', 'not-allowed');
-					return false;
-				} else {
-					$('#exportStudent').prop('disabled', false);
-					$('#exportStudent').removeClass('disabled');
-					$('#exportStudent').css('background-color', '#007bff');
-					$('#exportStudent').css('cursor', 'pointer');
-					return true;
-				}
+				return avisExists;
 			}).catch((jqXHR, textStatus, errorThrown) => {
 				console.error("Error checking student's avis:", textStatus, errorThrown);
+				return false;
 			});
 			promises.push(promise);
 		});
+	
+		Promise.all(promises).then((results) => {
+			const allHaveAvis = results.every(result => result === true);
+			if (allHaveAvis) {
+				$('#exportStudent').prop('disabled', false);
+				$('#exportStudent').removeClass('disabled');
+				$('#exportStudent').css('background-color', '#007bff');
+				$('#exportStudent').css('cursor', 'pointer');
+			} else {
+				$('#exportStudent').prop('disabled', true);
+				$('#exportStudent').addClass('disabled');
+				$('#exportStudent').css('background-color', 'grey');
+				$('#exportStudent').css('cursor', 'not-allowed');
+			}
+		});
 	}
+	
 
 	setupStudentProcessListener() {
 		$('#addStudent').click(() => {
