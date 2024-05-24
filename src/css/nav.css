@@ -65,7 +65,7 @@ body {
 	position: fixed;
 	top: 4rem;
 	left: -2rem;
-	width: 250px;
+	width: 270px;
 	height: calc(100vh - 30px);
 	background-image: url('./img/BulleGauche.png');
 	background-size: cover;
