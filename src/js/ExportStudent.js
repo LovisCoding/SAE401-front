@@ -338,7 +338,7 @@ async function createPdf(type) {
 		}
 
 		const absences = await getAbsencesEtudiant(studentsInfo.id_etu);
-		const semestreAbsences = Array.from({ length: 6 }, () => []);
+		const semestreAbsences = Array.from({ length: 5 }, () => []);
 
 		absences.forEach((absence) => {
 			const semestreIndex = absence.id_semestre - 1;
@@ -349,7 +349,7 @@ async function createPdf(type) {
 
 		absencesYear[0] = semestreAbsences[0].map((absence, index) => absence + semestreAbsences[1][index]);
 		absencesYear[1] = semestreAbsences[2].map((absence, index) => absence + semestreAbsences[3][index]);
-		absencesYear[2] = semestreAbsences[4].map((absence, index) => absence + semestreAbsences[5][index]);
+		absencesYear[2] = semestreAbsences[4];
 
 		niveau_X = 259;
 		page.drawText(absencesYear[0] + '', { x: niveau_X, y: height - 4 * 96, size: 10, font: font, color: color });
