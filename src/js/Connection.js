@@ -1,5 +1,7 @@
 class Connection {
 
+	// Déclaration du constructeur
+
 	constructor() {
 		this.btnValidate = document.querySelector("#btnValidate");
 		this.btnValidate.addEventListener('click', (event) => {
@@ -29,6 +31,8 @@ class Connection {
 			}
 		};
 	}
+
+	// Méthode permettant de véfirier si l'utilisateur peut se connecter
 
 	static login(identifiant, password) {
 		$.ajax({
@@ -71,5 +75,7 @@ class Connection {
 		});
 	}
 }
+
+// Instanciation de la classe Connection
 
 new Connection();

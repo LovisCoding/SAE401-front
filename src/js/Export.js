@@ -1,5 +1,7 @@
 class Export {
 
+	// Déclaration du constructeur
+
 	constructor(settingsSelector, settingsPanelSelector) {
 		this.settingsImage = document.querySelector(settingsSelector);
 		this.settingsPanel = document.querySelector(settingsPanelSelector);
@@ -19,6 +21,8 @@ class Export {
 		this.loadSemestre(idAnnee);
 	}
 
+	// Méthode permettant de charger les semestres
+
 	async loadSemestre(idAnnee) {
 		let lstSemestres = await this.getSemestres();
 		let semesters = lstSemestres.filter(item => item.id_annee == idAnnee);
@@ -37,20 +41,24 @@ class Export {
 	
 	}
 
+	// Méthode permettant de récupérer les semestres
+
 	async getSemestres() {
 		try {
-			const response = await fetch(`http://localhost:8000/api/semestre`);	
+			const response = await fetch(`http://localhost:8000/api/semestre`);
 			const data = await response.json();
 			if (data && Array.isArray(data)) {
 				return data; 
 			}
-			return []; // Retourner une liste vide si aucune compétence n'est trouvée
+			return [];
 		} catch (error) {
 			console.error('Une erreur s\'est produite :', error);
-			return []; // Retourner une liste vide en cas d'erreur
+			return [];
 		}
 	}
 	
+	// Méthode permetant de vérifier la localisation du clic pour afficher ou masquer le panneau de paramètres
+	// Ainsi que pour afficher les logos lors du dépôt de fichiers
 
 	setupListeners() {
 		this.settingsImage.addEventListener('click', (event) => {
@@ -86,6 +94,8 @@ class Export {
 		})
 	}
 
+	// Méthode permettant d'afficher le panneau de paramètres
+
 	toggleSettingsPanel() {
 		this.settingsPanel.classList.toggle('show');
 		const settingsElements = this.settingsPanel.querySelectorAll('*');
@@ -94,6 +104,8 @@ class Export {
 		});
 	}
 
+	// Méthode permettant de masquer le panneau de paramètres
+
 	hideSettingsPanel() {
 		this.settingsPanel.classList.remove('show');
 		const settingsElements = this.settingsPanel.querySelectorAll('*');
@@ -101,6 +113,8 @@ class Export {
 			element.classList.remove('show');
 		});
 	}
+
+	// Méthode permettant de charger les étudiants actuellement en S5 dans la liste déroulante
 
 	loadStudent() {
 		$.ajax({
@@ -120,6 +134,9 @@ class Export {
 			}
 		});
 	}
+
+	// Méthode permettant de vérifier si tous les étudiants ont un avis
+	// Si oui le bouton d'export est activé sinon il est désactivé et grisé
 
 	verifyStudentInListAvis() {
 		const promises = [];
@@ -155,7 +172,8 @@ class Export {
 			}
 		});
 	}
-	
+
+	// Méthode permettant de récupérer l'avis de l'étudiant sélectionné
 
 	setupStudentProcessListener() {
 		$('#addStudent').click(() => {
@@ -177,11 +195,13 @@ class Export {
 					$('#avisModal').modal('show');
 				},
 				error: function(jqXHR, textStatus, errorThrown){
-					
+					console.error("Error loading student's avis:", textStatus, errorThrown);
 				}
 			});
 		});
 	}
+
+	// Méthode permettant de mettre à jour l'avis de l'étudiant sélectionné
 
 	updateProcess() {
 		const selectedStudentId = $('.student').val();
@@ -211,6 +231,8 @@ class Export {
 		});
 	}
 
+	// Méthode permettant d'ajouter l'avis de l'étudiant sélectionné
+
 	addProcess() {
 		const selectedStudentId = $('.student').val();
 		const avisMaster = $('#avisMaster').val();
@@ -239,6 +261,8 @@ class Export {
 		});
 	}
 
+	// Méthode permettant de réaliser le traitement adapté en fonction de l'existence ou non d'un avis pour l'étudiant sélectionné
+
 	setupSubmitListener() {
 		const addAvisButton = document.getElementById('addAvis');
 		
@@ -264,5 +288,7 @@ class Export {
 		});
 	}
 }
+
+// Instanciation de la classe Export
 
 const exportInstance = new Export('.settings', '.settings-panel');

@@ -1,4 +1,7 @@
 class VerifLogin {
+
+	// Déclaration du constructeur
+
 	constructor() {
 		this.token = localStorage.getItem('token');
 		if (this.token == null || this.token == undefined ) {
@@ -9,30 +12,33 @@ class VerifLogin {
 		}
 		this.request();
 	}
+
+	// Méthode pour vérifier le token
+
 	request() {
 		$.ajax({
 			url: 'http://localhost:8000/api/verifyUser',
 			type: 'POST',
 			dataType: 'text',
 			success: function(data){
-				
 				const jsData = JSON.parse(data);
 				if (!jsData.token ) {
 					window.location.href = 'http://localhost:8080/login';
 				}
 			},
 			headers: {
-				'Authorization': this.token	
+				'Authorization': this.token
 			},
 			xhrFields: {
 				withCredentials: true
-			  },
-			
+			},
 			error: function(jqXHR, textStatus, errorThrown){
-				
+				console.log(jqXHR, textStatus, errorThrown);
 			}
 		});
 	}
-	
 }
+
+// Instanciation de la classe VerifLogin
+
 new VerifLogin();

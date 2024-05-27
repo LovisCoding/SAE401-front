@@ -16,8 +16,10 @@ class Year {
 
 			window.location.reload();
 		});
-	// Méthode pour charger les années
 	}
+
+	// Méthode pour charger les années
+
 	loadYears() {
 		$.ajax({
 			url: 'http://localhost:8000/api/annee',
@@ -34,7 +36,7 @@ class Year {
 				});
 			},
 			error: function(jqXHR, textStatus, errorThrown){
-				
+				console.error("Error loading years:", textStatus, errorThrown);
 			}
 		});
 	}
@@ -58,12 +60,11 @@ class Year {
 				dataType: 'json',
 				data: JSON.stringify([{ annee: newYear }]),
 				success: function(data){
-					console.log(data);
 					$('#ddlYear').append('<option value="' + data.id_annee + '">' + data.annee + '</option>');
 				},
 				
 				error: function(jqXHR, textStatus, errorThrown){
-					
+					console.error("Error adding year:", textStatus, errorThrown);
 				}
 			});
 		});

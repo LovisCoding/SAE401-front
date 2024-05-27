@@ -1,400 +1,393 @@
-$(document).ready(function() {
-	function exportData() {
+// Méthode permettant de renvoyer vers la bonne méthode selon le choix de l'utilisateur
 
-		const radioChecked = document.querySelector('input[name="juryCommission"]:checked');
-		const semestre = $("#semester").val();
+function exportData() {
+	const radioChecked = document.querySelector('input[name="juryCommission"]:checked');
+	const semestre = $("#semester").val();
 
-		if (radioChecked.value == "jury") {
-			exportJury(semestre)
-		} else {
-			exportCommission(semestre);
+	if (radioChecked.value == "jury") {
+		exportJury(semestre)
+	} else {
+		exportCommission(semestre);
+	}
+}
+
+// Méthode permettant d'exporter les données de la commission
+
+async function exportCommission(semestre) {
+	let data = [];
+	data.push(["BUT INFORMATIQUE "]);
+	data.push([semestre]);
+	data.push([localStorage.getItem('labelCurrentYear')])
+	data.push([]);
+	const idAnnee = localStorage.getItem('currentYear');
+
+	var idSemestre = await getIdSemestreByIdAnneeAndLabel(idAnnee, semestre);
+	let lstCompetences = await getCompetencesByIdSemestre(idSemestre);
+	let lstCoefficients = await getCoefficients();
+
+	// Récupération des entetes
+
+	let lstEntetes = ["Code nip", "Rang", "Nom", "Prenom", "Cursus", "UEs", "Moy"];
+	let lstCoeffAffiche = ["", "", "", "", "", "", ""];
+
+	for (let i = 0; i < lstCompetences.length; i++) {
+
+		lstEntetes.push(lstCompetences[i].label);
+		lstEntetes.push("Bonus " + lstCompetences[i].label);
+
+		lstCoeffAffiche.push("");
+		lstCoeffAffiche.push("");
+
+		let idComp = lstCompetences[i].id_comp;
+		let lstCoefficientsByComp = lstCoefficients.filter(item => item.id_comp == idComp);
+
+		for (let i = 0; i < lstCoefficientsByComp.length; i++) {
+			lstCoeffAffiche.push(lstCoefficientsByComp[i].coef);
+			let module = await getModuleById(lstCoefficientsByComp[i].id_module);
+			lstEntetes.push(module.label);
 		}
-		
 	}
 
-	async function exportCommission(semestre) {
-		let data = []
-		data.push(["BUT INFORMATIQUE "])
-		data.push([semestre]);
-		data.push([localStorage.getItem('labelCurrentYear')])
-		data.push([])
-		const idAnnee = localStorage.getItem('currentYear');
-	
-		var idSemestre = await getIdSemestreByIdAnneeAndLabel(idAnnee, semestre);
-		let lstCompetences = await getCompetencesByIdSemestre(idSemestre);
-		let lstCoefficients = await getCoefficients();
-	
-		// Récupération des entetes
-		let lstEntetes = ["Code nip", "Rang", "Nom", "Prenom", "Cursus", "UEs", "Moy"]
-		let lstCoeffAffiche = ["", "", "", "", "", "", ""]
+	data.push(lstEntetes);
+	data.push(lstCoeffAffiche);
+
+	// Récupération et traitement des étudiants
+
+	let lstEtudiants = await getEtudiantsByIdSemestre(idSemestre);
+	let lstEtuComp = await getEtuComp();
+	let lstEtuModule = await getEtuModule();
+
+	for (let i = 0; i < lstEtudiants.length; i++) {
+		let lstEtudiantAffiche = [];
+		let lstInfoEtudiant = [];
+		let lstNoteEtudiant = [];
+		let etudiant = lstEtudiants[i];
+		
+		// Info de l'étudiant
+
+		lstInfoEtudiant.push(etudiant.code_etu);
+		lstInfoEtudiant.push(i + 1);
+		lstInfoEtudiant.push(etudiant.nom_etu);
+		lstInfoEtudiant.push(etudiant.prenom_etu);
+		lstInfoEtudiant.push(etudiant.cursus);
+
+		// Note de l'étudiant
+
+		lstNoteEtudiant.push(etudiant.moyenne);
+
+		var totalComp = 0;
+		let cptUEReussie = 0;
+
 		for (let i = 0; i < lstCompetences.length; i++) {
-	
-			lstEntetes.push(lstCompetences[i].label);
-			lstEntetes.push("Bonus " + lstCompetences[i].label);
-	
-			lstCoeffAffiche.push("")
-			lstCoeffAffiche.push("")
-	
 			let idComp = lstCompetences[i].id_comp;
-	
+			let etuComp = lstEtuComp.filter(item => item.id_comp == idComp && item.id_etu == etudiant.id_etu)[0];
+
+			if (!etuComp) {
+				break;
+			}
+
+			lstNoteEtudiant.push(etuComp.moyenne_comp);
+
+			if (etuComp.bonus == 0 ) {
+				lstNoteEtudiant.push("");
+			} else {
+				lstNoteEtudiant.push(etuComp.bonus);
+			}
+
+			if (etuComp.moyenne_comp >= 10) {
+				cptUEReussie ++;
+			}
+
 			let lstCoefficientsByComp = lstCoefficients.filter(item => item.id_comp == idComp);
-	
+		
 			for (let i = 0; i < lstCoefficientsByComp.length; i++) {
-				lstCoeffAffiche.push(lstCoefficientsByComp[i].coef);
-				let module = await getModuleById(lstCoefficientsByComp[i].id_module);
-				lstEntetes.push(module.label);
-			}
-		}
-	
-		data.push(lstEntetes);
-		data.push(lstCoeffAffiche);
-	
-		// Récupération et traitement des étudiants
-	
-		let lstEtudiants = await getEtudiantsByIdSemestre(idSemestre);
-		let lstEtuComp = await getEtuComp();
-		let lstEtuModule = await getEtuModule();
-	
-		for (let i = 0; i < lstEtudiants.length; i++) {
-			let lstEtudiantAffiche = []
-			let lstInfoEtudiant = []
-			let lstNoteEtudiant = []
-			let etudiant = lstEtudiants[i];
-			
-			// Info de l'étudiant
-			lstInfoEtudiant.push(etudiant.code_etu);
-			lstInfoEtudiant.push(i + 1);
-			lstInfoEtudiant.push(etudiant.nom_etu);
-			lstInfoEtudiant.push(etudiant.prenom_etu);
-			lstInfoEtudiant.push(etudiant.cursus);
-	
-			// Note de l'étudiant
-			lstNoteEtudiant.push(etudiant.moyenne);
-			var totalComp = 0;
-	
-			let cptUEReussie = 0;
-			for (let i = 0; i < lstCompetences.length; i++) {
-				let idComp = lstCompetences[i].id_comp;
-				let etuComp = lstEtuComp.filter(item => item.id_comp == idComp && item.id_etu == etudiant.id_etu)[0];
-	
-				if (!etuComp) {
-					break;
+				let idCoeff = lstCoefficientsByComp[i].id_coef;
+				let etuModule = lstEtuModule.filter(item => item.id_coef == idCoeff && item.id_etu == etudiant.id_etu)[0];
+				if (etuModule) {
+					if (etuModule.note == -1) {
+						lstNoteEtudiant.push("~");
+					} else {
+						lstNoteEtudiant.push(etuModule.note);
+					}
 				}
-	
-				lstNoteEtudiant.push(etuComp.moyenne_comp);
-	
-				if (etuComp.bonus == 0 ) {
+				else {
 					lstNoteEtudiant.push("");
-				} else {
-					lstNoteEtudiant.push(etuComp.bonus);
-				}
-	
-				if (etuComp.moyenne_comp >= 10) {
-					cptUEReussie ++;
-				}
-	
-				let lstCoefficientsByComp = lstCoefficients.filter(item => item.id_comp == idComp);
-			
-				for (let i = 0; i < lstCoefficientsByComp.length; i++) {
-					let idCoeff = lstCoefficientsByComp[i].id_coef;
-					let etuModule = lstEtuModule.filter(item => item.id_coef == idCoeff && item.id_etu == etudiant.id_etu)[0];
-					if (etuModule) {
-						if (etuModule.note == -1) {
-							lstNoteEtudiant.push("~");
-						} else {
-							lstNoteEtudiant.push(etuModule.note);
-						}
-					}
-					else {
-						lstNoteEtudiant.push("")
-					}
-					
 				}
 			}
-	
-			lstInfoEtudiant.push(cptUEReussie + "/" + lstCompetences.length);
-	
-			lstInfoEtudiant.forEach(element =>
-				lstEtudiantAffiche.push(element)
-			);
-	
-			lstNoteEtudiant.forEach(element =>
-				lstEtudiantAffiche.push(element)
-			);
-			data.push(lstEtudiantAffiche);
 		}
 
-		let nomFichier = "Commission_" + semestre.replace(" ", "_") + "_" + localStorage.getItem('labelCurrentYear') + ".xlsx";
+		lstInfoEtudiant.push(cptUEReussie + "/" + lstCompetences.length);
+		lstInfoEtudiant.forEach(element => lstEtudiantAffiche.push(element));
+		lstNoteEtudiant.forEach(element => lstEtudiantAffiche.push(element));
 
-		createExcel(data, nomFichier)
-	
+		data.push(lstEtudiantAffiche);
 	}
 
-	async function exportJury(semestre) {
-		let data = []
-		data.push(["BUT INFORMATIQUE "])
-		data.push([semestre]);
-		data.push([localStorage.getItem('labelCurrentYear')])
-		data.push([])
-		const idAnnee = localStorage.getItem('currentYear');
-	
-		const match = semestre.match(/\d+/);
-		const numSemestre = match ? parseInt(match[0]) : null;
-		var idSemestre = await getIdSemestreByIdAnneeAndLabel(idAnnee, semestre);
-		var lstEntetes = []
-		if (numSemestre !== 1) {
-			lstEntetes = ["Code nip", "Rang", "Nom", "Prenom","Pacours", "Cursus","UEs", "Moy"]
-			for (let i = 0; i < (numSemestre-1)/2 -1 ; i++) { 
-				lstEntetes.push("C1");
-				lstEntetes.push("C2");
-				lstEntetes.push("C3");
-				lstEntetes.push("C4");
-				lstEntetes.push("C5");
-				lstEntetes.push("C6");
-			}
-			if (numSemestre !== 6) {
-				lstEntetes.push("C1");
-				lstEntetes.push("C2");
-				lstEntetes.push("C3");
-				lstEntetes.push("C4");
-				lstEntetes.push("C5");
-				lstEntetes.push("C6");
-			} else {
-				lstEntetes.push("C1");
-				lstEntetes.push("C2");
-				lstEntetes.push("C3");
-			}
-		} else {
-			lstEntetes = ["Code nip", "Rang", "Nom", "Prenom", "Pacours", "Cursus","UEs","Moy" ,"C1", "C2", "C3"]
-			if (numSemestre !== 5 && numSemestre !== 6) {
-				lstEntetes.push("C4");
-				lstEntetes.push("C5");
-				lstEntetes.push("C6");
-			}
+	let nomFichier = "Commission_" + semestre.replace(" ", "_") + "_" + localStorage.getItem('labelCurrentYear') + ".xlsx";
+
+	createExcel(data, nomFichier);
+}
+
+// Méthode permettant d'exporter les données du jury
+
+async function exportJury(semestre) {
+	let data = [];
+	data.push(["BUT INFORMATIQUE "]);
+	data.push([semestre]);
+	data.push([localStorage.getItem('labelCurrentYear')])
+	data.push([]);
+	const idAnnee = localStorage.getItem('currentYear');
+
+	const match = semestre.match(/\d+/);
+	const numSemestre = match ? parseInt(match[0]) : null;
+	var idSemestre = await getIdSemestreByIdAnneeAndLabel(idAnnee, semestre);
+	var lstEntetes = [];
+
+	if (numSemestre !== 1) {
+		lstEntetes = ["Code nip", "Rang", "Nom", "Prenom","Pacours", "Cursus","UEs", "Moy"];
+		for (let i = 0; i < (numSemestre-1)/2 -1 ; i++) { 
+			lstEntetes.push("C1");
+			lstEntetes.push("C2");
+			lstEntetes.push("C3");
+			lstEntetes.push("C4");
+			lstEntetes.push("C5");
+			lstEntetes.push("C6");
 		}
+		if (numSemestre !== 6) {
+			lstEntetes.push("C1");
+			lstEntetes.push("C2");
+			lstEntetes.push("C3");
+			lstEntetes.push("C4");
+			lstEntetes.push("C5");
+			lstEntetes.push("C6");
+		} else {
+			lstEntetes.push("C1");
+			lstEntetes.push("C2");
+			lstEntetes.push("C3");
+		}
+	} else {
+		lstEntetes = ["Code nip", "Rang", "Nom", "Prenom", "Pacours", "Cursus","UEs","Moy" ,"C1", "C2", "C3"];
+		if (numSemestre !== 5 && numSemestre !== 6) {
+			lstEntetes.push("C4");
+			lstEntetes.push("C5");
+			lstEntetes.push("C6");
+		}
+	}
+
+	let lstCompetences = await getCompetencesByIdSemestre(idSemestre);
+
+	if (numSemestre % 2 == 0) {
 		
-	
-		let lstCompetences = await getCompetencesByIdSemestre(idSemestre);
-		if (numSemestre%2 == 0) {
+		var labelSemestre = "Semestre " + (numSemestre - 1);
+		var idSemestre1 = await getIdSemestreByIdAnneeAndLabel(idAnnee, labelSemestre);
+		let lstCompetencesSem1 = await getCompetencesByIdSemestre(idSemestre1);
+		
+		for (let i = 0; i < lstCompetences.length; i++) {
 			
-			var labelSemestre = "Semestre " + (numSemestre - 1);
-			var idSemestre1 = await getIdSemestreByIdAnneeAndLabel(idAnnee, labelSemestre);
-			let lstCompetencesSem1 = await getCompetencesByIdSemestre(idSemestre1);
-			
-			for (let i = 0; i < lstCompetences.length; i++) {
-				
-				if (!lstCompetencesSem1[i] || !lstCompetences[i]) {
-					break;
+			if (!lstCompetencesSem1[i] || !lstCompetences[i]) {
+				break;
+			}
+
+			lstEntetes.push(lstCompetencesSem1[i].label+ "" + lstCompetences[i].label);
+		}
+
+		lstEntetes.push("Décision");
+	} else {
+		lstCompetences.forEach(comp => {
+			lstEntetes.push(comp.label);
+		});
+	}
+
+	data.push(lstEntetes);
+
+	let lstEtudiants = await getEtudiantsByIdSemestre(idSemestre);
+	let lstEtuComp = await getEtuComp();
+	let lstEtuSemestre = await getEtuSemestre();
+
+	let lstSemestres = await getSemestres();
+	let lstAllCompetences = await getCompetences();
+
+	let lstImport = [];
+
+	for (let i = 0; i < lstEtudiants.length; i++) {
+		let lstEtudiantAffiche = [];
+		let lstInfoEtudiant = [];
+		let lstNoteEtudiant = [];
+		let etudiant = lstEtudiants[i];
+		
+		// Info de l'étudiant
+		lstInfoEtudiant.push(etudiant.code_etu);
+		lstInfoEtudiant.push(etudiant.nom_etu);
+		lstInfoEtudiant.push(etudiant.prenom_etu);
+		lstInfoEtudiant.push("A");
+		lstInfoEtudiant.push(etudiant.cursus);
+
+		// Note de l'étudiant
+
+		// Il faut gérer les compétences obtenues lors du précédent semestre / lors de la précédente année
+
+		if (numSemestre !== 2) {
+			if (idAnnee - 1 < 1 ) {
+				for (let i = 0; i < 6; i++) {
+					lstNoteEtudiant.push("");
 				}
-	
-				lstEntetes.push(lstCompetencesSem1[i].label+ "" + lstCompetences[i].label);
-			}
-	
-			lstEntetes.push("Décision")
-		} else {
-			lstCompetences.forEach(comp => {
-				lstEntetes.push(comp.label);
-			});
-		}
-	
-		data.push(lstEntetes)
-	
-		let lstEtudiants = await getEtudiantsByIdSemestre(idSemestre);
-		let lstEtuComp = await getEtuComp();	
-		let lstEtuSemestre = await getEtuSemestre();
-	
-		let lstSemestres = await getSemestres();
-		let lstAllCompetences = await getCompetences();
-	
-		let lstImport = []
-	
-		for (let i = 0; i < lstEtudiants.length; i++) {
-			let lstEtudiantAffiche = []
-			let lstInfoEtudiant = []
-			let lstNoteEtudiant = []
-			let etudiant = lstEtudiants[i];
-			
-			// Info de l'étudiant
-			lstInfoEtudiant.push(etudiant.code_etu);
-			// lstInfoEtudiant.push(i + 1);
-			lstInfoEtudiant.push(etudiant.nom_etu);
-			lstInfoEtudiant.push(etudiant.prenom_etu);
-			lstInfoEtudiant.push("A");
-			lstInfoEtudiant.push(etudiant.cursus);
-	
-			// Note de l'étudiant
-	
-			// Il faut gérer les compétences obtenues lors du précédent semestre / lors de la précédente année
-			if (numSemestre !== 2) {
-				if (idAnnee - 1 < 1 ) {
-					for (let i = 0; i < 6; i++) {
-						lstNoteEtudiant.push("");
-					}
-					if (numSemestre == 5 || numSemestre == 6) {
-						if (idAnnee - 2 < 1 ) {
-							for (let i = 0; i < 6; i++) {
-								lstNoteEtudiant.push("");
-							}
-						}
-					}
-				} else {
-	
-					var labelAncienSemestre = "Semestre 2";
-					if (numSemestre == 5 || numSemestre == 6) {
-						if (idAnnee - 2 < 1 ) {
-							for (let i = 0; i < 6; i++) {
-								lstNoteEtudiant.push("");
-							}
-						} else {
-							let idSemestreAncien = lstSemestres.filter(item => item.id_annee == idAnnee - 2 && item.label == labelAncienSemestre)[0].id_semestre;
-							let lstAncienneComp = lstAllCompetences.filter(item => item.id_semestre == idSemestreAncien);
-							if (lstAncienneComp) {
-								for (let i = 0; i < lstAncienneComp.length; i++) {
-									let idComp = lstAncienneComp[i].id_comp;
-									let etuComp = lstEtuComp.filter(item => item.id_comp == idComp && item.id_etu == etudiant.id_etu)[0];
-									if (etuComp) {
-										lstNoteEtudiant.push(etuComp.passage);
-									} else {
-										lstNoteEtudiant.push("");
-									}
-								}
-							}
-							else {
-								for (let i = 0; i < 6; i++) {
-									lstNoteEtudiant.push("");
-								}
-							}
-							
-	
-						}
-						labelAncienSemestre = "Semestre 4";
-					}
-		
-					let idSemestreAncien = lstSemestres.filter(item => item.id_annee == idAnnee - 1 && item.label == labelAncienSemestre)[0].id_semestre;
-					let lstAncienneComp = lstAllCompetences.filter(item => item.id_semestre == idSemestreAncien);
-	
-					for (let i = 0; i < lstAncienneComp.length; i++) {
-						let idComp = lstAncienneComp[i].id_comp;
-						let etuComp = lstEtuComp.filter(item => item.id_comp == idComp && item.id_etu == etudiant.id_etu)[0];
-						if (etuComp) {
-							lstNoteEtudiant.push(etuComp.passage);
-						} else {
+				if (numSemestre == 5 || numSemestre == 6) {
+					if (idAnnee - 2 < 1 ) {
+						for (let i = 0; i < 6; i++) {
 							lstNoteEtudiant.push("");
 						}
 					}
 				}
-			}
-			
-			// Si le semestre est pair, on affiche le détail des compétences acquises dans l'année
-			if (numSemestre%2 == 0) {
-				for (let i = 0; i < lstCompetences.length; i++) {
-					let idComp = lstCompetences[i].id_comp;
-					let etuComp = lstEtuComp.filter(item => item.id_comp == idComp && item.id_etu == etudiant.id_etu)[0];
-					if (!etuComp){
-						lstNoteEtudiant.push("");
+			} else {
+				var labelAncienSemestre = "Semestre 2";
+				if (numSemestre == 5 || numSemestre == 6) {
+					if (idAnnee - 2 < 1 ) {
+						for (let i = 0; i < 6; i++) {
+							lstNoteEtudiant.push("");
+						}
 					} else {
+						let idSemestreAncien = lstSemestres.filter(item => item.id_annee == idAnnee - 2 && item.label == labelAncienSemestre)[0].id_semestre;
+						let lstAncienneComp = lstAllCompetences.filter(item => item.id_semestre == idSemestreAncien);
+						if (lstAncienneComp) {
+							for (let i = 0; i < lstAncienneComp.length; i++) {
+								let idComp = lstAncienneComp[i].id_comp;
+								let etuComp = lstEtuComp.filter(item => item.id_comp == idComp && item.id_etu == etudiant.id_etu)[0];
+								if (etuComp) {
+									lstNoteEtudiant.push(etuComp.passage);
+								} else {
+									lstNoteEtudiant.push("");
+								}
+							}
+						}
+						else {
+							for (let i = 0; i < 6; i++) {
+								lstNoteEtudiant.push("");
+							}
+						}
+					}
+					labelAncienSemestre = "Semestre 4";
+				}
+	
+				let idSemestreAncien = lstSemestres.filter(item => item.id_annee == idAnnee - 1 && item.label == labelAncienSemestre)[0].id_semestre;
+				let lstAncienneComp = lstAllCompetences.filter(item => item.id_semestre == idSemestreAncien);
+
+				for (let i = 0; i < lstAncienneComp.length; i++) {
+					let idComp = lstAncienneComp[i].id_comp;
+					let etuComp = lstEtuComp.filter(item => item.id_comp == idComp && item.id_etu == etudiant.id_etu)[0];
+					if (etuComp) {
 						lstNoteEtudiant.push(etuComp.passage);
+					} else {
+						lstNoteEtudiant.push("");
 					}
 				}
 			}
-	
-			//lstNoteEtudiant.push(etudiant.moyenne);
-			var totalComp = 0.0;
-	
-			let cptUEReussie = 0;
-			var totalComp = 0;
-	
+		}
+		
+		// Si le semestre est pair, on affiche le détail des compétences acquises dans l'année
+
+		if (numSemestre % 2 == 0) {
 			for (let i = 0; i < lstCompetences.length; i++) {
 				let idComp = lstCompetences[i].id_comp;
 				let etuComp = lstEtuComp.filter(item => item.id_comp == idComp && item.id_etu == etudiant.id_etu)[0];
-	
-				if (!etuComp) {
+				if (!etuComp){
 					lstNoteEtudiant.push("");
 				} else {
-					var moyenne_comp = etuComp.moyenne_comp
-	
-					if (numSemestre%2 == 0) {
-						var labelSemestre = "Semestre " + (numSemestre - 1);
-						let idSemestre1 = lstSemestres.filter(item => item.id_annee == idAnnee && item.label == labelSemestre)[0].id_semestre;
-						let lstCompetencesSem1 = lstAllCompetences.filter(item => item.id_semestre == idSemestre1);
-						let idCompSem1 = lstCompetencesSem1[i].id_comp;
-						let etuCompSem1 = lstEtuComp.filter(item => item.id_comp == idCompSem1 && item.id_etu == etudiant.id_etu)[0];
-						moyenne_comp = (Number(Number(etuCompSem1.moyenne_comp) + Number(moyenne_comp)) / 2).toFixed(2);
-	
-					} 
-	
-					lstNoteEtudiant.push(moyenne_comp);
-					totalComp = totalComp + Number(moyenne_comp);
-	
-					if (moyenne_comp >= 10) {
-						cptUEReussie ++;
-					}
+					lstNoteEtudiant.push(etuComp.passage);
 				}
-	
 			}
-	
-			if (numSemestre%2 == 0) {
-				let etuSemestre = lstEtuSemestre.filter(item => item.id_etu == etudiant.id_etu && item.id_semestre == idSemestre)[0];
-				lstNoteEtudiant.push(etuSemestre.validation)
-			}
-	
-			lstInfoEtudiant.push(cptUEReussie + "/" + lstCompetences.length);
-	
-			lstInfoEtudiant.forEach(element =>
-				lstEtudiantAffiche.push(element)
-			);
-	
-			if (numSemestre !== 5 && numSemestre !== 6) {
-				lstEtudiantAffiche.push(Number(totalComp/6).toFixed(2))
+		}
+
+		var totalComp = 0.0;
+		let cptUEReussie = 0;
+		var totalComp = 0;
+
+		for (let i = 0; i < lstCompetences.length; i++) {
+			let idComp = lstCompetences[i].id_comp;
+			let etuComp = lstEtuComp.filter(item => item.id_comp == idComp && item.id_etu == etudiant.id_etu)[0];
+
+			if (!etuComp) {
+				lstNoteEtudiant.push("");
 			} else {
-				lstEtudiantAffiche.push(Number(totalComp/3).toFixed(2))
-			}
-			
-			lstNoteEtudiant.forEach(element =>
-				lstEtudiantAffiche.push(element)
-			);
-			lstImport.push(lstEtudiantAffiche)
-		}
-	
-		lstImport.sort((a, b) => {
-			return parseFloat(b[6]) - parseFloat(a[6]);
-		});
-	
-		for (let i = 0; i < lstImport.length; i++) {
-			let lstEtudiantAffiche = lstImport[i];
-			lstEtudiantAffiche.splice(1, 0, i+1);
-			data.push(lstEtudiantAffiche)
-		}
+				var moyenne_comp = etuComp.moyenne_comp;
 
-		let nomFichier = "Jury_" + semestre.replace(" ", "_") + "_" + localStorage.getItem('labelCurrentYear') + ".xlsx";
+				if (numSemestre%2 == 0) {
+					var labelSemestre = "Semestre " + (numSemestre - 1);
+					let idSemestre1 = lstSemestres.filter(item => item.id_annee == idAnnee && item.label == labelSemestre)[0].id_semestre;
+					let lstCompetencesSem1 = lstAllCompetences.filter(item => item.id_semestre == idSemestre1);
+					let idCompSem1 = lstCompetencesSem1[i].id_comp;
+					let etuCompSem1 = lstEtuComp.filter(item => item.id_comp == idCompSem1 && item.id_etu == etudiant.id_etu)[0];
+					moyenne_comp = (Number(Number(etuCompSem1.moyenne_comp) + Number(moyenne_comp)) / 2).toFixed(2);
+				}
 
-		createExcel(data, nomFichier);
-	
-	}
+				lstNoteEtudiant.push(moyenne_comp);
+				totalComp = totalComp + Number(moyenne_comp);
 
-
-	function createExcel(data, nomFichier) {
-		// Convertir les chaînes de caractères en float si possible
-		for (let i = 0; i < data.length; i++) {
-			for (let j = 0; j < data[i].length; j++) {
-				let cellValue = data[i][j];
-				if (cellValue !== "" && !isNaN(cellValue)) {
-					data[i][j] = parseFloat(cellValue);
+				if (moyenne_comp >= 10) {
+					cptUEReussie ++;
 				}
 			}
 		}
-	
-		// Créer la feuille de calcul
-		var ws = XLSX.utils.aoa_to_sheet(data);
-		var wb = XLSX.utils.book_new();
-		XLSX.utils.book_append_sheet(wb, ws, "Etudiants");
-	
-		// Écrire le fichier Excel
-		XLSX.writeFile(wb, nomFichier);
+
+		if (numSemestre%2 == 0) {
+			let etuSemestre = lstEtuSemestre.filter(item => item.id_etu == etudiant.id_etu && item.id_semestre == idSemestre)[0];
+			lstNoteEtudiant.push(etuSemestre.validation);
+		}
+
+		lstInfoEtudiant.push(cptUEReussie + "/" + lstCompetences.length);
+
+		lstInfoEtudiant.forEach(element => lstEtudiantAffiche.push(element));
+
+		if (numSemestre !== 5 && numSemestre !== 6) {
+			lstEtudiantAffiche.push(Number(totalComp/6).toFixed(2))
+		} else {
+			lstEtudiantAffiche.push(Number(totalComp/3).toFixed(2))
+		}
+		
+		lstNoteEtudiant.forEach(element => lstEtudiantAffiche.push(element));
+		lstImport.push(lstEtudiantAffiche)
 	}
 
-	$("#exportFile").click(exportData);
-});
+	lstImport.sort((a, b) => {
+		return parseFloat(b[6]) - parseFloat(a[6]);
+	});
+
+	for (let i = 0; i < lstImport.length; i++) {
+		let lstEtudiantAffiche = lstImport[i];
+		lstEtudiantAffiche.splice(1, 0, i+1);
+		data.push(lstEtudiantAffiche);
+	}
+
+	let nomFichier = "Jury_" + semestre.replace(" ", "_") + "_" + localStorage.getItem('labelCurrentYear') + ".xlsx";
+
+	createExcel(data, nomFichier);
+}
+
+// Méthode permettant de générer un fichier Excel
+
+function createExcel(data, nomFichier) {
+	for (let i = 0; i < data.length; i++) {
+		for (let j = 0; j < data[i].length; j++) {
+			let cellValue = data[i][j];
+			if (cellValue !== "" && !isNaN(cellValue)) {
+				data[i][j] = parseFloat(cellValue);
+			}
+		}
+	}
+
+	// Créer la feuille de calcul
+
+	var ws = XLSX.utils.aoa_to_sheet(data);
+	var wb = XLSX.utils.book_new();
+	XLSX.utils.book_append_sheet(wb, ws, "Etudiants");
+
+	// Écrire le fichier Excel
+
+	XLSX.writeFile(wb, nomFichier);
+}
+
+// Événement permettant de lancer l'export des données
+
+$("#exportFile").click(exportData);
 
 
 

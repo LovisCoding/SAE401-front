@@ -8,8 +8,8 @@ class Nav {
 		if (this.isAdmin == null || this.isAdmin == undefined) {
 			window.location.href = 'http://localhost:8080/login';
 		}
-		this.loadNav() 
 
+		this.loadNav() 
 	}
 
 	// Méthode pour charger la barre de navigation
@@ -83,23 +83,16 @@ class Nav {
 				if (profilePopup.style.display === 'none' || profilePopup.style.display === '') {
 					profilePopup.style.display = 'block';
 					arrow.classList.add('rotate');
-					
-					
 				} else {
 					profilePopup.style.display = 'none';
 					arrow.classList.remove('rotate');
-					
 				}
-				
 			});
 
 			document.addEventListener('click', function (event) {
 				if (!profile.contains(event.target) && !profilePopup.contains(event.target)) {
-					
 					profilePopup.style.display = 'none';
 					arrow.classList.remove('rotate');
-
-					
 				}
 				if (btnLogout.contains(event.target)) {
 					localStorage.removeItem('token');
@@ -109,8 +102,6 @@ class Nav {
 					window.location.href = 'http://localhost:8080/login';
 				}
 			});
-			
-
 		});
 	}
 
@@ -123,6 +114,9 @@ class Nav {
 			});
 		});
 	}
+
+	// Méthode pour sélectionner l'onglet de la barre de navigation en fonction de la page courante
+
 	setSelectedNav() {
 		switch (document.location.pathname) {
 			case '/home':
@@ -141,7 +135,6 @@ class Nav {
 				case '/export/':
 				document.getElementById('navExport').classList.add('nav-selected');
 				break;
-
 			default:
 				break;
 		}
@@ -150,4 +143,4 @@ class Nav {
 
 // Instanciation de la classe Nav
 
-const nav = new Nav();
+new Nav();

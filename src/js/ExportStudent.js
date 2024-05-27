@@ -1,16 +1,8 @@
-async function loadImage(file) {
-	return new Promise((resolve, reject) => {
-		const fileReader = new FileReader();
-		fileReader.onload = () => resolve(fileReader.result);
-		fileReader.onerror = () => reject(fileReader.error);
-		fileReader.readAsArrayBuffer(file);
-	});
-}
+// Méthode permettant de générer un avis de poursuite d'études pour un ou plusieurs étudiants
 
 async function createPdf(type) {
 
 	const zip = new JSZip();
-
 	const studentSelect = document.querySelector('.student');
 	let student = [];
 
@@ -23,6 +15,7 @@ async function createPdf(type) {
 	const year = $(".form-control-modified option:selected").text();
 	const yearBefore = (parseInt(year.split('-')[0]) - 1) + '-' + (parseInt(year.split('-')[1]) - 1);
 	const yearBefore2 = (parseInt(year.split('-')[0]) - 2) + '-' + (parseInt(year.split('-')[1]) - 2);
+	const yearPromo = (parseInt(year.split('-')[0]) - 2) + '-' + (parseInt(year.split('-')[1]));
 
 	const semester2 = await getSemestre('Semestre 2', getAnnee(yearBefore2));
 	const semester4 = await getSemestre('Semestre 4', getAnnee(yearBefore));
@@ -35,22 +28,22 @@ async function createPdf(type) {
 	const loadingCoeff = document.getElementById('loadingCoeff');
 	loadingCoeff.classList.remove('d-none');
 
-	const existingPdfBytes = await fetch('./Avis_Poursuite_etudes_modele.pdf').then(res => res.arrayBuffer());
-	let pdfDoc = await PDFLib.PDFDocument.load(existingPdfBytes);
+	const existingPdf = await fetch('./Avis_Poursuite_etudes_modele.pdf').then(res => res.arrayBuffer());
+	let pdfDoc = await PDFLib.PDFDocument.load(existingPdf);
 
 	for (const stud of student) {
 
 		if (type === 'multiple') {
-			const existingPdfBytes = await fetch('./Avis_Poursuite_etudes_modele.pdf').then(res => res.arrayBuffer());
-			pdfDoc = await PDFLib.PDFDocument.load(existingPdfBytes);
+			const existingPdf = await fetch('./Avis_Poursuite_etudes_modele.pdf').then(res => res.arrayBuffer());
+			pdfDoc = await PDFLib.PDFDocument.load(existingPdf);
 		}
 
 		let page = pdfDoc.getPages()[0];
 
 		if (type === 'uniquePromo' && student.indexOf(stud) !== 0) {
 			page = pdfDoc.addPage();
-			const backgroundBytes = await fetch('./Avis_Poursuite_etudes_modele.jpg').then(res => res.arrayBuffer());
-			const backgroundImage = await pdfDoc.embedJpg(backgroundBytes);
+			const backgroundContent = await fetch('./Avis_Poursuite_etudes_modele.jpg').then(res => res.arrayBuffer());
+			const backgroundImage = await pdfDoc.embedJpg(backgroundContent);
 			const { width, height } = page.getSize();
 			page.drawImage(backgroundImage, {
 				x: 0,
@@ -70,8 +63,8 @@ async function createPdf(type) {
 
 		if (fileLogo) {
 			try {
-				const imageBytes3 = await loadImage(fileLogo);
-				const image = await pdfDoc.embedPng(imageBytes3);
+				const imageBytes = await loadImage(fileLogo);
+				const image = await pdfDoc.embedPng(imageBytes);
 				const imageDims = image.scale(0.5);
 				page.drawImage(image, {
 					x: page.getWidth() / 2 - imageDims.width / 2 - 220,
@@ -91,14 +84,14 @@ async function createPdf(type) {
 
 		if (fileLogo2) {
 			try {
-				const imageBytes4 = await loadImage(fileLogo2);
-				const image2 = await pdfDoc.embedPng(imageBytes4);
-				const imageDims2 = image2.scale(0.5);
-				page.drawImage(image2, {
-					x: page.getWidth() / 2 - imageDims2.width / 2 + 210,
-					y: page.getHeight() / 2 - imageDims2.height / 2 + 370,
-					width: imageDims2.width,
-					height: imageDims2.height,
+				const imageBytes = await loadImage(fileLogo2);
+				const image = await pdfDoc.embedPng(imageBytes);
+				const imageDims = image.scale(0.5);
+				page.drawImage(image, {
+					x: page.getWidth() / 2 - imageDims.width / 2 + 210,
+					y: page.getHeight() / 2 - imageDims.height / 2 + 370,
+					width: imageDims.width,
+					height: imageDims.height,
 				});
 			} catch (error) {
 				console.error('Error loading the image: ', error);
@@ -112,8 +105,8 @@ async function createPdf(type) {
 
 		if (file) {
 			try {
-				const imageBytes3 = await loadImage(file);
-				const image = await pdfDoc.embedPng(imageBytes3);
+				const imageBytes = await loadImage(file);
+				const image = await pdfDoc.embedPng(imageBytes);
 				const imageDims = image.scale(0.1);
 				page.drawImage(image, {
 					x: page.getWidth() / 2 - imageDims.width / 2 + 190,
@@ -130,78 +123,76 @@ async function createPdf(type) {
 
 		page.drawText(stud, { x: 210, y: height - 4 * 35.5, size: 10, font: font, color: color, });
 
-		let niveau_Y = height - 4 * 38.7;
+		let level_Y = height - 4 * 38.7;
 
-		const studentData = await fetch(`http://localhost:8000/api/etudiant`).then(res => res.json());
+		const studentData = await getStudents();
 		const studentName = stud.split(' ')[0];
 		const studentPrenom = stud.split(' ')[1];
 		const studentInfo = studentData.find(s => s.nom_etu === studentName && s.prenom_etu === studentPrenom);
 		const isAlternant = studentInfo.alternant;
 
-		page.drawText('Non', { x: 251, y: niveau_Y, size: 10, font: font, color: color });
-		page.drawText('Non', { x: 371, y: niveau_Y, size: 10, font: font, color: color });
-		page.drawText(isAlternant ? 'Oui' : 'Non', { x: 485, y: niveau_Y, size: 10, font: font, color: color });
+		page.drawText('Non', { x: 251, y: level_Y, size: 10, font: font, color: color });
+		page.drawText('Non', { x: 371, y: level_Y, size: 10, font: font, color: color });
+		page.drawText(isAlternant ? 'Oui' : 'Non', { x: 485, y: level_Y, size: 10, font: font, color: color });
 
-		niveau_Y = height - 4 * 41.7;
-		const yearPromo = (parseInt(year.split('-')[0]) - 2) + '-' + (parseInt(year.split('-')[1]));
-		page.drawText(yearBefore2, { x: 251, y: niveau_Y, size: 10, font: font, color: color });
-		page.drawText(yearBefore, { x: 371, y: niveau_Y, size: 10, font: font, color: color });
-		page.drawText(year, { x: 485, y: niveau_Y, size: 10, font: font, color: color });
+		level_Y = height - 4 * 41.7;
+
+		page.drawText(yearBefore2, { x: 251, y: level_Y, size: 10, font: font, color: color });
+		page.drawText(yearBefore, { x: 371, y: level_Y, size: 10, font: font, color: color });
+		page.drawText(year, { x: 485, y: level_Y, size: 10, font: font, color: color });
 		page.drawText(yearPromo, { x: 410, y: height - 4 * 21, size: 10, font: font, color: color, });
 
-		let niveau_X = 229;
-		niveau_Y = 500;
+		let level_X = 229;
+		level_Y = 500;
 
-		const students = await getStudents();
-		const studentsInfo = students.find(s => s.nom_etu === studentName && s.prenom_etu === studentPrenom);
+		const moyenneBUT1 = await getMoyenneEtu(lstImportBUT1, studentInfo.id_etu);
+		const moyenneBUT2 = await getMoyenneEtu(lstImportBUT2, studentInfo.id_etu);
+		const moyenneBUT3 = await getMoyenneEtu(lstImportBUT3, studentInfo.id_etu);
 
-		const moyenneBUT1 = await getMoyenneEtu(lstImportBUT1, studentsInfo.id_etu);
-		const moyenneBUT2 = await getMoyenneEtu(lstImportBUT2, studentsInfo.id_etu);
-		const moyenneBUT3 = await getMoyenneEtu(lstImportBUT3, studentsInfo.id_etu);
-
-		const rangEtuBUT1 = await getRangEtu(lstImportBUT1, studentsInfo.id_etu);
-		const rangEtuBUT2 = await getRangEtu(lstImportBUT2, studentsInfo.id_etu);
-		const rangEtuBUT3 = await getRangEtu(lstImportBUT3, studentsInfo.id_etu);
+		const rangEtuBUT1 = await getRangEtu(lstImportBUT1, studentInfo.id_etu);
+		const rangEtuBUT2 = await getRangEtu(lstImportBUT2, studentInfo.id_etu);
+		const rangEtuBUT3 = await getRangEtu(lstImportBUT3, studentInfo.id_etu);
 
 		for (let index = moyenneBUT1.length - 1; index >= 0; index--) {
 			let moyenne = moyenneBUT1[index];
 			let rang = rangEtuBUT1[index];
-			page.drawText(moyenne + '', { x: niveau_X, y: niveau_Y, size: 10, font: font, color: color });
-			page.drawText(rang + '', { x: niveau_X + 45, y: niveau_Y, size: 10, font: font, color: color });
-			niveau_Y += 15;
+			page.drawText(moyenne + '', { x: level_X, y: level_Y, size: 10, font: font, color: color });
+			page.drawText(rang + '', { x: level_X + 45, y: level_Y, size: 10, font: font, color: color });
+			level_Y += 15;
 		}
 
-		niveau_X = 229 + 75;
-		niveau_Y = 500;
+		level_X = 229 + 75;
+		level_Y = 500;
 
 		for (let index = moyenneBUT2.length - 1; index >= 0; index--) {
 			let moyenne = moyenneBUT2[index];
 			let rang = rangEtuBUT2[index];
-			page.drawText(moyenne + '', { x: niveau_X, y: niveau_Y, size: 10, font: font, color: color });
-			page.drawText(rang + '', { x: niveau_X + 45, y: niveau_Y, size: 10, font: font, color: color });
-			niveau_Y += 15;
+			page.drawText(moyenne + '', { x: level_X, y: level_Y, size: 10, font: font, color: color });
+			page.drawText(rang + '', { x: level_X + 45, y: level_Y, size: 10, font: font, color: color });
+			level_Y += 15;
 		}
 
-		niveau_X = 229 + 42;
-		niveau_Y = 392;
+		level_X = 229 + 42;
+		level_Y = 392;
 
 		for (let index = moyenneBUT3.length - 1; index >= 0; index--) {
+
 			if (index === 0) {
-				niveau_Y = 378 - 45;
+				level_Y = 378 - 45;
 			}
+
 			let moyenne = moyenneBUT3[index];
 			let rang = rangEtuBUT3[index];
-			page.drawText(moyenne + '', { x: niveau_X, y: niveau_Y, size: 10, font: font, color: color });
-			page.drawText(rang + '', { x: niveau_X + 65, y: niveau_Y, size: 10, font: font, color: color });
-			niveau_Y += 15;
+			page.drawText(moyenne + '', { x: level_X, y: level_Y, size: 10, font: font, color: color });
+			page.drawText(rang + '', { x: level_X + 65, y: level_Y, size: 10, font: font, color: color });
+			level_Y += 15;
 		}
 
 		const moduleLabels = ['BINR106', 'BINR107', 'BINR207', 'BINR208', 'BINR209', 'BINR308', 'BINR309', 'BINR412', 'BINR511', 'BINR512', 'BINR110', 'BINR212', 'BINR312', 'BINR405'];
 
 		const modules = await getModules();
 		const coefficients = await getCoefficents();
-		const etumodules = await getEtumodules();
-		const allStudent = await getStudents();
+		const etumodules = await getEtuModule();
 
 		const moduleData = {};
 		const coeffData = {};
@@ -217,7 +208,7 @@ async function createPdf(type) {
 
 		const studentAverages = {};
 
-		allStudent.forEach(student => {
+		studentData.forEach(student => {
 			const studentId = student.id_etu;
 			const studentModules = etumodules.filter(e => e.id_etu === studentId);
 
@@ -246,7 +237,7 @@ async function createPdf(type) {
 			const averages = Object.values(studentAverages).map(avg => avg[subject]);
 			const sortedAverages = [...averages].sort((a, b) => b - a);
 
-			return allStudent.map(student => {
+			return studentData.map(student => {
 				const studentId = student.id_etu;
 				const studentAverage = studentAverages[studentId][subject];
 				const rank = sortedAverages.indexOf(studentAverage) + 1;
@@ -259,7 +250,7 @@ async function createPdf(type) {
 			});
 		};
 
-		const specificStudentId = studentsInfo.id_etu;
+		const specificStudentId = studentInfo.id_etu;
 
 		const ranksMaths = rankStudents('moyenneMaths');
 		const ranksBUT2Maths = rankStudents('moyenneBUT2Maths');
@@ -273,14 +264,14 @@ async function createPdf(type) {
 		};
 
 		const specificStudentRanks = {
-			moyenneMaths: findStudentRank(ranksMaths, studentsInfo.id_etu),
-			moyenneBUT2Maths: findStudentRank(ranksBUT2Maths, studentsInfo.id_etu),
-			moyenneBUT3Maths: findStudentRank(ranksBUT3Maths, studentsInfo.id_etu),
-			moyenneAnglais: findStudentRank(ranksAnglais, studentsInfo.id_etu),
-			moyenneAnglaisBUT2: findStudentRank(ranksAnglaisBUT2, studentsInfo.id_etu)
+			moyenneMaths: findStudentRank(ranksMaths, studentInfo.id_etu),
+			moyenneBUT2Maths: findStudentRank(ranksBUT2Maths, studentInfo.id_etu),
+			moyenneBUT3Maths: findStudentRank(ranksBUT3Maths, studentInfo.id_etu),
+			moyenneAnglais: findStudentRank(ranksAnglais, studentInfo.id_etu),
+			moyenneAnglaisBUT2: findStudentRank(ranksAnglaisBUT2, studentInfo.id_etu)
 		};
 
-		const specificStudentAverages = studentAverages[studentsInfo.id_etu];
+		const specificStudentAverages = studentAverages[studentInfo.id_etu];
 
 		if (specificStudentAverages) {
 
@@ -300,63 +291,63 @@ async function createPdf(type) {
 				moyenneAnglaisBUT2: rankAnglaisBUT2
 			} = specificStudentRanks;
 		
-			niveau_X = 259;
-			page.drawText(moyenneMaths.toFixed(2) + '', { x: niveau_X - 30, y: height - 4 * 89, size: 10, font: font, color: color });
-			niveau_X += 45;
-			page.drawText(rankMaths + '', { x: niveau_X - 30, y: height - 4 * 89, size: 10, font: font, color: color });
-			niveau_X = 330;
-			page.drawText(moyenneBUT2Maths.toFixed(2) + '', { x: niveau_X - 25, y: height - 4 * 89, size: 10, font: font, color: color });
-			niveau_X += 49;
-			page.drawText(rankBUT2Maths + '', { x: niveau_X - 30, y: height - 4 * 89, size: 10, font: font, color: color });
+			level_X = 259;
+			page.drawText(moyenneMaths.toFixed(2) + '', { x: level_X - 30, y: height - 4 * 89, size: 10, font: font, color: color });
+			level_X += 45;
+			page.drawText(rankMaths + '', { x: level_X - 30, y: height - 4 * 89, size: 10, font: font, color: color });
+			level_X = 330;
+			page.drawText(moyenneBUT2Maths.toFixed(2) + '', { x: level_X - 25, y: height - 4 * 89, size: 10, font: font, color: color });
+			level_X += 49;
+			page.drawText(rankBUT2Maths + '', { x: level_X - 30, y: height - 4 * 89, size: 10, font: font, color: color });
 
-			niveau_X = 309;
+			level_X = 309;
 
 			if (moyenneBUT3Maths === 0) {
-				page.drawText('', { x: niveau_X - 32, y: height - 4 * 130.5, size: 10, font: font, color: color });
+				page.drawText('', { x: level_X - 32, y: height - 4 * 130.5, size: 10, font: font, color: color });
 			} else {
-				page.drawText(moyenneBUT3Maths.toFixed(2) + '', { x: niveau_X - 38, y: height - 4 * 130.5, size: 10, font: font, color: color });
+				page.drawText(moyenneBUT3Maths.toFixed(2) + '', { x: level_X - 38, y: height - 4 * 130.5, size: 10, font: font, color: color });
 			}
 
-			niveau_X += 57;
+			level_X += 57;
 
 			if (moyenneBUT3Maths === 0) {
-				page.drawText('', { x: niveau_X - 32, y: height - 4 * 130.5, size: 10, font: font, color: color });
+				page.drawText('', { x: level_X - 32, y: height - 4 * 130.5, size: 10, font: font, color: color });
 			} else {
-				page.drawText(rankBUT3Maths + '', { x: niveau_X - 30, y: height - 4 * 130.5, size: 10, font: font, color: color });
+				page.drawText(rankBUT3Maths + '', { x: level_X - 30, y: height - 4 * 130.5, size: 10, font: font, color: color });
 			}
 		
-			niveau_X = 259;
-			page.drawText(moyenneAnglais.toFixed(2) + '', { x: niveau_X - 30, y: height - 4 * 92.5, size: 10, font: font, color: color });
-			niveau_X += 45;
-			page.drawText(rankAnglais + '', { x: niveau_X - 30, y: height - 4 * 92.5, size: 10, font: font, color: color });
-			niveau_X = 330;
-			page.drawText(moyenneAnglaisBUT2.toFixed(2) + '', { x: niveau_X - 25, y: height - 4 * 92.5, size: 10, font: font, color: color });
-			niveau_X += 49;
-			page.drawText(rankAnglaisBUT2 + '', { x: niveau_X - 30, y: height - 4 * 92.5, size: 10, font: font, color: color });
+			level_X = 259;
+			page.drawText(moyenneAnglais.toFixed(2) + '', { x: level_X - 30, y: height - 4 * 92.5, size: 10, font: font, color: color });
+			level_X += 45;
+			page.drawText(rankAnglais + '', { x: level_X - 30, y: height - 4 * 92.5, size: 10, font: font, color: color });
+			level_X = 330;
+			page.drawText(moyenneAnglaisBUT2.toFixed(2) + '', { x: level_X - 25, y: height - 4 * 92.5, size: 10, font: font, color: color });
+			level_X += 49;
+			page.drawText(rankAnglaisBUT2 + '', { x: level_X - 30, y: height - 4 * 92.5, size: 10, font: font, color: color });
 		} else {
 			console.error(`Averages for student ${specificStudentId} are not available.`);
 		}
 
-		const absences = await getAbsencesEtudiant(studentsInfo.id_etu);
-		const semestreAbsences = Array.from({ length: 6 }, () => []);
+		const absences = await getStudentAbsences(studentInfo.id_etu);
+		const semesterAbsences = Array.from({ length: 6 }, () => []);
 
 		absences.forEach((absence) => {
 			const semestreIndex = absence.id_semestre - 1;
-			semestreAbsences[semestreIndex].push(absence.absences);
+			semesterAbsences[semestreIndex].push(absence.absences);
 		});
 		
 		const absencesYear = Array.from({ length: 3 }, () => []);
 
-		absencesYear[0] = semestreAbsences[0].map((absence, index) => absence + semestreAbsences[1][index]);
-		absencesYear[1] = semestreAbsences[2].map((absence, index) => absence + semestreAbsences[3][index]);
-		absencesYear[2] = semestreAbsences[4];
+		absencesYear[0] = semesterAbsences[0].map((absence, index) => absence + semesterAbsences[1][index]);
+		absencesYear[1] = semesterAbsences[2].map((absence, index) => absence + semesterAbsences[3][index]);
+		absencesYear[2] = semesterAbsences[4];
 
-		niveau_X = 259;
-		page.drawText(absencesYear[0] + '', { x: niveau_X, y: height - 4 * 96, size: 10, font: font, color: color });
-		niveau_X = 330;
-		page.drawText(absencesYear[1] + '', { x: niveau_X, y: height - 4 * 96, size: 10, font: font, color: color });
-		niveau_X = 309;
-		page.drawText(absencesYear[2] + '', { x: niveau_X, y: height - 4 * 134.5, size: 10, font: font, color: color });
+		level_X = 259;
+		page.drawText(absencesYear[0] + '', { x: level_X, y: height - 4 * 96, size: 10, font: font, color: color });
+		level_X = 330;
+		page.drawText(absencesYear[1] + '', { x: level_X, y: height - 4 * 96, size: 10, font: font, color: color });
+		level_X = 309;
+		page.drawText(absencesYear[2] + '', { x: level_X, y: height - 4 * 134.5, size: 10, font: font, color: color });
 
 		const avisMaster = document.getElementById('avisMaster').value;
 
@@ -439,6 +430,70 @@ async function createPdf(type) {
 	loadingCoeff.classList.add('d-none');
 }
 
+// Méthode permettant de récupérer les compétences
+
+async function getCompetences() {
+	const response = await fetch('http://localhost:8000/api/competence');
+	return response.json();
+}
+
+// Méthode permettant de récupérer les étudiants
+
+async function getStudents() {
+	const response = await fetch('http://localhost:8000/api/etudiant');
+	return response.json();
+}
+
+// Méthode permettant de récupérer les absences en fonction de l'ID de l'étudiant passé en paramètre
+
+async function getStudentAbsences(etudiantId) {
+	const response = await fetch(`http://localhost:8000/api/etuSemestre/${etudiantId}`);
+	return response.json();
+}
+
+// Méthode permettant de récupérer les etuModules
+
+async function getEtuModule() {
+	const response = await fetch('http://localhost:8000/api/etuModule');
+	return response.json();
+}
+
+// Méthode permettant de récupérer le semestre à partir de son Label
+
+async function getSemestre(label) {
+	const response = await fetch(`http://localhost:8000/api/semestre`);
+	const data = await response.json();
+	return data.find(item => item.label == label);
+}
+
+// Méthode permettant de récuperer l'année à partir du Label
+
+async function getAnnee(annee) {
+	const response = await fetch(`http://localhost:8000/api/annee`);
+	const data = await response.json();
+	return data.find(item => item.annee == annee);
+}
+
+// Méthode permettant de récupérer les coefficients
+
+async function getCoefficents() {
+	const response = await fetch('http://localhost:8000/api/coefficient');
+	return response.json();
+}
+
+// Méthode permettant de charger un fichier image depuis un input de type file
+
+async function loadImage(file) {
+	return new Promise((resolve, reject) => {
+		const fileReader = new FileReader();
+		fileReader.onload = () => resolve(fileReader.result);
+		fileReader.onerror = () => reject(fileReader.error);
+		fileReader.readAsArrayBuffer(file);
+	});
+}
+
+// Méthode permettant de récupérer les avis des étudiants et de les traiter
+
 async function fetchAndProcessAvis() {
 	const avisData = await fetch('http://localhost:8000/api/avis').then(res => res.json());
 	const avisCounts = {
@@ -495,36 +550,7 @@ async function fetchAndProcessAvis() {
 	return avisCounts;
 }
 
-document.getElementById('exportStudent').addEventListener('click', function() {
-	if (document.getElementById('fileUnique').checked) {
-		createPdf('unique');
-	} else if (document.getElementById('fileMultiple').checked) {
-		createPdf('multiple');
-	} else if (document.getElementById('fileUniquePromo').checked) {
-		createPdf('uniquePromo');
-	}
-});
-
-
-async function getCompetences() {
-	const response = await fetch('http://localhost:8000/api/competence');
-	return response.json();
-}
-
-async function getStudents() {
-	const response = await fetch('http://localhost:8000/api/etudiant');
-	return response.json();
-}
-
-async function getAbsencesEtudiant(etudiantId) {
-	const response = await fetch(`http://localhost:8000/api/etuSemestre/${etudiantId}`);
-	return response.json();
-}
-
-async function getEtumodules() {
-	const response = await fetch('http://localhost:8000/api/etuModule');
-	return response.json();
-}
+// Méthode permettant de récupérer les notes de l'étudiant, du semestre et de l'année passés en paramètres
 
 async function getLstImport(idSemestre, numSemestre, idAnnee) {
 	let lstCompetences = await getCompetencesByIdSemestre(idSemestre);
@@ -535,19 +561,16 @@ async function getLstImport(idSemestre, numSemestre, idAnnee) {
 	let lstSemestres = await getSemestres();
 	let lstAllCompetences = await getCompetences();
 
-	let lstImport = []
+	let lstImport = [];
+
 	for (let i = 0; i < lstEtudiants.length; i++) {
 		let lstNoteEtudiant = []
 		let etudiant = lstEtudiants[i];
-		
-		// Info de l'étudiant
-		lstNoteEtudiant.push(etudiant.code_etu);
-
-		//lstNoteEtudiant.push(etudiant.moyenne);
 		var totalComp = 0.0;
-
 		let cptUEReussie = 0;
 		var totalComp = 0;
+
+		lstNoteEtudiant.push(etudiant.code_etu);
 
 		for (let i = 0; i < lstCompetences.length; i++) {
 			let idComp = lstCompetences[i].id_comp;
@@ -565,8 +588,7 @@ async function getLstImport(idSemestre, numSemestre, idAnnee) {
 					let idCompSem1 = lstCompetencesSem1[i].id_comp;
 					let etuCompSem1 = lstEtuComp.filter(item => item.id_comp == idCompSem1 && item.id_etu == etudiant.id_etu)[0];
 					moyenne_comp = (Number(Number(etuCompSem1.moyenne_comp) + Number(moyenne_comp)) / 2).toFixed(2);
-
-				} 
+				}
 
 				lstNoteEtudiant.push(moyenne_comp);
 				totalComp = totalComp + Number(moyenne_comp);
@@ -575,7 +597,6 @@ async function getLstImport(idSemestre, numSemestre, idAnnee) {
 					cptUEReussie ++;
 				}
 			}
-
 		}
 
 		lstImport.push(lstNoteEtudiant)
@@ -584,11 +605,15 @@ async function getLstImport(idSemestre, numSemestre, idAnnee) {
 	return lstImport;
 }
 
+// Méthode permetant de récupérer le rang de l'étudiant par année et par compétence
+
 async function getRangEtu(lstImport, idEtu) {
 	let lstRangEtu = [];
+
 	if (!lstImport || !lstImport[0]) {
 		return;
 	}
+
 	let numComp = lstImport[0].length - 1;
 
 	for (let i=1 ; i<=numComp ; i++) {
@@ -596,7 +621,8 @@ async function getRangEtu(lstImport, idEtu) {
 			return parseFloat(b[i]) - parseFloat(a[i]);
 		});
 
-		var rangEtu = -1
+		var rangEtu = -1;
+
 		for (let i = 0; i < lstImport.length; i++) {
 			if (Number(lstImport[i][0]) == idEtu) {
 				rangEtu = i+1;
@@ -604,11 +630,12 @@ async function getRangEtu(lstImport, idEtu) {
 		}
 
 		lstRangEtu.push(rangEtu);
-
 	}
 
 	return lstRangEtu;
 }
+
+// Méthode permettant de déterminer la moyenne de l'étudiant
 
 async function getMoyenneEtu(lstImport, idEtu) {
 	let lstMoyenneEtu = [];
@@ -616,10 +643,8 @@ async function getMoyenneEtu(lstImport, idEtu) {
 		return;
 	}
 
-	// Trouver la sous-liste contenant l'ID
 	let etudiant = lstImport.find(item => Number(item[0]) === idEtu);
 
-	// Si l'étudiant est trouvé, extraire les éléments après le premier
 	if (etudiant) {
 		lstMoyenneEtu = etudiant.slice(1);
 	}
@@ -627,19 +652,14 @@ async function getMoyenneEtu(lstImport, idEtu) {
 	return lstMoyenneEtu;
 }
 
-async function getSemestre(label) {
-	const response = await fetch(`http://localhost:8000/api/semestre`);
-	const data = await response.json();
-	return data.find(item => item.label == label);
-}
+// Initialisation du type d'export selon le choix de l'utilisateur
 
-async function getAnnee(annee) {
-	const response = await fetch(`http://localhost:8000/api/annee`);
-	const data = await response.json();
-	return data.find(item => item.annee == annee);
-}
-
-async function getCoefficents() {
-	const response = await fetch('http://localhost:8000/api/coefficient');
-	return response.json();
-}
+document.getElementById('exportStudent').addEventListener('click', function() {
+	if (document.getElementById('fileUnique').checked) {
+		createPdf('unique');
+	} else if (document.getElementById('fileMultiple').checked) {
+		createPdf('multiple');
+	} else if (document.getElementById('fileUniquePromo').checked) {
+		createPdf('uniquePromo');
+	}
+});

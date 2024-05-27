@@ -61,8 +61,11 @@ h6 {
 }
 
 .typeProc {
-	margin-left: 4rem;
 	margin-top: 3rem;
+}
+
+#jury {
+	margin-left: 3rem;
 }
 
 #fileUnique {
@@ -71,6 +74,11 @@ h6 {
 
 .labelSemester {
 	margin-top: 1.5rem;
+	margin-left: 1rem;
+}
+
+#semester {
+	margin-left: 0.5rem;
 }
 
 .settings {
@@ -188,4 +196,8 @@ h6 {
 .validate {
 	border: 1px solid #13c758;
 	border-style: solid;
+}
+
+#exportFile {
+	margin-left: 1.2rem;
 }
