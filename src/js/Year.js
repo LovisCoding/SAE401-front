@@ -21,6 +21,7 @@ class Year {
 	// Méthode pour charger les années
 
 	loadYears() {
+		$('#ddlYear').append('<option value="' + 0 + '" selected>' + '2023-2024' + '</option>');
 		$.ajax({
 			url: 'http://localhost:8000/api/annee',
 			type: 'GET',

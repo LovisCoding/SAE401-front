@@ -3,11 +3,8 @@ class Nav {
 	// Déclaration du constructeur
 
 	constructor() {
-		this.isAdmin = localStorage.getItem('isadmin');
-		this.token = localStorage.getItem('token');
-		if (this.isAdmin == null || this.isAdmin == undefined) {
-			window.location.href = 'http://localhost:8080/login';
-		}
+		this.isAdmin = 'true'
+
 
 		this.loadNav() 
 	}
@@ -61,8 +58,8 @@ class Nav {
 						<div class="profile-info">
 							<div class="profile-icon"><img src="/img/logoProfilePopUp.png" width="90" height="80" class="arrow" alt=""/></div>
 							<div class="profile-text">
-								<div class="username">${localStorage.getItem('identifiant')}</div>
-								<div class="role">${localStorage.getItem('isadmin') === 'true' ? 'Administrateur' : 'Utilisateur '}</div>
+								<div class="username">admin</div>
+								<div class="role">${this.isAdmin === 'true' ? 'Administrateur' : 'Utilisateur '}</div>
 							</div>
 						</div>
 						<button id="btnLogout" class="logout-button">Déconnexion</button>

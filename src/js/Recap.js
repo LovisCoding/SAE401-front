@@ -241,10 +241,7 @@ async function updateValue(lstRowIndex, lstColIndex, lstNewValue, lstRow, lstHea
 async function loadSemestre(idAnnee) {
 	let lstSemestres = await getSemestres();
 	let semesters = lstSemestres.filter(item => item.id_annee == idAnnee);
-	if (semesters.length === 0) {
-		alert('Pas de semestre sur l\'annee courante');
-		return
-	}
+	
 	semesters.sort((a, b) => a.label.localeCompare(b.label));
 	const selectElement = document.getElementById('semester');
 
