@@ -41,3 +41,5 @@ app.get('/recap', function(req, res) {
 });
 
 app.listen(port);
+
+module.exports = app;
