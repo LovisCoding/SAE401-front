@@ -67,7 +67,7 @@ body {
 	left: -2rem;
 	width: 270px;
 	height: calc(100vh - 30px);
-	background-image: url('./img/BulleGauche.png');
+	background-image: url('/assets/img/BulleGauche.png');
 	background-size: cover;
 	background-repeat: no-repeat;
 	z-index: -1;
@@ -79,7 +79,7 @@ body {
 	bottom: 0;
 	width: 250px;
 	height: 250px;
-	background-image: url('./img/BulleDroite.png');
+	background-image: url('/assets/img/BulleDroite.png');
 	background-size: cover;
 	background-repeat: no-repeat;
 	z-index: -1;
@@ -91,7 +91,7 @@ body {
 	left: 45%;
 	width: 200px;
 	height: 130px;
-	background-image: url('./img/Logo_ScoNotes.png');
+	background-image: url('/assets/img/Logo_ScoNotes.png');
 	background-size: cover;
 	background-repeat: no-repeat;
 	z-index: -1;

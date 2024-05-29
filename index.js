@@ -19,10 +19,10 @@ app.get('/login', function(req, res) {
 	res.sendFile(path.join(__dirname, '/src/html/connection.html'));
 });
 
-app.use(express.static('src/css'))
-app.use(express.static('src/js'))
-app.use(express.static('src/assets'))
-app.use(express.static('node_modules'))
+app.use('/css', express.static(path.join(__dirname, 'src/css')));
+app.use('/js', express.static(path.join(__dirname, 'src/js')));
+app.use('/assets', express.static(path.join(__dirname, 'src/assets')));
+app.use('/modules', express.static(path.join(__dirname, 'node_modules')));
 
 app.get('/home', function(req, res) {
 	res.sendFile(path.join(__dirname, '/src/html/home.html'));

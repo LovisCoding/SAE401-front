@@ -17,7 +17,7 @@ class Nav {
 			let navHTML = `
 			<nav class="navbar navbar-expand-lg navbar-light bg-light">
 				<a   class="navbar-brand" href="/home">
-					<img src="/img/Logo_ScoNotesSimple.png" width="65" height="45" class="d-inline-block align-top logo" alt="ScoNotes" id="navHome"/>
+					<img src="/assets/img/Logo_ScoNotesSimple.png" width="65" height="45" class="d-inline-block align-top logo" alt="ScoNotes" id="navHome"/>
 				</a>
 				<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
 					<span class="navbar-toggler-icon"></span>
@@ -27,7 +27,7 @@ class Nav {
 			if (this.isAdmin == 'true') {
 				navHTML += `<li class="nav-item">
 							<a class="nav-link d-flex flex-column align-items-center text-center" id="navImport" href="/import">
-								<img src="/img/Import.svg" width="25" height="25" class="d-inline-block align-top" alt="Importation"/>
+								<img src="/assets/img/Import.svg" width="25" height="25" class="d-inline-block align-top" alt="Importation"/>
 								<span>Importation</span>
 							</a>
 						</li>`
@@ -35,28 +35,28 @@ class Nav {
 			navHTML += `
 						<li class="nav-item">
 							<a class="nav-link d-flex flex-column align-items-center text-center" id="navRecap" href="/recap">
-								<img src="/img/Recapitulatif.svg" width="25" height="25" class="d-inline-block align-top" alt="Récapitulatif"/>
+								<img src="/assets/img/Recapitulatif.svg" width="25" height="25" class="d-inline-block align-top" alt="Récapitulatif"/>
 								<span>Récapitulatif</span>
 							</a>
 						</li>
 						<li class="nav-item">
 							<a class="nav-link d-flex flex-column align-items-center text-center " id="navExport" href="/export">
-								<img src="/img/Export.svg" width="25" height="25" class="d-inline-block align-top"  alt="Exportation"/>
+								<img src="/assets/img/Export.svg" width="25" height="25" class="d-inline-block align-top"  alt="Exportation"/>
 								<span>Exportation</span>
 							</a>
 						</li>
 						<li class="nav-item">
 							<a class="d-flex align-items-center text-decoration-none" href="#" id="profile">
 								<div class="d-flex flex-column align-items-center nav-link">
-								<img src="/img/Profil.svg" width="25" height="25" class="d-inline-block align-top" alt="Profil"/>
+								<img src="/assets/img/Profil.svg" width="25" height="25" class="d-inline-block align-top" alt="Profil"/>
 								<span>Profil</span>
 								</div>							
-								<img src="/img/Arrow.svg" width="18" height="18" class="arrow default" alt="" id="arrowProfil"/>
+								<img src="/assets/img/Arrow.svg" width="18" height="18" class="arrow default" alt="" id="arrowProfil"/>
 							</a>
 						</li>
 						<div class="profile-popup" id="profilePopup">
 						<div class="profile-info">
-							<div class="profile-icon"><img src="/img/logoProfilePopUp.png" width="90" height="80" class="arrow" alt=""/></div>
+							<div class="profile-icon"><img src="/assets/img/logoProfilePopUp.png" width="90" height="80" class="arrow" alt=""/></div>
 							<div class="profile-text">
 								<div class="username">admin</div>
 								<div class="role">${this.isAdmin === 'true' ? 'Administrateur' : 'Utilisateur '}</div>
