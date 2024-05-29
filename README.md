@@ -82,5 +82,8 @@ ScoNotes est une extension du logiciel ScoDoc, conçue pour organiser, filtrer e
 ### Technologies utilisées
 
 - **Frontend** : HTML, CSS, JavaScript
-- **Backend** : PHP
+- **Backend** : PHP, ExpressJs
 - **Base de données** : SQL
+
+
+Maquette : https://www.figma.com/design/LsDxa36DuohB0woEQZuluY/Maquette-SAE401?node-id=3-193136&t=nlcjzxkPres8asN9-1 
